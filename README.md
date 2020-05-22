@@ -1,68 +1,33 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# PRIVATE WEBSITE
 
-## Available Scripts
+[THIS WEBSITE IS PRIVATE](aucunDomaine)
+Copyright (©) 2019-2020 IlinguCorp(Chollet, Arthur), Inc.
+This webSite are the propity of IlinguCorp, Inc., Nobody are allowed to copy or
+distributed OR MODIFIE some version of MY webSite!!!
 
-In the project directory, you can run:
+# File and Folder
 
-### `npm start`
+### ©2020 All file and folder rights reserved at IlinguCorp® (Chollet, Arthur)
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# Installation
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+## NO DOWNLOADS ARE ALLOWED
 
-### `npm test`
+## Contributing
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Principal Developper: Chollet Arthur => All rights reserved
 
-### `npm run build`
+### Principal Admin : Chollet, Arthur => All rights reserved
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Norme And Cookies
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+### All technologies are modern and up to date.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## No Cookies in this webSite : you're data aren't collect.
 
-### `npm run eject`
+## License
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+[IlinguCorp](nolicence)
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+"signature of me", 13 January 2020
+Ilingu, Client, principal developer, president of this webSite
