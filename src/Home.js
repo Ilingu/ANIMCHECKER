@@ -36,7 +36,7 @@ export default class Home extends Component {
       window.history.pushState("", "", "/");
       window.location.reload();
     } else {
-      this.ref = base.syncState(`/Anim`, {
+      this.ref = base.syncState(`/`, {
         context: this,
         state: "Anim",
       });
@@ -47,93 +47,132 @@ export default class Home extends Component {
     base.removeBinding(this.ref);
   }
 
-  addAnime = () => {
+  addAnime = (imageUrl) => {
     const { title, nbSaison, EPSaison, type, durer } = this.state;
-    const StateCopy = { ...this.state };
-
-    if (type === "serie") {
-      let isGoodForAllEP = true;
-
-      EPSaison.forEach((EP) => {
-        if (typeof EP !== "number") {
-          isGoodForAllEP = false;
-        } else if (EP < 1) {
-          isGoodForAllEP = false;
-        }
-      });
-
-      if (
-        title !== undefined &&
-        title !== null &&
-        typeof title === "string" &&
-        title.trim().length !== 0 &&
-        title !== "" &&
-        typeof nbSaison === "number" &&
-        nbSaison >= 1 &&
-        isGoodForAllEP
-      ) {
-        let SaisonEPObj = {};
-        let EPObj = {};
-
-        for (let i = 0; i < nbSaison; i++) {
-          for (let j = 0; j < StateCopy.EPSaison[i]; j++) {
-            EPObj[`Episode${j + 1}`] = {
-              finished: false,
-              startedEPDate: null,
-              finishedEPDate: null,
-            };
-          }
-          SaisonEPObj[`Saison${i + 1}`] = { finishedS: false, EPObj };
-        }
-
-        StateCopy.Anim.serie[`series-${Date.now()}`] = {
-          name: title,
-          startedAnimDate: null,
-          finishedAnimDate: null,
-          finishedAnim: false,
-          Anim: SaisonEPObj,
-        };
-      } else {
-        this.setState({
-          ResText: "Tous les champs doivent être remplie correctement",
-          typeAlert: "danger",
+    const self = this;
+    const StateCopy = { ...this.state.Anim };
+    if (typeof imageUrl === "object") {
+      const title2 = this.replaceSpace(title, "%20");
+      axios
+        .get(`https://api.jikan.moe/v3/search/anime?q=${title2}&limit=1`)
+        .then((result) => {
+          imageUrl = result.data.results[0].image_url;
+          next();
+        })
+        .catch((err) => {
+          this.setState({
+            ResText:
+              "Excusés-nous mais nous avons rencontré un problème lors de la recherche d'une photos de cette anim, vueillez réessayer plus tard ou chercher cette anim (non manuellement)",
+            typeAlert: "danger",
+          });
+          console.error(err);
         });
-      }
-    } else if (type === "film") {
-      if (
-        title !== undefined &&
-        title !== null &&
-        typeof title === "string" &&
-        title.trim().length !== 0 &&
-        title !== "" &&
-        typeof durer === "number" &&
-        durer >= 1
-      ) {
-      } else {
-        this.setState({
-          ResText: "Tous les champs doivent être remplie correctement",
-          typeAlert: "danger",
-        });
-      }
-    } else {
-      this.setState({
-        ResText:
-          "Vous n'avez pas choisi de type pour l'oeuvre que vous allez regarder",
-        typeAlert: "danger",
-      });
     }
+
+    function next() {
+      console.log(imageUrl);
+      if (type === "serie") {
+        let isGoodForAllEP = true;
+
+        EPSaison.forEach((EP) => {
+          if (typeof EP !== "number") {
+            isGoodForAllEP = false;
+          } else if (EP < 1) {
+            isGoodForAllEP = false;
+          }
+        });
+
+        if (
+          title !== undefined &&
+          title !== null &&
+          typeof title === "string" &&
+          title.trim().length !== 0 &&
+          title !== "" &&
+          typeof nbSaison === "number" &&
+          nbSaison >= 1 &&
+          isGoodForAllEP
+        ) {
+          let SaisonEPObj = {};
+          let EPObj = {};
+
+          for (let i = 0; i < nbSaison; i++) {
+            for (let j = 0; j < EPSaison[i]; j++) {
+              EPObj[`Episode${j + 1}`] = {
+                finished: false,
+                startedEPDate: null,
+                finishedEPDate: null,
+              };
+            }
+            SaisonEPObj[`Saison${i + 1}`] = { finishedS: false, EPObj };
+          }
+
+          StateCopy.serie[`series-${Date.now()}`] = {
+            name: title,
+            imageUrl,
+            startedAnimDate: null,
+            finishedAnimDate: null,
+            finishedAnim: false,
+            Anim: SaisonEPObj,
+          };
+
+          self.setState({ Anim: StateCopy });
+        } else {
+          self.setState({
+            ResText: "Tous les champs doivent être remplie correctement",
+            typeAlert: "danger",
+          });
+        }
+      } else if (type === "film") {
+        if (
+          title !== undefined &&
+          title !== null &&
+          typeof title === "string" &&
+          title.trim().length !== 0 &&
+          title !== "" &&
+          typeof durer === "number" &&
+          durer >= 1
+        ) {
+          StateCopy.film[`film-${Date.now()}`] = {
+            name: title,
+            durer,
+            imageUrl,
+            startedFilmDate: null,
+            finishedFilmDate: null,
+            finished: false,
+          };
+
+          self.setState({ Anim: StateCopy });
+        } else {
+          self.setState({
+            ResText: "Tous les champs doivent être remplie correctement",
+            typeAlert: "danger",
+          });
+        }
+      } else {
+        self.setState({
+          ResText:
+            "Vous n'avez pas choisi de type pour l'oeuvre que vous allez regarder",
+          typeAlert: "danger",
+        });
+      }
+    }
+
     this.setState({ ShowModalAddAnim: false, ShowModalAddFilm: false });
+  };
+
+  replaceSpace = (data, remplaceStr) => {
+    return data
+      .split("")
+      .map((char) => (char === " " ? remplaceStr : char))
+      .join("");
   };
 
   SearchAnim = (name) => {
     let NameToSend = name;
-    this.setState({ ShowModal: true });
+    this.setState({ ShowModalSearch: true });
 
     if (name.includes(" ")) {
-      NameToSend = name
-        .split("")
-        .map((char) => (char === " " ? "%20" : char))
-        .join("");
+      NameToSend = this.replaceSpace(name, "%20");
     }
 
     axios
@@ -145,7 +184,7 @@ export default class Home extends Component {
   };
 
   handleClick = (id) => {
-    this.setState({ ShowModal: false });
+    this.setState({ ShowModalSearch: false });
 
     axios
       .get(`https://api.jikan.moe/v3/anime/${id}`)
@@ -250,12 +289,35 @@ export default class Home extends Component {
           SeeInDetails={this.handleClick}
           type={anim.type}
           id={anim.mal_id}
+          inMyAnim={false}
           clicked={this.handleClick}
         />
       ));
     }
 
     if (Object.keys(Anim).length !== 0) {
+      const { serie, film } = this.state.Anim;
+      MyAnimList = Object.keys(serie)
+        .map((key) => (
+          <Poster
+            key={key}
+            id={key}
+            url={serie[key].imageUrl}
+            title={serie[key].name}
+            inMyAnim={true}
+          />
+        ))
+        .concat(
+          Object.keys(film).map((key) => (
+            <Poster
+              key={key}
+              id={key}
+              url={film[key].imageUrl}
+              title={film[key].name}
+              inMyAnim={true}
+            />
+          ))
+        );
     }
 
     if (animToDetails !== null && animToDetails.length >= 2) {

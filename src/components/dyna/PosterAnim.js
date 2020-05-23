@@ -10,7 +10,7 @@ const PosterAnim = ({
   SeeInDetails,
   inMyAnim,
 }) => {
-  if (inMyAnim)
+  if (!inMyAnim) {
     return (
       <div className="poster" onClick={() => SeeInDetails(id)}>
         <img src={url} alt="Img of Anim" />
@@ -21,19 +21,18 @@ const PosterAnim = ({
         </h4>
       </div>
     );
-  else
+  } else {
     return (
-      <Link push={true} to={`/Watch/${id}`}>
+      <Link push="true" to={`/Watch/${id}`}>
         <div className="poster">
           <img src={url} alt="Img of Anim" />
           <h4>
             <span className="title">{title}</span>,<br />
-            <span className="score">{score}/10</span>,{" "}
-            <span className="type">{type === "Movie" ? "Movie" : "Anime"}</span>
           </h4>
         </div>
       </Link>
     );
+  }
 };
 
 export default PosterAnim;

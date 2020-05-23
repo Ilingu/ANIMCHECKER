@@ -37,7 +37,7 @@ const Header = ({ search, openModalNewAnim }) => {
           rel="noopener noreferrer"
           style={{ marginRight: "10px" }}
         >
-          <Button variant="outline-primary">Discord</Button>
+          <Button variant="outline-primary">Discord Anime</Button>
         </a>
       </Nav.Item>
       <Nav.Item>
