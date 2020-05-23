@@ -21,6 +21,11 @@ body {
   color: $MainColor;
 }
 
+::selection {
+  background-color: $MainColor;
+  color: $dark;
+}
+
 .fixedOnBottom {
   position: fixed;
   bottom: 0;

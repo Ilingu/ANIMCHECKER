@@ -22,6 +22,16 @@ body {
   color: #ff6d00;
 }
 
+::-moz-selection {
+  background-color: #ff6d00;
+  color: #212121;
+}
+
+::selection {
+  background-color: #ff6d00;
+  color: #212121;
+}
+
 .fixedOnBottom {
   position: fixed;
   bottom: 0;

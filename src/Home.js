@@ -72,6 +72,27 @@ export default class Home extends Component {
         nbSaison >= 1 &&
         isGoodForAllEP
       ) {
+        let SaisonEPObj = {};
+        let EPObj = {};
+
+        for (let i = 0; i < nbSaison; i++) {
+          for (let j = 0; j < StateCopy.EPSaison[i]; j++) {
+            EPObj[`Episode${j + 1}`] = {
+              finished: false,
+              startedEPDate: null,
+              finishedEPDate: null,
+            };
+          }
+          SaisonEPObj[`Saison${i + 1}`] = { finishedS: false, EPObj };
+        }
+
+        StateCopy.Anim.serie[`series-${Date.now()}`] = {
+          name: title,
+          startedAnimDate: null,
+          finishedAnimDate: null,
+          finishedAnim: false,
+          Anim: SaisonEPObj,
+        };
       } else {
         this.setState({
           ResText: "Tous les champs doivent être remplie correctement",
