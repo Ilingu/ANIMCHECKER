@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 // CSS
-import { Nav, Form, Button } from "react-bootstrap";
+import { Navbar, Nav, Form, Button } from "react-bootstrap";
 
 const Header = ({ search, openModalNewAnim }) => {
   const [Anim, SetAnim] = useState("");
@@ -22,26 +22,27 @@ const Header = ({ search, openModalNewAnim }) => {
   };
 
   return (
-    <Nav variant="tabs">
-      <Nav.Item>
-        <Link to="/Home">
-          <Button variant="warning" id="btnHome">
-            Home
-          </Button>
-        </Link>
-      </Nav.Item>
-      <Nav.Item>
-        <a
-          href="https://discord.gg/Jrmks5b"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ marginRight: "10px" }}
-        >
-          <Button variant="outline-primary">Discord Anime</Button>
-        </a>
-      </Nav.Item>
-      <Nav.Item>
-        <Form onSubmit={HandleSubmit} id="searchForm">
+    <Navbar bg="light" expand="lg">
+      <Link push="true" to="/Home">
+        <Navbar.Brand>ASI-Check</Navbar.Brand>
+      </Link>
+      <Navbar.Toggle aria-controls="basic-navbar-nav" />
+      <Navbar.Collapse id="basic-navbar-nav">
+        <Nav className="mr-auto">
+          <Nav.Link href="https://discord.gg/Jrmks5b" target="_blank">
+            Discord Anime
+          </Nav.Link>
+          <Nav.Item>
+            <Button
+              variant="outline-success"
+              style={{ marginLeft: "10px" }}
+              onClick={openModalNewAnim}
+            >
+              Create Anime/Moovie (manually)
+            </Button>
+          </Nav.Item>
+        </Nav>
+        <Form onSubmit={HandleSubmit} id="searchForm" inline>
           <Form.Group>
             <Form.Control
               type="text"
@@ -54,17 +55,8 @@ const Header = ({ search, openModalNewAnim }) => {
             <span className="fas fa-search"></span>
           </Button>
         </Form>
-      </Nav.Item>
-      <Nav.Item>
-        <Button
-          variant="outline-success"
-          style={{ marginLeft: "10px" }}
-          onClick={openModalNewAnim}
-        >
-          Create Anime/Moovie (manually)
-        </Button>
-      </Nav.Item>
-    </Nav>
+      </Navbar.Collapse>
+    </Navbar>
   );
 };
 

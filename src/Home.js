@@ -4,8 +4,16 @@ import axios from "axios";
 import Header from "./components/Header";
 import Poster from "./components/dyna/PosterAnim";
 import Episode from "./components/dyna/Episode";
+import NextAnimCO from "./components/dyna/NextAnim";
 // CSS
-import { Modal, Button, ResponsiveEmbed, Form, Alert } from "react-bootstrap";
+import {
+  Modal,
+  Button,
+  ResponsiveEmbed,
+  Form,
+  Alert,
+  Nav,
+} from "react-bootstrap";
 // DB
 import base from "./db/base";
 
@@ -19,6 +27,7 @@ export default class Home extends Component {
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
     ShowModalType: false,
+    SwitchMyAnim: false,
     animToDetails: [],
     // Form
     title: "",
@@ -26,6 +35,7 @@ export default class Home extends Component {
     durer: 110,
     nbSaison: 1,
     EPSaison: [1],
+    NextAnim: "",
     // Alerts
     ResText: null,
     typeAlert: null,
@@ -51,6 +61,7 @@ export default class Home extends Component {
     const { title, nbSaison, EPSaison, type, durer } = this.state;
     const self = this;
     const StateCopy = { ...this.state.Anim };
+
     if (typeof imageUrl === "object") {
       const title2 = this.replaceSpace(title, "%20");
       axios
@@ -70,7 +81,6 @@ export default class Home extends Component {
     }
 
     function next() {
-      console.log(imageUrl);
       if (type === "serie") {
         let isGoodForAllEP = true;
 
@@ -99,8 +109,8 @@ export default class Home extends Component {
             for (let j = 0; j < EPSaison[i]; j++) {
               EPObj[`Episode${j + 1}`] = {
                 finished: false,
-                startedEPDate: null,
-                finishedEPDate: null,
+                startedEPDate: "null",
+                finishedEPDate: "null",
               };
             }
             SaisonEPObj[`Saison${i + 1}`] = { finishedS: false, EPObj };
@@ -109,13 +119,31 @@ export default class Home extends Component {
           StateCopy.serie[`series-${Date.now()}`] = {
             name: title,
             imageUrl,
-            startedAnimDate: null,
-            finishedAnimDate: null,
+            startedAnimDate: "null",
+            finishedAnimDate: "null",
             finishedAnim: false,
             Anim: SaisonEPObj,
           };
 
-          self.setState({ Anim: StateCopy });
+          self.setState({
+            Anim: StateCopy,
+            findAnim: [],
+            ShowModalSearch: false,
+            ShowModalAddAnim: false,
+            ShowModalAddFilm: false,
+            ShowModalType: false,
+            animToDetails: [],
+            // Form
+            title: "",
+            type: "serie",
+            durer: 110,
+            nbSaison: 1,
+            EPSaison: [1],
+            NextAnim: "",
+            // Alerts
+            ResText: null,
+            typeAlert: null,
+          });
         } else {
           self.setState({
             ResText: "Tous les champs doivent être remplie correctement",
@@ -136,12 +164,30 @@ export default class Home extends Component {
             name: title,
             durer,
             imageUrl,
-            startedFilmDate: null,
-            finishedFilmDate: null,
+            startedFilmDate: "null",
+            finishedFilmDate: "null",
             finished: false,
           };
 
-          self.setState({ Anim: StateCopy });
+          self.setState({
+            Anim: StateCopy,
+            findAnim: [],
+            ShowModalSearch: false,
+            ShowModalAddAnim: false,
+            ShowModalAddFilm: false,
+            ShowModalType: false,
+            animToDetails: [],
+            // Form
+            title: "",
+            type: "serie",
+            durer: 110,
+            nbSaison: 1,
+            EPSaison: [1],
+            NextAnim: "",
+            // Alerts
+            ResText: null,
+            typeAlert: null,
+          });
         } else {
           self.setState({
             ResText: "Tous les champs doivent être remplie correctement",
@@ -158,6 +204,29 @@ export default class Home extends Component {
     }
 
     this.setState({ ShowModalAddAnim: false, ShowModalAddFilm: false });
+  };
+
+  newNextAnim = (event) => {
+    event.preventDefault();
+
+    const NextAnimCopy = { ...this.state.Anim };
+    const { NextAnim } = this.state;
+
+    if (
+      NextAnim !== undefined &&
+      NextAnim !== null &&
+      typeof NextAnim === "string" &&
+      NextAnim.trim().length !== 0 &&
+      NextAnim !== ""
+    ) {
+      NextAnimCopy.NextAnim[`NextAnim${Date.now()}`] = { name: NextAnim };
+      this.setState({ Anim: NextAnimCopy, NextAnim: "" });
+    } else {
+      this.setState({
+        ResText: "Vueillez me donner le nom de l'anime à rajouter",
+        typeAlert: "danger",
+      });
+    }
   };
 
   replaceSpace = (data, remplaceStr) => {
@@ -243,9 +312,13 @@ export default class Home extends Component {
       ShowModalAddFilm,
       ShowModalType,
       durer,
+      SwitchMyAnim,
+      NextAnim,
     } = this.state;
     let animList = null;
-    let MyAnimList = "Vous avez aucun anime :/\nRajouter-en !";
+    let MyAnimList = "Vous avez aucun anime :/\nRajoutez-en !";
+    let MyNextAnimList =
+      "Vous avez mis aucun anime comme souhait dans cette section\nRajoutez-en";
     let EPSaisonHtml = [];
 
     if (type === "serie") {
@@ -295,7 +368,7 @@ export default class Home extends Component {
       ));
     }
 
-    if (Object.keys(Anim).length !== 0) {
+    if (Object.keys(Anim).length !== 0 && SwitchMyAnim) {
       const { serie, film } = this.state.Anim;
       MyAnimList = Object.keys(serie)
         .map((key) => (
@@ -304,6 +377,7 @@ export default class Home extends Component {
             id={key}
             url={serie[key].imageUrl}
             title={serie[key].name}
+            isFinished={serie[key].finishedAnim}
             inMyAnim={true}
           />
         ))
@@ -314,10 +388,16 @@ export default class Home extends Component {
               id={key}
               url={film[key].imageUrl}
               title={film[key].name}
+              isFinished={film[key].finished}
               inMyAnim={true}
             />
           ))
         );
+    } else if (!SwitchMyAnim && this.state.Anim.NextAnim !== undefined) {
+      const { NextAnim } = this.state.Anim;
+      MyNextAnimList = Object.keys(NextAnim).map((key) => (
+        <NextAnimCO key={key} name={NextAnim[key].name} />
+      ));
     }
 
     if (animToDetails !== null && animToDetails.length >= 2) {
@@ -447,6 +527,26 @@ export default class Home extends Component {
 
           <section id="MyAnime">
             <header>
+              <Nav fill variant="tabs">
+                <Nav.Item>
+                  <Nav.Link
+                    eventKey="link-1"
+                    active={SwitchMyAnim}
+                    onClick={() => this.setState({ SwitchMyAnim: true })}
+                  >
+                    My Anim
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link
+                    eventKey="link-2"
+                    active={!SwitchMyAnim}
+                    onClick={() => this.setState({ SwitchMyAnim: false })}
+                  >
+                    My next anim
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
               <div className="return">
                 {ResText === null && typeAlert === null ? null : (
                   <Alert
@@ -464,7 +564,39 @@ export default class Home extends Component {
                 )}
               </div>
             </header>
-            {MyAnimList}
+            <div className={SwitchMyAnim ? "content" : "content none"}>
+              {SwitchMyAnim ? (
+                MyAnimList
+              ) : (
+                <Fragment>
+                  <header>
+                    <h4>
+                      Ici tu met les anime que tu veux regarder plus tard:{" "}
+                    </h4>
+                    <Form onSubmit={this.newNextAnim}>
+                      <Form.Group controlId="type">
+                        <Form.Label>Le nom ton prochain anime: </Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Nom de cette anime"
+                          autoComplete="off"
+                          value={NextAnim}
+                          onChange={(event) =>
+                            this.setState({ NextAnim: event.target.value })
+                          }
+                        />
+                      </Form.Group>
+                      <Button variant="success" type="submit">
+                        <span className="fas fa-plus"></span> Ajouter {}
+                      </Button>
+                    </Form>
+                    <hr />
+                  </header>
+
+                  {MyNextAnimList}
+                </Fragment>
+              )}
+            </div>
           </section>
 
           {/* MODALS */}
@@ -487,7 +619,7 @@ export default class Home extends Component {
             <Modal.Body id="ModalBody">
               <Form>
                 <Form.Group controlId="type">
-                  <Form.Label>Custom select</Form.Label>
+                  <Form.Label>Série OU Film</Form.Label>
                   <Form.Control
                     as="select"
                     value={type}

@@ -9,6 +9,7 @@ const PosterAnim = ({
   id,
   SeeInDetails,
   inMyAnim,
+  isFinished,
 }) => {
   if (!inMyAnim) {
     return (
@@ -23,14 +24,31 @@ const PosterAnim = ({
     );
   } else {
     return (
-      <Link push="true" to={`/Watch/${id}`}>
-        <div className="poster">
+      <div className={isFinished ? "MyAnimPoster finished" : "MyAnimPoster"}>
+        {isFinished ? <h4>{title}</h4> : null}
+
+        <div className="ImgInterract">
           <img src={url} alt="Img of Anim" />
-          <h4>
-            <span className="title">{title}</span>,<br />
-          </h4>
         </div>
-      </Link>
+        <div className="action">
+          <Link push="true" to={`/Watch/${id}`}>
+            <div className="watch">
+              <span className="fas fa-eye"></span>
+            </div>
+          </Link>
+
+          <div className="delete">
+            <span className="fas fa-trash-alt"></span>
+          </div>
+        </div>
+        {isFinished ? (
+          <h5>
+            <span className="fas fa-check"></span>
+          </h5>
+        ) : (
+          <h4 className="name">{title}</h4>
+        )}
+      </div>
     );
   }
 };
