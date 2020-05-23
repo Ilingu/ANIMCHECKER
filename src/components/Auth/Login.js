@@ -93,9 +93,6 @@ export default class Login extends Component {
                   onClose={() => this.setState({ ResText: null, type: null })}
                   dismissible
                 >
-                  <Alert.Heading>
-                    {type === "success" ? "GG !" : "Oh mince! Ta une erreur!"}
-                  </Alert.Heading>
                   <p>{ResText}</p>
                 </Alert>
               )}

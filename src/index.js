@@ -9,6 +9,8 @@ import Reducer from "./Redux/Reducer";
 import Home from "./Home";
 // Components
 import Login from "./components/Auth/Login";
+import Watch from "./components/Watch";
+import NotFound from "./components/Error/NotFound";
 // CSS
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Assets/CSS/App.css";
@@ -16,8 +18,8 @@ import "./Assets/CSS/App.css";
 import * as serviceWorker from "./serviceWorker";
 
 const store = createStore(
-  Reducer,
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+  Reducer
+  // window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );
 
 const Root = () => (
@@ -25,6 +27,8 @@ const Root = () => (
     <Switch>
       <Route exact path="/" render={() => <Login store={store} />} />
       <Route exact path="/Home" render={() => <Home store={store} />} />
+      <Route exact path={`/Watch/:id`} render={() => <Watch store={store} />} />
+      <Route component={NotFound} />
     </Switch>
   </Router>
 );
@@ -37,5 +41,3 @@ ReactDOM.render(
 );
 
 serviceWorker.unregister();
-
-// Discord: 

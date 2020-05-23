@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 // CSS
 import { Nav, Form, Button } from "react-bootstrap";
 
-const Header = ({ search }) => {
+const Header = ({ search, openModalNewAnim }) => {
   const [Anim, SetAnim] = useState("");
 
   const HandleSubmit = (event) => {
@@ -56,9 +56,13 @@ const Header = ({ search }) => {
         </Form>
       </Nav.Item>
       <Nav.Item>
-        <Link to="/NewAnim" style={{ marginLeft: "10px" }}>
-          <Button variant="outline-success">Create anim (manually)</Button>
-        </Link>
+        <Button
+          variant="outline-success"
+          style={{ marginLeft: "10px" }}
+          onClick={openModalNewAnim}
+        >
+          Create Anime/Moovie (manually)
+        </Button>
       </Nav.Item>
     </Nav>
   );

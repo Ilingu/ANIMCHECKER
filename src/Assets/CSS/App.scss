@@ -38,6 +38,21 @@ body {
   margin-top: 10px;
 }
 
+.NotFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  h1 {
+    font-size: 10rem;
+  }
+  h3 {
+    background-color: #313131;
+    padding: 20px;
+    width: 400px;
+    border-radius: 10px;
+  }
+}
 #searchForm {
   display: flex;
 

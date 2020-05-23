@@ -5,19 +5,30 @@ import Header from "./components/Header";
 import Poster from "./components/dyna/PosterAnim";
 import Episode from "./components/dyna/Episode";
 // CSS
-import { Modal, Button, ResponsiveEmbed } from "react-bootstrap";
+import { Modal, Button, ResponsiveEmbed, Form, Alert } from "react-bootstrap";
 // DB
 import base from "./db/base";
 
 export default class Home extends Component {
   state = {
-    Anim: {
-      moovies: {},
-      anims: {},
-    },
+    // Firebase
+    Anim: {},
+    // Bon fonctionnement de l'app
     findAnim: [],
-    ShowModal: false,
+    ShowModalSearch: false,
+    ShowModalAddAnim: false,
+    ShowModalAddFilm: false,
+    ShowModalType: false,
     animToDetails: [],
+    // Form
+    title: "",
+    type: "serie",
+    durer: 110,
+    nbSaison: 1,
+    EPSaison: [1],
+    // Alerts
+    ResText: null,
+    typeAlert: null,
   };
 
   componentDidMount() {
@@ -35,6 +46,63 @@ export default class Home extends Component {
   componentWillUnmount() {
     base.removeBinding(this.ref);
   }
+
+  addAnime = () => {
+    const { title, nbSaison, EPSaison, type, durer } = this.state;
+    const StateCopy = { ...this.state };
+
+    if (type === "serie") {
+      let isGoodForAllEP = true;
+
+      EPSaison.forEach((EP) => {
+        if (typeof EP !== "number") {
+          isGoodForAllEP = false;
+        } else if (EP < 1) {
+          isGoodForAllEP = false;
+        }
+      });
+
+      if (
+        title !== undefined &&
+        title !== null &&
+        typeof title === "string" &&
+        title.trim().length !== 0 &&
+        title !== "" &&
+        typeof nbSaison === "number" &&
+        nbSaison >= 1 &&
+        isGoodForAllEP
+      ) {
+      } else {
+        this.setState({
+          ResText: "Tous les champs doivent être remplie correctement",
+          typeAlert: "danger",
+        });
+      }
+    } else if (type === "film") {
+      if (
+        title !== undefined &&
+        title !== null &&
+        typeof title === "string" &&
+        title.trim().length !== 0 &&
+        title !== "" &&
+        typeof durer === "number" &&
+        durer >= 1
+      ) {
+      } else {
+        this.setState({
+          ResText: "Tous les champs doivent être remplie correctement",
+          typeAlert: "danger",
+        });
+      }
+    } else {
+      this.setState({
+        ResText:
+          "Vous n'avez pas choisi de type pour l'oeuvre que vous allez regarder",
+        typeAlert: "danger",
+      });
+    }
+    this.setState({ ShowModalAddAnim: false, ShowModalAddFilm: false });
+  };
 
   SearchAnim = (name) => {
     let NameToSend = name;
@@ -61,7 +129,10 @@ export default class Home extends Component {
     axios
       .get(`https://api.jikan.moe/v3/anime/${id}`)
       .then((result) => {
-        this.setState({ animToDetails: [result.data], findAnim: [] });
+        this.setState({
+          animToDetails: [result.data],
+          findAnim: [],
+        });
       })
       .catch((err) => console.error(err));
     axios
@@ -75,9 +146,78 @@ export default class Home extends Component {
       .catch((err) => console.error(err));
   };
 
+  openNext = () => {
+    const { type } = this.state;
+
+    if (type === "serie") this.setState({ ShowModalAddAnim: true });
+    else this.setState({ ShowModalAddFilm: true });
+  };
+
+  cancelModal = () => {
+    this.setState({
+      ShowModalSearch: false,
+      ShowModalAddAnim: false,
+      ShowModalAddFilm: false,
+      ShowModalType: false,
+      title: "",
+      type: "serie",
+      durer: 110,
+      nbSaison: 1,
+      EPSaison: [1],
+    });
+  };
+
   render() {
-    const { ShowModal, findAnim, animToDetails } = this.state;
+    const {
+      ShowModalSearch,
+      findAnim,
+      animToDetails,
+      Anim,
+      ShowModalAddAnim,
+      nbSaison,
+      title,
+      EPSaison,
+      ResText,
+      typeAlert,
+      type,
+      ShowModalAddFilm,
+      ShowModalType,
+      durer,
+    } = this.state;
     let animList = null;
+    let MyAnimList = "Vous avez aucun anime :/\nRajouter-en !";
+    let EPSaisonHtml = [];
+
+    if (type === "serie") {
+      for (let i = 0; i < nbSaison; i++) {
+        const stateCopy = { ...this.state };
+
+        if (stateCopy.EPSaison[i] === undefined) {
+          stateCopy.EPSaison = [...stateCopy.EPSaison, 1];
+          this.setState(stateCopy);
+        }
+
+        EPSaisonHtml = [
+          ...EPSaisonHtml,
+          <Form.Group controlId="saison" key={i}>
+            <Form.Label>Nombre d'épisode de la saison {i + 1}</Form.Label>
+            <Form.Control
+              type="number"
+              value={EPSaison[i]}
+              placeholder="Nombre d'épisode"
+              onChange={(event) => {
+                const value = parseInt(event.target.value);
+
+                if (value < 1) return;
+
+                stateCopy.EPSaison[i] = value;
+                this.setState(stateCopy);
+              }}
+            />
+          </Form.Group>,
+        ];
+      }
+    }
 
     if (findAnim.length !== 0) {
       animList = findAnim.map((anim) => (
@@ -92,6 +232,9 @@ export default class Home extends Component {
           clicked={this.handleClick}
         />
       ));
+    }
+
+    if (Object.keys(Anim).length !== 0) {
     }
 
     if (animToDetails !== null && animToDetails.length >= 2) {
@@ -214,23 +357,174 @@ export default class Home extends Component {
     } else {
       return (
         <div className="container">
-          <Header search={this.SearchAnim} />
+          <Header
+            search={this.SearchAnim}
+            openModalNewAnim={() => this.setState({ ShowModalType: true })}
+          />
 
-          {/* MODAL */}
-          <Modal
-            show={ShowModal}
-            onHide={() => this.setState({ ShowModal: false })}
-          >
+          <section id="MyAnime">
+            <header>
+              <div className="return">
+                {ResText === null && typeAlert === null ? null : (
+                  <Alert
+                    variant={typeAlert}
+                    onClose={() =>
+                      this.setState({
+                        ResText: null,
+                        typeAlert: null,
+                      })
+                    }
+                    dismissible
+                  >
+                    <p>{ResText}</p>
+                  </Alert>
+                )}
+              </div>
+            </header>
+            {MyAnimList}
+          </section>
+
+          {/* MODALS */}
+          <Modal show={ShowModalSearch} onHide={this.cancelModal}>
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Animé(s) trouvé(s)</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">{animList}</Modal.Body>
             <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={ShowModalType} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Type d'anime</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <Form>
+                <Form.Group controlId="type">
+                  <Form.Label>Custom select</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={type}
+                    onChange={(event) =>
+                      this.setState({ type: event.target.value })
+                    }
+                    custom
+                  >
+                    <option value="serie">Série</option>
+                    <option value="film">Film</option>
+                  </Form.Control>
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
               <Button
-                variant="secondary"
-                onClick={() => this.setState({ ShowModal: false })}
+                variant="success"
+                onClick={() => {
+                  this.setState({ ShowModalType: false });
+                  this.openNext();
+                }}
               >
-                Close
+                Suivant <span className="fas fa-arrow-right"></span>
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={ShowModalAddAnim} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Ajouter un Anim/Film</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <Form id="AddAnim" onSubmit={this.addAnime}>
+                <Form.Group controlId="titre">
+                  <Form.Label>Titre</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Titre de l'anime/film"
+                    autoComplete="off"
+                    value={title}
+                    onChange={(event) =>
+                      this.setState({
+                        title: event.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId="saison">
+                  <Form.Label>Nombre de saisons</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={nbSaison.toString()}
+                    placeholder="Nombre De saison"
+                    onChange={(event) => {
+                      const value = parseInt(event.target.value);
+
+                      if (value < 1) return;
+                      this.setState({ nbSaison: value });
+                    }}
+                  />
+                </Form.Group>
+                <div id="EPSaisonHtml">{EPSaisonHtml}</div>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button variant="success" onClick={this.addAnime}>
+                <span className="fas fa-plus"></span> Créer {title}
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={ShowModalAddFilm} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Ajouter un Anim/Film</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <Form id="AddAnim" onSubmit={this.addAnime}>
+                <Form.Group controlId="titre">
+                  <Form.Label>Titre</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Titre de l'anime/film"
+                    autoComplete="off"
+                    value={title}
+                    onChange={(event) =>
+                      this.setState({
+                        title: event.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId="duree">
+                  <Form.Label>Durée du film</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={durer.toString()}
+                    min="1"
+                    placeholder="Durée en minutes"
+                    onChange={(event) => {
+                      const value = parseInt(event.target.value);
+
+                      if (value < 1) return;
+                      this.setState({ durer: value });
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button variant="success" onClick={this.addAnime}>
+                <span className="fas fa-plus"></span> Créer {title}
               </Button>
             </Modal.Footer>
           </Modal>
