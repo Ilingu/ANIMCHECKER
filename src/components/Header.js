@@ -25,10 +25,20 @@ const Header = ({ search }) => {
     <Nav variant="tabs">
       <Nav.Item>
         <Link to="/Home">
-          <Button varient="warning" id="btnHome">
+          <Button variant="warning" id="btnHome">
             Home
           </Button>
         </Link>
+      </Nav.Item>
+      <Nav.Item>
+        <a
+          href="https://discord.gg/Jrmks5b"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ marginRight: "10px" }}
+        >
+          <Button variant="outline-primary">Discord</Button>
+        </a>
       </Nav.Item>
       <Nav.Item>
         <Form onSubmit={HandleSubmit} id="searchForm">
@@ -44,6 +54,11 @@ const Header = ({ search }) => {
             <span className="fas fa-search"></span>
           </Button>
         </Form>
+      </Nav.Item>
+      <Nav.Item>
+        <Link to="/NewAnim" style={{ marginLeft: "10px" }}>
+          <Button variant="outline-success">Create anim (manually)</Button>
+        </Link>
       </Nav.Item>
     </Nav>
   );
