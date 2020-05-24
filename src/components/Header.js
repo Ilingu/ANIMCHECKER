@@ -44,6 +44,15 @@ const Header = () => {
               Create Anime/Moovie (manually)
             </Button>
           </Nav.Item>
+          <Nav.Item>
+            <Button
+              variant="outline-warning"
+              style={{ marginLeft: "10px" }}
+              onClick={Context.logOut}
+            >
+              LogOut
+            </Button>
+          </Nav.Item>
         </Nav>
         <Form onSubmit={HandleSubmit} id="searchForm" inline>
           <Form.Group>

@@ -83,8 +83,8 @@ const MyAnim = ({
                 </Form>
                 <hr />
               </header>
-
-              {MyNextAnimList}
+              <div className="NextAnimContainer">{MyNextAnimList}</div>
+              <br />
             </Fragment>
           )}
         </div>

@@ -5,19 +5,22 @@ import Poster from "./components/dyna/PosterAnim";
 import NextAnimCO from "./components/dyna/NextAnim";
 import OneAnim from "./components/OneAnim";
 import MyAnim from "./components/MyAnim";
+import Login from "./components/Auth/Login";
 // Context
 import ContextForMyAnim from "./ContextSchema";
 // CSS
 import { Modal, Button, Form } from "react-bootstrap";
 // DB
-import base from "./db/base";
+import base, { firebaseApp } from "./db/base";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 export default class Home extends Component {
   state = {
     // Firebase
     Anim: {},
-    uid: null,
-    proprio: null,
+    uid: 12,
+    proprio: 12,
     // Bon fonctionnement de l'app
     findAnim: [],
     ShowModalSearch: false,
@@ -34,26 +37,82 @@ export default class Home extends Component {
     nbSaison: 1,
     EPSaison: [1],
     NextAnim: "",
+    CodeNumber: ["", 1],
     // Alerts
     ResText: null,
     typeAlert: null,
   };
 
   componentDidMount() {
-    // if (!this.props.store.getState() === true) {
-    //   window.history.pushState("", "", "/");
-    //   window.location.reload();
-    // } else {
-    this.ref = base.syncState(`/`, {
-      context: this,
-      state: "Anim",
+    const self = this;
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        self.handleAuth({ user });
+      }
+      self.ref = base.syncState(`/`, {
+        context: this,
+        state: "Anim",
+      });
     });
-    // }
   }
 
   componentWillUnmount() {
     base.removeBinding(this.ref);
   }
+
+  handleAuth = async (authData) => {
+    const box = await base.fetch("/", { context: this });
+
+    if (!box.proprio) {
+      await base.post("/proprio", {
+        data: authData.user.uid,
+      });
+    }
+
+    this.setState({
+      uid: authData.user.uid,
+      proprio: box.proprio || authData.user.uid,
+    });
+  };
+
+  authenticate = () => {
+    firebase.auth().languageCode = "fr";
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+      "recaptcha-container"
+    );
+    firebaseApp
+      .auth()
+      .signInWithPhoneNumber("+33652114944", window.recaptchaVerifier)
+      .then((confirmationResult) => {
+        window.confirmationResult = confirmationResult;
+        this.setState({
+          CodeNumber: [this.state.CodeNumber[0], 2],
+        });
+      });
+  };
+
+  verificateCode = () => {
+    window.confirmationResult
+      .confirm(this.state.CodeNumber[0])
+      .then((result) => {
+        this.console.log(result.user);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  logOut = () => {
+    const CopyState = { ...this.state.Anim };
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        CopyState.proprio = "";
+        this.setState({ Anim: CopyState });
+      })
+      .catch((err) => console.error(err));
+  };
 
   addAnime = () => {
     const { title, nbSaison, EPSaison, type, durer, imageUrl } = this.state;
@@ -120,7 +179,10 @@ export default class Home extends Component {
                 finishedEPDate: "null",
               };
             }
-            SaisonEPObj[`Saison${i + 1}`] = { finishedS: false, EPObj };
+            SaisonEPObj[`Saison${i + 1}`] = {
+              finishedS: false,
+              EPObj,
+            };
           }
 
           StateCopy.serie[`series-${Date.now()}`] = {
@@ -212,7 +274,10 @@ export default class Home extends Component {
       }
     }
 
-    this.setState({ ShowModalAddAnim: false, ShowModalAddFilm: false });
+    this.setState({
+      ShowModalAddAnim: false,
+      ShowModalAddFilm: false,
+    });
   };
 
   newNextAnim = (event) => {
@@ -228,7 +293,9 @@ export default class Home extends Component {
       NextAnim.trim().length !== 0 &&
       NextAnim !== ""
     ) {
-      NextAnimCopy.NextAnim[`NextAnim${Date.now()}`] = { name: NextAnim };
+      NextAnimCopy.NextAnim[`NextAnim${Date.now()}`] = {
+        name: NextAnim,
+      };
       this.setState({ Anim: NextAnimCopy, NextAnim: "" });
     } else {
       this.setState({
@@ -310,6 +377,8 @@ export default class Home extends Component {
 
   render() {
     const {
+      uid,
+      proprio,
       ShowModalSearch,
       findAnim,
       animToDetails,
@@ -326,7 +395,37 @@ export default class Home extends Component {
       durer,
       SwitchMyAnim,
       NextAnim,
+      CodeNumber,
     } = this.state;
+
+    if (!uid) {
+      return (
+        <Login
+          authenticate={this.authenticate}
+          verificateCode={this.verificateCode}
+          forForm={CodeNumber.concat([
+            (event) =>
+              this.setState({
+                CodeNumber: [event.target.value, CodeNumber[1]],
+              }),
+          ])}
+        />
+      );
+    }
+
+    if (uid !== proprio) {
+      base.removeBinding(this.ref);
+
+      return (
+        <div>
+          <p>
+            Vous n'êtes pas le bonne utilisateur \n (PS: Si vous êtes pas le
+            développeur de cette App ça sert à rien de continuer)
+          </p>
+        </div>
+      );
+    }
+
     let animList = null;
     let MyAnimList = "Vous avez aucun anime :/\nRajoutez-en !";
     let MyNextAnimList =
@@ -427,13 +526,14 @@ export default class Home extends Component {
           }}
         />
       );
-    else {
+    else
       return (
         <Fragment>
           <ContextForMyAnim.Provider
             value={{
               openModalNewAnim: () => this.setState({ ShowModalType: true }),
               search: this.SearchAnim,
+              logOut: this.logOut,
             }}
           >
             <MyAnim
@@ -598,6 +698,5 @@ export default class Home extends Component {
           </Modal>
         </Fragment>
       );
-    }
   }
 }

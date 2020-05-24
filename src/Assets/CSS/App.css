@@ -47,6 +47,35 @@ hr {
   min-height: 100vh;
 }
 
+#login {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  width: 300px;
+  min-height: 100px;
+  -webkit-box-shadow: 4px 4px 8px #000;
+          box-shadow: 4px 4px 8px #000;
+}
+
+#login h2 {
+  font-size: 0.89rem;
+  font-weight: bold;
+}
+
+#login .google-button {
+  cursor: pointer;
+  background-color: #f7f7f7;
+  color: #212121;
+  border-bottom: 2px solid #212121;
+}
+
 .NotFound {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -509,24 +538,27 @@ hr {
   text-align: center;
 }
 
-#MyAnime .content.none #NextAnim {
-  text-align: center;
+#MyAnime .content.none .NextAnimContainer {
   max-height: 700px;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-#MyAnime .content.none #NextAnim .name {
+#MyAnime .content.none .NextAnimContainer #NextAnim {
+  text-align: center;
+}
+
+#MyAnime .content.none .NextAnimContainer #NextAnim .name {
   font-size: 1.3rem;
   font-weight: bold;
 }
 
-#MyAnime .content.none #NextAnim button {
+#MyAnime .content.none .NextAnimContainer #NextAnim button {
   position: relative;
   font-weight: bold;
 }
 
-#MyAnime .content.none #NextAnim button .animation {
+#MyAnime .content.none .NextAnimContainer #NextAnim button .animation {
   position: absolute;
   top: 20%;
   width: 100%;
@@ -537,7 +569,7 @@ hr {
   transition: 1.5s;
 }
 
-#MyAnime .content.none #NextAnim button .animation:hover {
+#MyAnime .content.none .NextAnimContainer #NextAnim button .animation:hover {
   -webkit-animation: LToR 0.5s ease-out 0.1s 1 forwards;
           animation: LToR 0.5s ease-out 0.1s 1 forwards;
 }

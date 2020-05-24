@@ -1,42 +1,45 @@
 // React
-import React, { Component } from "react";
-import { Redirect } from "react-router-dom";
-// Redux
-import { logIn } from "../../Redux/actions";
+import React, { Fragment } from "react";
 // CSS
-import { Form, Button, Spinner, Alert } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 
-export default class Login extends Component {
-  state = {
-    ResText: null,
-    type: null,
-  };
+const Login = ({ authenticate, forForm, verificateCode }) => {
+  let stepToShow = null;
 
-  render() {
-    const { ResText, type, RedirectPath } = this.state;
-    if (RedirectPath !== undefined) {
-      return <Redirect to={RedirectPath} />;
-    } else {
-      return (
-        <section className="container" id="Login">
-          <header>
-            <div className="return">
-              {ResText === null && type === null ? null : (
-                <Alert
-                  variant={type}
-                  onClose={() => this.setState({ ResText: null, type: null })}
-                  dismissible
-                >
-                  <p>{ResText}</p>
-                </Alert>
-              )}
-            </div>
-          </header>
-          <div className="login">
-            Se connecter avec <span className="fas fa-google"></span>
-          </div>
-        </section>
-      );
-    }
+  if (forForm[1] === 1) {
+    stepToShow = (
+      <Button onClick={authenticate} className="google-button">
+        1. Envoyer le code
+      </Button>
+    );
+  } else if (forForm[1] === 2) {
+    stepToShow = (
+      <Fragment>
+        <Form>
+          <Form.Group controlId="saison">
+            <Form.Control
+              type="text"
+              placeholder="2. Code reçu"
+              autoComplete="off"
+              value={forForm[0]}
+              onChange={forForm[2]}
+            />
+          </Form.Group>
+        </Form>
+        <Button className="google-button" onClick={verificateCode}>
+          3. Se Connecter
+        </Button>
+      </Fragment>
+    );
   }
-}
+
+  return (
+    <section className="container" id="login">
+      <div id="recaptcha-container"></div>
+      <h2>Connecte toi pour faire des list d'anime:</h2>
+      {stepToShow}
+    </section>
+  );
+};
+
+export default Login;
