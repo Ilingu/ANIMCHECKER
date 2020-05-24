@@ -10,6 +10,7 @@ const PosterAnim = ({
   SeeInDetails,
   inMyAnim,
   isFinished,
+  deleteAnim,
 }) => {
   if (!inMyAnim) {
     return (
@@ -31,13 +32,13 @@ const PosterAnim = ({
           <img src={url} alt="Img of Anim" />
         </div>
         <div className="action">
-          <Link push="true" to={`/Watch/${id}`}>
+          <Link push="true" to={`/Watch/${id}/sfBrITi0GsUi4IPfMsa1Gqcxj0h2`}>
             <div className="watch">
               <span className="fas fa-eye"></span>
             </div>
           </Link>
 
-          <div className="delete">
+          <div className="delete" onClick={() => deleteAnim(id)}>
             <span className="fas fa-trash-alt"></span>
           </div>
         </div>

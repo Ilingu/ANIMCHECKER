@@ -18,6 +18,7 @@ const Root = () => (
     <Switch>
       <Route exact path="/" component={Home} />
       <Route exact path={`/Watch/:id/:uid`} component={Watch} />
+      <Route exact path="/Watch" component={Watch} />
       <Route component={NotFound} />
     </Switch>
   </Router>

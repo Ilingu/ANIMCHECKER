@@ -15,6 +15,7 @@ const MyAnim = ({
   NextAnim,
   MyNextAnimList,
   handleSubmit,
+  onClose,
 }) => {
   return (
     <div className="container">
@@ -44,16 +45,7 @@ const MyAnim = ({
           </Nav>
           <div className="return">
             {ResText === null && typeAlert === null ? null : (
-              <Alert
-                variant={typeAlert}
-                onClose={() =>
-                  this.setState({
-                    ResText: null,
-                    typeAlert: null,
-                  })
-                }
-                dismissible
-              >
+              <Alert variant={typeAlert} onClose={onClose} dismissible>
                 <p>{ResText}</p>
               </Alert>
             )}

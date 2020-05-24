@@ -34,8 +34,7 @@ export default class Home extends Component {
     type: "serie",
     imageUrl: null,
     durer: 110,
-    nbSaison: 1,
-    EPSaison: [1],
+    nbEP: "",
     NextAnim: "",
     CodeNumber: ["", 1],
     // Alerts
@@ -115,7 +114,7 @@ export default class Home extends Component {
   };
 
   addAnime = () => {
-    const { title, nbSaison, EPSaison, type, durer, imageUrl } = this.state;
+    const { title, nbEP, type, durer, imageUrl } = this.state;
     const self = this;
     const StateCopy = { ...this.state.Anim };
     let imgUrl = imageUrl;
@@ -148,50 +147,36 @@ export default class Home extends Component {
 
     function next() {
       if (type === "serie") {
-        let isGoodForAllEP = true;
-
-        EPSaison.forEach((EP) => {
-          if (typeof EP !== "number") {
-            isGoodForAllEP = false;
-          } else if (EP < 1) {
-            isGoodForAllEP = false;
-          }
-        });
-
         if (
           title !== undefined &&
           title !== null &&
           typeof title === "string" &&
           title.trim().length !== 0 &&
           title !== "" &&
-          typeof nbSaison === "number" &&
-          nbSaison >= 1 &&
-          isGoodForAllEP
+          nbEP !== undefined &&
+          nbEP !== null &&
+          typeof nbEP === "string" &&
+          nbEP.trim().length !== 0 &&
+          nbEP !== ""
         ) {
-          let SaisonEPObj = {};
-          let EPObj = {};
-          // Faire nom episode pour ceux qu'on peut
-          for (let i = 0; i < nbSaison; i++) {
-            for (let j = 0; j < EPSaison[i]; j++) {
-              EPObj[`Episode${j + 1}`] = {
-                finished: false,
-                startedEPDate: "null",
-                finishedEPDate: "null",
-              };
-            }
-            SaisonEPObj[`Saison${i + 1}`] = {
-              finishedS: false,
-              EPObj,
-            };
-          }
+          let AnimSEP = nbEP.split(",").map((nbEpS, i) => {
+            let EpObj = [];
 
-          StateCopy.serie[`series-${Date.now()}`] = {
+            for (let j = 0; j < parseInt(nbEpS); j++) {
+              EpObj = [...EpObj, { id: j + 1, finished: false }];
+            }
+
+            return {
+              name: `Saison ${i + 1}`,
+              Episodes: EpObj,
+            };
+          });
+
+          StateCopy.serie[`serie-${Date.now()}`] = {
             name: title,
             imageUrl: imgUrl,
-            startedAnimDate: "null",
-            finishedAnimDate: "null",
             finishedAnim: false,
-            Anim: SaisonEPObj,
+            AnimEP: AnimSEP,
           };
 
           self.setState({
@@ -206,8 +191,7 @@ export default class Home extends Component {
             title: "",
             type: "serie",
             durer: 110,
-            nbSaison: 1,
-            EPSaison: [1],
+            nbEP: "",
             NextAnim: "",
             imageUrl: null,
             // Alerts
@@ -251,8 +235,7 @@ export default class Home extends Component {
             title: "",
             type: "serie",
             durer: 110,
-            nbSaison: 1,
-            EPSaison: [1],
+            nbEP: "",
             NextAnim: "",
             imageUrl: null,
             // Alerts
@@ -278,6 +261,13 @@ export default class Home extends Component {
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
     });
+  };
+
+  deleteAnim = (id) => {
+    const CopyAnim = { ...this.state.Anim };
+
+    CopyAnim[id.split("-")[0]][id] = null;
+    this.setState({ Anim: CopyAnim });
   };
 
   newNextAnim = (event) => {
@@ -360,6 +350,12 @@ export default class Home extends Component {
     this.setState({ animToDetails: [] });
   };
 
+  DeleteNextAnim = (id) => {
+    const AnimCopy = { ...this.state.Anim };
+    AnimCopy.NextAnim[id] = null;
+    this.setState({ Anim: AnimCopy });
+  };
+
   cancelModal = () => {
     this.setState({
       ShowModalSearch: false,
@@ -369,8 +365,7 @@ export default class Home extends Component {
       title: "",
       type: "serie",
       durer: 110,
-      nbSaison: 1,
-      EPSaison: [1],
+      nbEP: "",
       imageUrl: null,
     });
   };
@@ -384,9 +379,7 @@ export default class Home extends Component {
       animToDetails,
       Anim,
       ShowModalAddAnim,
-      nbSaison,
       title,
-      EPSaison,
       ResText,
       typeAlert,
       type,
@@ -396,6 +389,7 @@ export default class Home extends Component {
       SwitchMyAnim,
       NextAnim,
       CodeNumber,
+      nbEP,
     } = this.state;
 
     if (!uid) {
@@ -430,38 +424,6 @@ export default class Home extends Component {
     let MyAnimList = "Vous avez aucun anime :/\nRajoutez-en !";
     let MyNextAnimList =
       "Vous avez mis aucun anime comme souhait dans cette section\nRajoutez-en";
-    let EPSaisonHtml = [];
-
-    if (type === "serie") {
-      for (let i = 0; i < nbSaison; i++) {
-        const stateCopy = { ...this.state };
-
-        if (stateCopy.EPSaison[i] === undefined) {
-          stateCopy.EPSaison = [...stateCopy.EPSaison, 1];
-          this.setState(stateCopy);
-        }
-
-        EPSaisonHtml = [
-          ...EPSaisonHtml,
-          <Form.Group controlId="saison" key={i}>
-            <Form.Label>Nombre d'épisode de la saison {i + 1}</Form.Label>
-            <Form.Control
-              type="number"
-              value={EPSaison[i]}
-              placeholder="Nombre d'épisode"
-              onChange={(event) => {
-                const value = parseInt(event.target.value);
-
-                if (value < 1) return;
-
-                stateCopy.EPSaison[i] = value;
-                this.setState(stateCopy);
-              }}
-            />
-          </Form.Group>,
-        ];
-      }
-    }
 
     if (findAnim.length !== 0) {
       animList = findAnim.map((anim) => (
@@ -489,6 +451,7 @@ export default class Home extends Component {
             url={serie[key].imageUrl}
             title={serie[key].name}
             isFinished={serie[key].finishedAnim}
+            deleteAnim={this.deleteAnim}
             inMyAnim={true}
           />
         ))
@@ -507,7 +470,17 @@ export default class Home extends Component {
     } else if (!SwitchMyAnim && this.state.Anim.NextAnim !== undefined) {
       const { NextAnim } = this.state.Anim;
       MyNextAnimList = Object.keys(NextAnim).map((key) => (
-        <NextAnimCO key={key} name={NextAnim[key].name} />
+        <NextAnimCO
+          key={key}
+          name={NextAnim[key].name}
+          handleClick={() => {
+            this.setState({
+              ShowModalType: true,
+              title: NextAnim[key].name,
+            });
+            this.DeleteNextAnim(key);
+          }}
+        />
       ));
     }
 
@@ -549,6 +522,12 @@ export default class Home extends Component {
               MyAnimList={MyAnimList}
               MyNextAnimList={MyNextAnimList}
               handleSubmit={this.newNextAnim}
+              onClose={() =>
+                this.setState({
+                  ResText: null,
+                  typeAlert: null,
+                })
+              }
             />
           </ContextForMyAnim.Provider>
 
@@ -576,6 +555,7 @@ export default class Home extends Component {
                   <Form.Control
                     as="select"
                     value={type}
+                    autoComplete="off"
                     onChange={(event) =>
                       this.setState({ type: event.target.value })
                     }
@@ -605,7 +585,7 @@ export default class Home extends Component {
 
           <Modal show={ShowModalAddAnim} onHide={this.cancelModal}>
             <Modal.Header id="ModalTitle" closeButton>
-              <Modal.Title>Ajouter un Anim/Film</Modal.Title>
+              <Modal.Title>Ajouter une série</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
               <Form id="AddAnim" onSubmit={this.addAnime}>
@@ -624,20 +604,20 @@ export default class Home extends Component {
                   />
                 </Form.Group>
                 <Form.Group controlId="saison">
-                  <Form.Label>Nombre de saisons</Form.Label>
+                  <Form.Label>
+                    Nombre d'épisode (séparé d'un "," pour chnager de saison pas
+                    d'espace !)
+                  </Form.Label>
                   <Form.Control
-                    type="number"
-                    value={nbSaison.toString()}
-                    placeholder="Nombre De saison"
-                    onChange={(event) => {
-                      const value = parseInt(event.target.value);
-
-                      if (value < 1) return;
-                      this.setState({ nbSaison: value });
-                    }}
+                    type="text"
+                    value={nbEP}
+                    placeholder="Nombre d'EP => S1NbEP,S2NbEP..."
+                    autoComplete="off"
+                    onChange={(event) =>
+                      this.setState({ nbEP: event.target.value })
+                    }
                   />
                 </Form.Group>
-                <div id="EPSaisonHtml">{EPSaisonHtml}</div>
               </Form>
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
@@ -652,7 +632,7 @@ export default class Home extends Component {
 
           <Modal show={ShowModalAddFilm} onHide={this.cancelModal}>
             <Modal.Header id="ModalTitle" closeButton>
-              <Modal.Title>Ajouter un Anim/Film</Modal.Title>
+              <Modal.Title>Ajouter un Film</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
               <Form id="AddAnim" onSubmit={this.addAnime}>
@@ -677,6 +657,7 @@ export default class Home extends Component {
                     value={durer.toString()}
                     min="1"
                     placeholder="Durée en minutes"
+                    autoComplete="off"
                     onChange={(event) => {
                       const value = parseInt(event.target.value);
 

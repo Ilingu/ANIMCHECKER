@@ -16,7 +16,7 @@ const Login = ({ authenticate, forForm, verificateCode }) => {
     stepToShow = (
       <Fragment>
         <Form>
-          <Form.Group controlId="saison">
+          <Form.Group controlId="login">
             <Form.Control
               type="text"
               placeholder="2. Code reçu"

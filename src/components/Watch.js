@@ -1,34 +1,61 @@
 import React, { Component } from "react";
 // CSS
-import {} from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 // DB
 import base from "../db/base";
+import { Redirect } from "react-router-dom";
 
 class Watch extends Component {
   state = {
     Anim: {},
+    AnimToWatch: {},
+    uid: null,
+    id: null,
+    isFirstTime: true,
   };
 
   componentDidMount() {
-    if (
-      !this.props.store.getState() === true &&
-      window.location.pathname.split("/")[2] !== undefined
-    ) {
-      window.history.pushState("", "", "/");
-      window.location.reload();
-    } else {
-      this.ref = base.syncState(`/Anim`, {
-        context: this,
-        state: "Anim",
-      });
-    }
+    this.ref = base.syncState(`/`, {
+      context: this,
+      state: "Anim",
+    });
+
+    this.setState({
+      uid: this.props.match.params.uid,
+      id: this.props.match.params.id,
+    });
   }
 
   componentWillUnmount() {
     base.removeBinding(this.ref);
   }
+
+  linkAnimToWatch() {
+    const { id, Anim } = this.state;
+
+    this.setState({ AnimToWatch: Anim[id.split("-")[0]][id] });
+  }
+
   render() {
-    return <div></div>;
+    const { Anim, AnimToWatch, uid, id, isFirstTime } = this.state;
+
+    if (Anim.proprio) {
+      if (Anim.proprio !== uid || !uid) {
+        return <Redirect to="/" />;
+      } else if (isFirstTime) {
+        this.setState({ isFirstTime: false });
+        this.linkAnimToWatch();
+        return <Redirect to="/Watch" />;
+      }
+    } else {
+      return <Spinner animation="border" variant="warning" />;
+    }
+
+    return (
+      <section className="container" id="Watch">
+        lolita
+      </section>
+    );
   }
 }
 

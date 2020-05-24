@@ -454,6 +454,7 @@ hr {
   color: #fff;
   border: 3px solid #ccc;
   opacity: 0;
+  cursor: pointer;
   -webkit-transition: 0.7s;
   transition: 0.7s;
 }
