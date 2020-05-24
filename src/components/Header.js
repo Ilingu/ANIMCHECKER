@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+// Context
+import ContextForMyAnim from "../ContextSchema";
 // CSS
 import { Navbar, Nav, Form, Button } from "react-bootstrap";
 
-const Header = ({ search, openModalNewAnim }) => {
+const Header = () => {
   const [Anim, SetAnim] = useState("");
+  const Context = useContext(ContextForMyAnim);
 
   const HandleSubmit = (event) => {
     event.preventDefault();
@@ -16,14 +19,14 @@ const Header = ({ search, openModalNewAnim }) => {
       Anim.trim().length !== 0 &&
       Anim !== ""
     ) {
-      search(Anim);
+      Context.search(Anim);
     } else {
     }
   };
 
   return (
     <Navbar bg="light" expand="lg">
-      <Link push="true" to="/Home">
+      <Link push="true" to="/">
         <Navbar.Brand>ASI-Check</Navbar.Brand>
       </Link>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -36,7 +39,7 @@ const Header = ({ search, openModalNewAnim }) => {
             <Button
               variant="outline-success"
               style={{ marginLeft: "10px" }}
-              onClick={openModalNewAnim}
+              onClick={Context.openModalNewAnim}
             >
               Create Anime/Moovie (manually)
             </Button>

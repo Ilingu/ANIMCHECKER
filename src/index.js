@@ -8,7 +8,6 @@ import Reducer from "./Redux/Reducer";
 // Main Components
 import Home from "./Home";
 // Components
-import Login from "./components/Auth/Login";
 import Watch from "./components/Watch";
 import NotFound from "./components/Error/NotFound";
 // CSS
@@ -25,9 +24,12 @@ const store = createStore(
 const Root = () => (
   <Router>
     <Switch>
-      <Route exact path="/" render={() => <Login store={store} />} />
-      <Route exact path="/Home" render={() => <Home store={store} />} />
-      <Route exact path={`/Watch/:id`} render={() => <Watch store={store} />} />
+      <Route exact path="/" render={() => <Home store={store} />} />
+      <Route
+        exact
+        path={`/Watch/:id/:uid`}
+        render={() => <Watch store={store} />}
+      />
       <Route component={NotFound} />
     </Switch>
   </Router>

@@ -1,4 +1,4 @@
-const loogedReducer = (state = true, action) => {
+const loogedReducer = (state = false, action) => {
   switch (action.type) {
     case "Log":
       return (state = true);
