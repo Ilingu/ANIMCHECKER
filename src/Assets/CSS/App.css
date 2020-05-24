@@ -323,6 +323,7 @@ hr {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+  cursor: pointer;
   color: #007bff;
   position: absolute;
   top: calc(50% - 25px);
@@ -573,6 +574,204 @@ hr {
 #MyAnime .content.none .NextAnimContainer #NextAnim button .animation:hover {
   -webkit-animation: LToR 0.5s ease-out 0.1s 1 forwards;
           animation: LToR 0.5s ease-out 0.1s 1 forwards;
+}
+
+#Watch {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+#Watch .nonStartMod {
+  position: relative;
+  opacity: 0.3;
+  pointer-events: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+#Watch .nonStartMod section {
+  margin-bottom: 15px;
+}
+
+#Watch .nonStartMod section header {
+  text-align: center;
+}
+
+#Watch .nonStartMod section header h1 {
+  text-decoration: underline;
+  font-size: 2rem;
+  font-style: italic;
+}
+
+#Watch .nonStartMod > header {
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 40px 0;
+  background-color: rgba(255, 255, 255, 0.096);
+}
+
+#Watch .nonStartMod > header .img {
+  position: relative;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
+}
+
+#Watch .nonStartMod > header .img img {
+  width: 250px;
+  border-radius: 5px;
+  height: calc(318px + 25px);
+}
+
+#Watch .nonStartMod > header .img .play {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  cursor: pointer;
+  color: #007bff;
+  position: absolute;
+  top: calc(50% - 25px);
+  left: calc(50% - 25px);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ddd;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
+}
+
+#Watch .nonStartMod > header .img .play:hover {
+  -webkit-transform: scale(1.12);
+          transform: scale(1.12);
+}
+
+#Watch .nonStartMod > header .img:hover {
+  -webkit-transform: scale(1.05);
+          transform: scale(1.05);
+}
+
+#Watch .nonStartMod > header h1 {
+  font-size: 1.7rem;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+#Watch .nonStartMod button {
+  margin-left: 10px;
+  margin-top: 5px;
+}
+
+#Watch .nonStartMod .content {
+  position: relative;
+  margin-left: 10px;
+}
+
+#Watch .nonStartMod .content .film {
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 1.1rem;
+}
+
+#Watch .nonStartMod .content .film span {
+  color: greenyellow;
+  text-decoration: none;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .name {
+  font-size: 1.7rem;
+}
+
+#Watch .nonStartMod.active {
+  opacity: 1;
+  pointer-events: unset;
+  -webkit-user-select: unset;
+     -moz-user-select: unset;
+      -ms-user-select: unset;
+          user-select: unset;
+}
+
+#Watch .StartMod {
+  display: none;
+}
+
+#Watch .StartMod.active {
+  position: absolute;
+  top: 50vh;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+#Watch .StartMod.active .cancel,
+#Watch .StartMod.active .next,
+#Watch .StartMod.active .finished {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 30px !important;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  position: absolute;
+  top: calc(50% - 66px / 2);
+  width: 35px;
+  height: 35px;
+  font-size: 30px;
+  border-radius: 50%;
+  color: #ff6d00;
+  border: 3px solid #ff6d00;
+  cursor: pointer;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
+}
+
+#Watch .StartMod.active .next,
+#Watch .StartMod.active .finished {
+  left: calc(50vw + 13px);
+}
+
+#Watch .StartMod.active .cancel {
+  left: calc(50vw - 35px - 40px);
+}
+
+#Watch .StartMod.active .finished {
+  color: greenyellow;
+  border: 3px solid greenyellow;
+}
+
+#Watch .StartMod.active .cancel {
+  color: red;
+  border: 3px solid red;
+}
+
+#Watch .StartMod.active .cancel:hover,
+#Watch .StartMod.active .next:hover,
+#Watch .StartMod.active .finished:hover {
+  color: royalblue;
+  border: 3px solid royalblue;
 }
 
 @-webkit-keyframes LToR {
