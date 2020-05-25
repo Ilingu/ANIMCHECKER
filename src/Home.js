@@ -19,8 +19,8 @@ export default class Home extends Component {
   state = {
     // Firebase
     Anim: {},
-    uid: 12,
-    proprio: 12,
+    uid: null,
+    proprio: null,
     // Bon fonctionnement de l'app
     findAnim: [],
     ShowModalSearch: false,
@@ -589,7 +589,7 @@ export default class Home extends Component {
               <Modal.Title>Ajouter une série</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
-              <Form id="AddAnim" onSubmit={this.addAnime}>
+              <Form id="AddAnim">
                 <Form.Group controlId="titre">
                   <Form.Label>Titre</Form.Label>
                   <Form.Control
@@ -636,7 +636,7 @@ export default class Home extends Component {
               <Modal.Title>Ajouter un Film</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
-              <Form id="AddAnim" onSubmit={this.addAnime}>
+              <Form id="AddAnim">
                 <Form.Group controlId="titre">
                   <Form.Label>Titre</Form.Label>
                   <Form.Control

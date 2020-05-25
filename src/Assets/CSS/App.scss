@@ -616,6 +616,7 @@ hr {
         flex-direction: column;
         align-items: center;
         .accordion-child {
+          position: relative;
           width: 50%;
           min-width: 300px;
           border: 2px solid rgba(255, 255, 255, 0.5);
@@ -628,6 +629,11 @@ hr {
             font-size: 1.7rem;
             span {
               color: greenyellow;
+            }
+            #AddEpBtn {
+              position: absolute;
+              right: 20px;
+              top: 0;
             }
           }
           .episodes {

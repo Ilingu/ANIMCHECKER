@@ -775,6 +775,7 @@ hr {
 }
 
 #Watch .nonStartMod .content .accordionAnimEP .accordion-child {
+  position: relative;
   width: 50%;
   min-width: 300px;
   border: 2px solid rgba(255, 255, 255, 0.5);
@@ -791,6 +792,12 @@ hr {
 
 #Watch .nonStartMod .content .accordionAnimEP .accordion-child .name span {
   color: greenyellow;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .accordion-child .name #AddEpBtn {
+  position: absolute;
+  right: 20px;
+  top: 0;
 }
 
 #Watch .nonStartMod .content .accordionAnimEP .accordion-child .episodes {

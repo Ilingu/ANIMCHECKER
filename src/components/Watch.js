@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from "react";
+import { Redirect, Link } from "react-router-dom";
 // Components
 import AnimEpCo from "./dyna/AnimEp";
 // CSS
-import { Spinner, Button } from "react-bootstrap";
+import { Spinner, Button, Modal, Form } from "react-bootstrap";
 // DB
 import base from "../db/base";
-import { Redirect } from "react-router-dom";
 
 class Watch extends Component {
   state = {
@@ -18,11 +18,17 @@ class Watch extends Component {
     AnimToWatch: {},
     modeStart: false,
     type: "",
+    isFirstTime: true,
+    ToOpen: "",
+    // Repere
     repereSaison: {},
     repereEpisode: [],
-    isFirstTime: true,
-    RedirectPath: "",
-    ToOpen: "",
+    // Form
+    SeasonToAddEp: null,
+    nbEpToAdd: 1,
+    // Modal
+    ShowModalAddEp: false,
+    ShowModalAddSeasonEp: false,
   };
 
   componentDidMount() {
@@ -49,6 +55,58 @@ class Watch extends Component {
       type: id.split("-")[0],
     });
   }
+
+  addEp = (Season, nbEpToAdd) => {
+    const CopyAnim = { ...this.state.Anim };
+    const { id, type } = this.state;
+    const idSaison = parseInt(Season.name.split(" ")[1]) - 1;
+
+    for (let i = 0; i < nbEpToAdd; i++) {
+      CopyAnim[type][id].AnimEP[idSaison].Episodes = [
+        ...CopyAnim[type][id].AnimEP[idSaison].Episodes,
+        {
+          finished: false,
+          id: CopyAnim[type][id].AnimEP[idSaison].Episodes.length + 1,
+        },
+      ];
+    }
+    CopyAnim[type][id].AnimEP[idSaison].finished = false;
+
+    this.setState({
+      nbEpToAdd: 1,
+      ShowModalAddEp: false,
+      SeasonToAddEp: null,
+      Anim: CopyAnim,
+    });
+  };
+
+  addSeason = (nbEp) => {
+    const CopyAnim = { ...this.state.Anim };
+    const { id, type } = this.state;
+
+    let EpObj = [];
+
+    for (let j = 0; j < parseInt(nbEp); j++) {
+      EpObj = [...EpObj, { id: j + 1, finished: false }];
+    }
+
+    CopyAnim[type][id].AnimEP = [
+      ...CopyAnim[type][id].AnimEP,
+      {
+        name: `Saison ${CopyAnim[type][id].AnimEP.length + 1}`,
+        Episodes: EpObj,
+        finished: false,
+      },
+    ];
+
+    CopyAnim[type][id].finishedAnim = false;
+
+    this.setState({
+      nbEpToAdd: 1,
+      ShowModalAddSeasonEp: false,
+      Anim: CopyAnim,
+    });
+  };
 
   StartModeWatch = () => {
     window.scrollTo(0, 0);
@@ -105,16 +163,31 @@ class Watch extends Component {
       this.finishedEp(Saison, EpFinishedID);
       this.setRepere(Saison, EpFinishedID);
     } else {
+      const { AnimToWatch } = this.state;
+      let lastOne = null;
+
+      AnimToWatch.AnimEP.forEach((Season) => {
+        Season.Episodes.forEach((Ep) => {
+          if (!Ep.finished && lastOne === null) {
+            lastOne = [Season, Ep.id];
+          }
+        });
+      });
+
+      this.setRepere(lastOne[0], lastOne[1]);
     }
     this.StartModeWatch();
   };
 
   endOfSaison = (Saison, EpFinishedID) => {
     const StateCopy = { ...this.state.Anim };
-    const { id } = this.state;
+    const { id, type } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
-    StateCopy[id.split("-")[0]][id].AnimEP[idSaison].finished = true;
+    StateCopy[type][id].AnimEP[idSaison].finished = true;
+
+    if (StateCopy[type][id].AnimEP.length === idSaison + 1)
+      StateCopy[type][id].finishedAnim = true;
 
     this.finishedEp(Saison, EpFinishedID + 1);
     this.setState({ Anim: StateCopy });
@@ -126,6 +199,14 @@ class Watch extends Component {
     this.StartModeWatch();
   };
 
+  handleDelete = () => {
+    const CopyAnim = { ...this.state.Anim };
+    const { type, id } = this.state;
+
+    CopyAnim[type][id] = null;
+    this.setState({ Anim: CopyAnim, uid: null });
+  };
+
   render() {
     const {
       Anim,
@@ -133,14 +214,15 @@ class Watch extends Component {
       uid,
       type,
       isFirstTime,
-      RedirectPath,
       modeStart,
       repereEpisode,
       repereSaison,
       ToOpen,
+      ShowModalAddEp,
+      nbEpToAdd,
+      SeasonToAddEp,
+      ShowModalAddSeasonEp,
     } = this.state;
-
-    if (RedirectPath !== "") return <Redirect to={RedirectPath} />;
 
     if (Anim.proprio) {
       if (Anim.proprio !== uid || !uid) {
@@ -173,6 +255,9 @@ class Watch extends Component {
           ObjInfo={EpSaison}
           play={this.playEp}
           ToOpen={ToOpen}
+          AddEp={() =>
+            this.setState({ ShowModalAddEp: true, SeasonToAddEp: EpSaison })
+          }
           NextToOpen={(SaisonName) => {
             if (SaisonName === ToOpen) {
               this.setState({ ToOpen: "" });
@@ -200,12 +285,21 @@ class Watch extends Component {
             </div>
           </header>
           <section id="ToWatch">
+            <Link push={true} to="/">
+              <Button variant="primary">
+                <span className="fas fa-arrow-left"></span> Retour
+              </Button>
+            </Link>
             <Button
-              variant="primary"
-              onClick={() => this.setState({ RedirectPath: "/" })}
+              variant="success"
+              onClick={() => this.setState({ ShowModalAddSeasonEp: true })}
             >
-              <span className="fas fa-arrow-left"></span> Retour
+              <span className="fas fa-plus"></span> Ajouter une saison
             </Button>
+            <Button variant="danger" onClick={this.handleDelete}>
+              <span className="fas fa-trash-alt"></span> Supprimer cet anime
+            </Button>
+
             <header>
               <h1>{type === "serie" ? "Anime:" : "Film:"}</h1>
             </header>
@@ -229,7 +323,12 @@ class Watch extends Component {
               <header>
                 <h2>
                   Episode{" "}
-                  {repereEpisode[1] === undefined ? null : repereEpisode[1].id}
+                  {repereEpisode[1] === undefined ? null : repereEpisode[1].id}{" "}
+                  (S
+                  {Object.keys(repereSaison).length === 0
+                    ? null
+                    : repereSaison.name.split(" ")[1]}
+                  )
                 </h2>
               </header>
               <div
@@ -292,6 +391,90 @@ class Watch extends Component {
             </div>
           )}
         </div>
+
+        {/* MODAL */}
+        <Modal
+          show={ShowModalAddEp}
+          onHide={() => this.setState({ ShowModalAddEp: false })}
+        >
+          <Modal.Header id="ModalTitle" closeButton>
+            <Modal.Title>Rajouter des episode</Modal.Title>
+          </Modal.Header>
+          <Modal.Body id="ModalBody">
+            <Form id="AddAnim">
+              <Form.Group controlId="duree">
+                <Form.Label>Nombres d'ep à rajouter</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={nbEpToAdd.toString()}
+                  min="1"
+                  placeholder="Nombres d'EP"
+                  autoComplete="off"
+                  onChange={(event) => {
+                    const value = parseInt(event.target.value);
+
+                    if (value < 1) return;
+                    this.setState({ nbEpToAdd: value });
+                  }}
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer id="ModalFooter">
+            <Button
+              variant="secondary"
+              onClick={() => this.setState({ ShowModalAddEp: false })}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="success"
+              onClick={() => this.addEp(SeasonToAddEp, nbEpToAdd)}
+            >
+              <span className="fas fa-plus"></span> Ajouter {nbEpToAdd + " EP"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={ShowModalAddSeasonEp}
+          onHide={() => this.setState({ ShowModalAddSeasonEp: false })}
+        >
+          <Modal.Header id="ModalTitle" closeButton>
+            <Modal.Title>Ajouter une Saison</Modal.Title>
+          </Modal.Header>
+          <Modal.Body id="ModalBody">
+            <Form id="AddAnim">
+              <Form.Group controlId="duree">
+                <Form.Label>Rajouter les EP</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={nbEpToAdd.toString()}
+                  min="1"
+                  placeholder="Nombres d'épisode de cette saison"
+                  autoComplete="off"
+                  onChange={(event) => {
+                    const value = parseInt(event.target.value);
+
+                    if (value < 1) return;
+                    this.setState({ nbEpToAdd: value });
+                  }}
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer id="ModalFooter">
+            <Button
+              variant="secondary"
+              onClick={() => this.setState({ ShowModalAddSeasonEp: false })}
+            >
+              Annuler
+            </Button>
+            <Button variant="success" onClick={() => this.addSeason(nbEpToAdd)}>
+              <span className="fas fa-plus"></span> Ajouter {nbEpToAdd + " EP"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </section>
     );
   }

@@ -1,6 +1,7 @@
 import React from "react";
+import { Button } from "react-bootstrap";
 
-const AnimEp = ({ ObjInfo, play, ToOpen, NextToOpen }) => {
+const AnimEp = ({ ObjInfo, play, ToOpen, NextToOpen, AddEp }) => {
   const EP = ObjInfo.Episodes.map((id) => (
     <div
       key={id.id}
@@ -32,6 +33,9 @@ const AnimEp = ({ ObjInfo, play, ToOpen, NextToOpen }) => {
         {ObjInfo.finished === true ? (
           <span className="fas fa-check"></span>
         ) : null}
+        <Button variant="success" id="AddEpBtn" onClick={AddEp}>
+          <span className="fas fa-plus"></span> Add Ep
+        </Button>
       </div>
       <div className="episodes">{EP}</div>
     </div>
