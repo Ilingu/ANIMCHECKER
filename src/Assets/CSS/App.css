@@ -404,7 +404,6 @@ hr {
       grid-template-columns: repeat(5, 1fr);
   gap: 15px;
   text-decoration: none;
-  width: 200px !important;
   color: #ff6d00;
 }
 
@@ -576,8 +575,76 @@ hr {
           animation: LToR 0.5s ease-out 0.1s 1 forwards;
 }
 
+@media screen and (max-width: 1200px) {
+  #MyAnime .content {
+    -ms-grid-columns: (1fr)[4];
+        grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media screen and (max-width: 992px) {
+  #MyAnime .content {
+    -ms-grid-columns: (1fr)[3];
+        grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  #MyAnime .content {
+    -ms-grid-columns: (1fr)[3];
+        grid-template-columns: repeat(3, 1fr);
+    justify-items: center;
+    gap: 5px;
+  }
+  #MyAnime .content .MyAnimPoster {
+    width: 150px !important;
+  }
+  #MyAnime .content .MyAnimPoster .ImgInterract img {
+    width: 150px !important;
+    height: 222px !important;
+    border-radius: 7px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  #MyAnime .content {
+    -ms-grid-columns: (1fr)[2];
+        grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+}
+
+@media screen and (max-width: 340px) {
+  #MyAnime .content {
+    -ms-grid-columns: (1fr)[2];
+        grid-template-columns: repeat(2, 1fr);
+    justify-items: center;
+    gap: 5px;
+  }
+  #MyAnime .content .MyAnimPoster {
+    width: 100px !important;
+  }
+  #MyAnime .content .MyAnimPoster .ImgInterract img {
+    width: 100px !important;
+    height: 148px !important;
+    border-radius: 7px;
+  }
+}
+
+@media screen and (max-width: 240px) {
+  #MyAnime .content {
+    -ms-grid-columns: (1fr)[1];
+        grid-template-columns: repeat(1, 1fr);
+    justify-items: center;
+    gap: 5px;
+  }
+}
+
 #Watch {
   position: relative;
+  width: 100vw;
+  height: 100vh;
   margin: 0;
   padding: 0;
 }
@@ -694,8 +761,48 @@ hr {
   text-decoration: none;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .name {
+#Watch .nonStartMod .content .accordionAnimEP {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .accordion-child {
+  width: 50%;
+  min-width: 300px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 5px;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .accordion-child .name {
+  color: rgba(255, 255, 255, 0.5);
   font-size: 1.7rem;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .accordion-child .name span {
+  color: greenyellow;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .accordion-child .episodes {
+  display: none;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .accordion-child .episodes span {
+  color: greenyellow;
+}
+
+#Watch .nonStartMod .content .accordionAnimEP .accordion-child.active .episodes {
+  display: block;
 }
 
 #Watch .nonStartMod.active {
@@ -720,6 +827,75 @@ hr {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
+}
+
+#Watch .StartMod.active header {
+  position: absolute;
+  top: -25vh;
+  left: calc(50vw - 250px / 3);
+  width: 500px;
+}
+
+#Watch .StartMod.active header h2 {
+  font-size: 2.5rem;
+}
+
+#Watch .StartMod.active footer {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  top: 25vh;
+  left: calc(50vw - 246px);
+  width: 500px;
+}
+
+#Watch .StartMod.active footer .previousEp {
+  margin-right: 20px;
+  margin-bottom: 10px;
+}
+
+#Watch .StartMod.active footer .blockNextAction {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  border-radius: 5px;
+  text-align: center;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  width: 300px;
+  height: 75px;
+  cursor: pointer;
+  border: 2px solid #ff6d00;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+#Watch .StartMod.active footer .blockNextAction:hover {
+  background-color: #ddd;
+}
+
+@media screen and (max-width: 510px) {
+  #Watch .StartMod.active footer {
+    display: block;
+    width: 300px !important;
+    left: calc(50vw - 146px);
+  }
+  #Watch .StartMod.active footer .previousEp {
+    margin-right: 0px;
+  }
+  #Watch .StartMod.active footer .blockNextAction {
+    background-color: #ddd;
+  }
 }
 
 #Watch .StartMod.active .cancel,

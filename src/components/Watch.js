@@ -18,9 +18,11 @@ class Watch extends Component {
     AnimToWatch: {},
     modeStart: false,
     type: "",
+    repereSaison: {},
     repereEpisode: [],
     isFirstTime: true,
     RedirectPath: "",
+    ToOpen: "",
   };
 
   componentDidMount() {
@@ -54,24 +56,73 @@ class Watch extends Component {
     this.setState({ modeStart: true });
   };
 
+  setRepere = (Saison, idEp) => {
+    let previousEp = idEp - 1,
+      nextEp = idEp + 1,
+      thisEp = idEp,
+      Ep;
+
+    for (Ep of Saison.Episodes) {
+      if (Ep.id === previousEp) {
+        previousEp = Ep;
+      } else if (Ep.id === thisEp) {
+        thisEp = Ep;
+      } else if (Ep.id === nextEp) {
+        nextEp = Ep;
+      }
+    }
+
+    if (typeof previousEp === "number") {
+      previousEp = null;
+    } else if (typeof nextEp === "number") {
+      nextEp = null;
+    }
+
+    this.setState({
+      repereEpisode: [previousEp, thisEp, nextEp],
+      repereSaison: Saison,
+    });
+  };
+
   StopModeWatch = () => {
     document.body.style.cssText = "overflow: unset;";
     this.setState({ modeStart: false });
   };
 
-  StartNextEP = (episodeFinished = null) => {
-    if (episodeFinished !== null) {
+  finishedEp = (Saison, EpFinishedID) => {
+    const StateCopy = { ...this.state.Anim };
+    const { id } = this.state;
+    const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
+
+    StateCopy[id.split("-")[0]][id].AnimEP[idSaison].Episodes[
+      EpFinishedID - 2
+    ].finished = true;
+    this.setState({ Anim: StateCopy });
+  };
+
+  StartNextEP = (Saison = null, EpFinishedID = null) => {
+    if (Saison !== null && EpFinishedID !== null) {
+      this.finishedEp(Saison, EpFinishedID);
+      this.setRepere(Saison, EpFinishedID);
     } else {
     }
     this.StartModeWatch();
   };
 
-  StartPreviousEP = () => {
-    this.StartModeWatch();
+  endOfSaison = (Saison, EpFinishedID) => {
+    const StateCopy = { ...this.state.Anim };
+    const { id } = this.state;
+    const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
+
+    StateCopy[id.split("-")[0]][id].AnimEP[idSaison].finished = true;
+
+    this.finishedEp(Saison, EpFinishedID + 1);
+    this.setState({ Anim: StateCopy });
+    this.StopModeWatch();
   };
 
   playEp = (Saison, idEp) => {
-    console.log(Saison, idEp);
+    this.setRepere(Saison, idEp);
     this.StartModeWatch();
   };
 
@@ -85,6 +136,8 @@ class Watch extends Component {
       RedirectPath,
       modeStart,
       repereEpisode,
+      repereSaison,
+      ToOpen,
     } = this.state;
 
     if (RedirectPath !== "") return <Redirect to={RedirectPath} />;
@@ -98,7 +151,17 @@ class Watch extends Component {
         return <Redirect to="/Watch" />;
       }
     } else {
-      return <Spinner animation="border" variant="warning" />;
+      return (
+        <Spinner
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+          }}
+          animation="border"
+          variant="warning"
+        />
+      );
     }
 
     let MyAnimAccordeon = null;
@@ -109,6 +172,14 @@ class Watch extends Component {
           key={Date.now() + Math.random() * 100000 - Math.random() * -100000}
           ObjInfo={EpSaison}
           play={this.playEp}
+          ToOpen={ToOpen}
+          NextToOpen={(SaisonName) => {
+            if (SaisonName === ToOpen) {
+              this.setState({ ToOpen: "" });
+              return;
+            }
+            this.setState({ ToOpen: SaisonName });
+          }}
         />
       ));
     }
@@ -156,23 +227,63 @@ class Watch extends Component {
           {type === "serie" ? (
             <Fragment>
               <header>
-                <h2>{repereEpisode[1]}</h2>
+                <h2>
+                  Episode{" "}
+                  {repereEpisode[1] === undefined ? null : repereEpisode[1].id}
+                </h2>
               </header>
-              <div className="next">
-                <span className="fas fa-chevron-circle-right"></span>
+              <div
+                className="next"
+                onClick={() => {
+                  repereEpisode[2] !== null
+                    ? this.StartNextEP(repereSaison, repereEpisode[2].id)
+                    : this.endOfSaison(repereSaison, repereEpisode[1].id);
+                }}
+              >
+                {repereEpisode[2] !== null ? (
+                  <span className="fas fa-chevron-circle-right"></span>
+                ) : (
+                  <span className="fas fa-check"></span>
+                )}
               </div>
               <footer>
-                <div className="previousEp" onClick={this.StartPreviousEP}>
-                  {repereEpisode[0]}{" "}
-                  <span className="fas fa-long-arrow-alt-left"></span>
-                </div>
-                <div
-                  className="nextEp"
-                  onClick={() => this.StartNextEP(repereEpisode[1])}
-                >
-                  {repereEpisode[2]}{" "}
-                  <span className="fas fa-long-arrow-alt-right"></span>
-                </div>
+                {repereEpisode[0] !== null ? (
+                  <div
+                    className="previousEp blockNextAction"
+                    onClick={() => {
+                      repereEpisode[0] !== null
+                        ? this.playEp(repereSaison, repereEpisode[0].id)
+                        : console.warn(
+                            "Impossible de charger un Episode innexistant !"
+                          );
+                    }}
+                  >
+                    Episode{" "}
+                    {repereEpisode[0] === undefined
+                      ? null
+                      : repereEpisode[0].id}{" "}
+                    <span className="fas fa-long-arrow-alt-left"></span>
+                  </div>
+                ) : null}
+
+                {repereEpisode[2] !== null ? (
+                  <div
+                    className="nextEp blockNextAction"
+                    onClick={() => {
+                      repereEpisode[2] !== null
+                        ? this.StartNextEP(repereSaison, repereEpisode[2].id)
+                        : console.warn(
+                            "Impossible de charger un Episode innexistant !"
+                          );
+                    }}
+                  >
+                    Episode{" "}
+                    {repereEpisode[2] === undefined
+                      ? null
+                      : repereEpisode[2].id}{" "}
+                    <span className="fas fa-long-arrow-alt-right"></span>
+                  </div>
+                ) : null}
               </footer>
             </Fragment>
           ) : (

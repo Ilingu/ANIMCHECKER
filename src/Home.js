@@ -169,6 +169,7 @@ export default class Home extends Component {
             return {
               name: `Saison ${i + 1}`,
               Episodes: EpObj,
+              finished: false,
             };
           });
 

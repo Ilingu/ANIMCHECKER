@@ -1,15 +1,39 @@
 import React from "react";
 
-const AnimEp = ({ ObjInfo, play }) => {
+const AnimEp = ({ ObjInfo, play, ToOpen, NextToOpen }) => {
   const EP = ObjInfo.Episodes.map((id) => (
-    <div key={id.id} id={id.id} onClick={() => play(ObjInfo, id.id)}>
-      <span className="fas fa-play"></span> Episode {id.id}
+    <div
+      key={id.id}
+      id={id.id}
+      style={id.finished ? { textDecoration: "line-through" } : null}
+      onClick={() => play(ObjInfo, id.id)}
+    >
+      {id.finished ? (
+        <span className="fas fa-check"></span>
+      ) : (
+        <span className="fas fa-play"></span>
+      )}{" "}
+      Episode {id.id}
     </div>
   ));
+
   return (
-    <div className="accordion-child" id={ObjInfo.name.split(" ").join("")}>
-      <div className="name">{ObjInfo.name}</div>
-      <div className="episode">{EP}</div>
+    <div
+      className={
+        ToOpen === ObjInfo.name.split(" ").join("")
+          ? "accordion-child active"
+          : "accordion-child"
+      }
+      id={ObjInfo.name.split(" ").join("")}
+      onClick={() => NextToOpen(ObjInfo.name.split(" ").join(""))}
+    >
+      <div className="name">
+        {ObjInfo.name}{" "}
+        {ObjInfo.finished === true ? (
+          <span className="fas fa-check"></span>
+        ) : null}
+      </div>
+      <div className="episodes">{EP}</div>
     </div>
   );
 };
