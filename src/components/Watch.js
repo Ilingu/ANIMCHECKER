@@ -58,19 +58,19 @@ class Watch extends Component {
 
   addEp = (Season, nbEpToAdd) => {
     const CopyAnim = { ...this.state.Anim };
-    const { id, type } = this.state;
+    const { id } = this.state;
     const idSaison = parseInt(Season.name.split(" ")[1]) - 1;
 
     for (let i = 0; i < nbEpToAdd; i++) {
-      CopyAnim[type][id].AnimEP[idSaison].Episodes = [
-        ...CopyAnim[type][id].AnimEP[idSaison].Episodes,
+      CopyAnim.serie[id].AnimEP[idSaison].Episodes = [
+        ...CopyAnim.serie[id].AnimEP[idSaison].Episodes,
         {
           finished: false,
-          id: CopyAnim[type][id].AnimEP[idSaison].Episodes.length + 1,
+          id: CopyAnim.serie[id].AnimEP[idSaison].Episodes.length + 1,
         },
       ];
     }
-    CopyAnim[type][id].AnimEP[idSaison].finished = false;
+    CopyAnim.serie[id].AnimEP[idSaison].finished = false;
 
     this.setState({
       nbEpToAdd: 1,
@@ -82,7 +82,7 @@ class Watch extends Component {
 
   addSeason = (nbEp) => {
     const CopyAnim = { ...this.state.Anim };
-    const { id, type } = this.state;
+    const { id } = this.state;
 
     let EpObj = [];
 
@@ -90,16 +90,16 @@ class Watch extends Component {
       EpObj = [...EpObj, { id: j + 1, finished: false }];
     }
 
-    CopyAnim[type][id].AnimEP = [
-      ...CopyAnim[type][id].AnimEP,
+    CopyAnim.serie[id].AnimEP = [
+      ...CopyAnim.serie[id].AnimEP,
       {
-        name: `Saison ${CopyAnim[type][id].AnimEP.length + 1}`,
+        name: `Saison ${CopyAnim.serie[id].AnimEP.length + 1}`,
         Episodes: EpObj,
         finished: false,
       },
     ];
 
-    CopyAnim[type][id].finishedAnim = false;
+    CopyAnim.serie[id].finishedAnim = false;
 
     this.setState({
       nbEpToAdd: 1,
@@ -152,9 +152,10 @@ class Watch extends Component {
     const { id } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
-    StateCopy[id.split("-")[0]][id].AnimEP[idSaison].Episodes[
+    StateCopy.serie[id].AnimEP[idSaison].Episodes[
       EpFinishedID - 2
     ].finished = true;
+
     this.setState({ Anim: StateCopy });
   };
 
@@ -181,13 +182,13 @@ class Watch extends Component {
 
   endOfSaison = (Saison, EpFinishedID) => {
     const StateCopy = { ...this.state.Anim };
-    const { id, type } = this.state;
+    const { id } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
-    StateCopy[type][id].AnimEP[idSaison].finished = true;
+    StateCopy.serie[id].AnimEP[idSaison].finished = true;
 
-    if (StateCopy[type][id].AnimEP.length === idSaison + 1)
-      StateCopy[type][id].finishedAnim = true;
+    if (StateCopy.serie[id].AnimEP.length === idSaison + 1)
+      StateCopy.serie[id].finishedAnim = true;
 
     this.finishedEp(Saison, EpFinishedID + 1);
     this.setState({ Anim: StateCopy });
@@ -197,6 +198,16 @@ class Watch extends Component {
   playEp = (Saison, idEp) => {
     this.setRepere(Saison, idEp);
     this.StartModeWatch();
+  };
+
+  EndFilm = () => {
+    const CopyAnim = { ...this.state.Anim };
+    const { id } = this.state;
+
+    CopyAnim.film[id].finished = true;
+
+    this.setState({ Anim: CopyAnim });
+    this.StopModeWatch();
   };
 
   handleDelete = () => {
@@ -279,7 +290,12 @@ class Watch extends Component {
             </h1>
             <div className="img">
               <img src={AnimToWatch.imageUrl} alt="Img of anim" />
-              <div className="play" onClick={this.StartNextEP}>
+              <div
+                className="play"
+                onClick={() => {
+                  type === "serie" ? this.StartNextEP() : this.StartModeWatch();
+                }}
+              >
                 <span className="fas fa-play"></span>
               </div>
             </div>
@@ -305,7 +321,11 @@ class Watch extends Component {
             </header>
             <div className="content">
               {type === "film" ? (
-                <div className="film" id={AnimToWatch.name}>
+                <div
+                  className="film"
+                  id={AnimToWatch.name}
+                  onClick={this.StartModeWatch}
+                >
                   <span className="fas fa-play"></span> {AnimToWatch.name}
                 </div>
               ) : (
@@ -386,7 +406,7 @@ class Watch extends Component {
               </footer>
             </Fragment>
           ) : (
-            <div className="finished">
+            <div className="finished" onClick={this.EndFilm}>
               <span className="fas fa-check"></span>
             </div>
           )}

@@ -219,8 +219,6 @@ export default class Home extends Component {
             name: title,
             durer,
             imageUrl: imgUrl,
-            startedFilmDate: "null",
-            finishedFilmDate: "null",
             finished: false,
           };
 
