@@ -18,7 +18,9 @@ import "firebase/auth";
 export default class Home extends Component {
   state = {
     // Firebase
-    Anim: {},
+    NextAnimFireBase: {},
+    filmFireBase: {},
+    serieFirebase: {},
     uid: null,
     proprio: null,
     // Bon fonctionnement de l'app
@@ -29,6 +31,7 @@ export default class Home extends Component {
     ShowModalType: false,
     SwitchMyAnim: true,
     animToDetails: [],
+    NextAnimToDelete: null,
     // Form
     title: "",
     type: "serie",
@@ -48,16 +51,94 @@ export default class Home extends Component {
       if (user) {
         self.handleAuth({ user });
       }
-      self.ref = base.syncState(`/`, {
-        context: this,
-        state: "Anim",
-      });
+
+      self.refreshValueFirebase();
     });
   }
 
-  componentWillUnmount() {
-    base.removeBinding(this.ref);
-  }
+  refreshValueFirebase = async () => {
+    try {
+      const NextAnim = await base.fetch("/NextAnim", { context: this });
+      const serie = await base.fetch("/serie", { context: this });
+      const film = await base.fetch("/film", { context: this });
+
+      this.setState({
+        NextAnimFireBase: NextAnim,
+        serieFirebase: serie,
+        filmFireBase: film,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  addValue = (path, value) => {
+    base
+      .post(path, {
+        data: value,
+      })
+      .then(() => {
+        this.refreshValueFirebase();
+        this.setState({
+          ResText: "Votre requête d'ajout a réussite.",
+          typeAlert: "success",
+        });
+
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error(err);
+        this.setState({
+          ResText: "Votre requête d'ajout à echoué.",
+          typeAlert: "danger",
+        });
+
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2000);
+      });
+  };
+
+  deleteValue = async (path) => {
+    base
+      .remove(path)
+      .then(() => {
+        this.refreshValueFirebase();
+        this.setState({
+          ResText: "Votre requête de suppression a réussite.",
+          typeAlert: "success",
+        });
+
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error(err);
+        this.setState({
+          ResText: "Votre requête de suppression a échoué.",
+          typeAlert: "danger",
+        });
+
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2000);
+      });
+  };
 
   handleAuth = async (authData) => {
     const box = await base.fetch("/", { context: this });
@@ -114,9 +195,9 @@ export default class Home extends Component {
   };
 
   addAnime = () => {
-    const { title, nbEP, type, durer, imageUrl } = this.state;
+    const { title, nbEP, type, durer, imageUrl, NextAnimToDelete } = this.state;
     const self = this;
-    const StateCopy = { ...this.state.Anim };
+
     let imgUrl = imageUrl;
 
     if (imgUrl === null) {
@@ -146,6 +227,7 @@ export default class Home extends Component {
     }
 
     function next() {
+      let IsGood = false;
       if (type === "serie") {
         if (
           title !== undefined &&
@@ -159,6 +241,7 @@ export default class Home extends Component {
           nbEP.trim().length !== 0 &&
           nbEP !== ""
         ) {
+          IsGood = true;
           let AnimSEP = nbEP.split(",").map((nbEpS, i) => {
             let EpObj = [];
 
@@ -173,15 +256,18 @@ export default class Home extends Component {
             };
           });
 
-          StateCopy.serie[`serie-${Date.now()}`] = {
-            name: title,
-            imageUrl: imgUrl,
-            finishedAnim: false,
-            AnimEP: AnimSEP,
-          };
+          self.addValue("/serie", {
+            ...self.state.serieFirebase,
+            [`serie-${Date.now()}`]: {
+              name: title,
+              imageUrl: imgUrl,
+              finishedAnim: false,
+              AnimEP: AnimSEP,
+            },
+          });
 
+          // reset
           self.setState({
-            Anim: StateCopy,
             findAnim: [],
             ShowModalSearch: false,
             ShowModalAddAnim: false,
@@ -215,15 +301,20 @@ export default class Home extends Component {
           typeof durer === "number" &&
           durer >= 1
         ) {
-          StateCopy.film[`film-${Date.now()}`] = {
-            name: title,
-            durer,
-            imageUrl: imgUrl,
-            finished: false,
-          };
+          IsGood = true;
 
+          self.addValue("/serie", {
+            ...self.state.filmFireBase,
+            [`film-${Date.now()}`]: {
+              name: title,
+              durer,
+              imageUrl: imgUrl,
+              finished: false,
+            },
+          });
+
+          // Reset
           self.setState({
-            Anim: StateCopy,
             findAnim: [],
             ShowModalSearch: false,
             ShowModalAddAnim: false,
@@ -254,6 +345,13 @@ export default class Home extends Component {
           typeAlert: "danger",
         });
       }
+
+      if (IsGood && NextAnimToDelete !== null) {
+        self.deleteValue(`/NextAnim/${NextAnimToDelete}`);
+        self.setState({
+          NextAnimToDelete: null,
+        });
+      }
     }
 
     this.setState({
@@ -262,17 +360,9 @@ export default class Home extends Component {
     });
   };
 
-  deleteAnim = (id) => {
-    const CopyAnim = { ...this.state.Anim };
-
-    CopyAnim[id.split("-")[0]][id] = null;
-    this.setState({ Anim: CopyAnim });
-  };
-
   newNextAnim = (event) => {
     event.preventDefault();
 
-    const NextAnimCopy = { ...this.state.Anim };
     const { NextAnim } = this.state;
 
     if (
@@ -282,10 +372,14 @@ export default class Home extends Component {
       NextAnim.trim().length !== 0 &&
       NextAnim !== ""
     ) {
-      NextAnimCopy.NextAnim[`NextAnim${Date.now()}`] = {
-        name: NextAnim,
-      };
-      this.setState({ Anim: NextAnimCopy, NextAnim: "" });
+      this.addValue("/NextAnim", {
+        ...this.state.NextAnimFireBase,
+        [`NextAnim${Date.now()}`]: {
+          name: NextAnim,
+        },
+      });
+
+      this.setState({ NextAnim: "" });
     } else {
       this.setState({
         ResText: "Vueillez me donner le nom de l'anime à rajouter",
@@ -349,18 +443,13 @@ export default class Home extends Component {
     this.setState({ animToDetails: [] });
   };
 
-  DeleteNextAnim = (id) => {
-    const AnimCopy = { ...this.state.Anim };
-    AnimCopy.NextAnim[id] = null;
-    this.setState({ Anim: AnimCopy });
-  };
-
   cancelModal = () => {
     this.setState({
       ShowModalSearch: false,
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
       ShowModalType: false,
+      NextAnimToDelete: null,
       title: "",
       type: "serie",
       durer: 110,
@@ -371,12 +460,14 @@ export default class Home extends Component {
 
   render() {
     const {
+      filmFireBase,
+      serieFirebase,
+      NextAnimFireBase,
       uid,
       proprio,
       ShowModalSearch,
       findAnim,
       animToDetails,
-      Anim,
       ShowModalAddAnim,
       title,
       ResText,
@@ -440,44 +531,50 @@ export default class Home extends Component {
       ));
     }
 
-    if (Object.keys(Anim).length !== 0 && SwitchMyAnim) {
-      const { serie, film } = this.state.Anim;
-      MyAnimList = Object.keys(serie)
+    if (
+      Object.keys(filmFireBase).length !== 0 &&
+      Object.keys(serieFirebase).length !== 0 &&
+      SwitchMyAnim
+    ) {
+      MyAnimList = Object.keys(serieFirebase)
         .map((key) => (
           <Poster
             key={key}
             id={key}
-            url={serie[key].imageUrl}
-            title={serie[key].name}
-            isFinished={serie[key].finishedAnim}
-            deleteAnim={this.deleteAnim}
+            url={serieFirebase[key].imageUrl}
+            title={serieFirebase[key].name}
+            isFinished={serieFirebase[key].finishedAnim}
+            deleteAnim={this.deleteValue}
             inMyAnim={true}
           />
         ))
         .concat(
-          Object.keys(film).map((key) => (
+          Object.keys(filmFireBase).map((key) => (
             <Poster
               key={key}
               id={key}
-              url={film[key].imageUrl}
-              title={film[key].name}
-              isFinished={film[key].finished}
+              url={filmFireBase[key].imageUrl}
+              title={filmFireBase[key].name}
+              isFinished={filmFireBase[key].finished}
               inMyAnim={true}
             />
           ))
         );
-    } else if (!SwitchMyAnim && this.state.Anim.NextAnim !== undefined) {
-      const { NextAnim } = this.state.Anim;
-      MyNextAnimList = Object.keys(NextAnim).map((key) => (
+    } else if (
+      !SwitchMyAnim &&
+      Object.keys(NextAnimFireBase).length !== 0 &&
+      NextAnimFireBase !== undefined
+    ) {
+      MyNextAnimList = Object.keys(NextAnimFireBase).map((key) => (
         <NextAnimCO
           key={key}
-          name={NextAnim[key].name}
+          name={NextAnimFireBase[key].name}
           handleClick={() => {
             this.setState({
               ShowModalType: true,
-              title: NextAnim[key].name,
+              title: NextAnimFireBase[key].name,
+              NextAnimToDelete: key,
             });
-            this.DeleteNextAnim(key);
           }}
         />
       ));

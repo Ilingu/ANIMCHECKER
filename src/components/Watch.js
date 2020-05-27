@@ -6,19 +6,23 @@ import AnimEpCo from "./dyna/AnimEp";
 import { Spinner, Button, Modal, Form } from "react-bootstrap";
 // DB
 import base from "../db/base";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 class Watch extends Component {
   state = {
     // Firebase
     Anim: {},
+    AnimToWatch: {},
     // Auth
     uid: null,
     id: null,
+    proprio: null,
     // Bon fonctionnement de l'app
-    AnimToWatch: {},
     modeStart: false,
     type: "",
     isFirstTime: true,
+    RedirectHome: false,
     ToOpen: "",
     // Repere
     repereSaison: {},
@@ -32,79 +36,145 @@ class Watch extends Component {
   };
 
   componentDidMount() {
-    this.ref = base.syncState(`/`, {
-      context: this,
-      state: "Anim",
+    const self = this;
+
+    if (this.props.match.params.id !== undefined) {
+      this.refreshAnimToWatch(this.props.match.params.id);
+
+      this.setState({
+        id: this.props.match.params.id,
+        type: self.props.match.params.id.split("-")[0],
+      });
+    }
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        self.handleAuth({ user });
+      }
     });
+  }
+
+  handleAuth = async (authData) => {
+    const box = await base.fetch("/", { context: this });
+
+    if (!box.proprio) {
+      await base.post("/proprio", {
+        data: authData.user.uid,
+      });
+    }
 
     this.setState({
-      uid: this.props.match.params.uid,
-      id: this.props.match.params.id,
+      uid: authData.user.uid,
+      proprio: box.proprio || authData.user.uid,
     });
-  }
+  };
 
-  componentWillUnmount() {
-    base.removeBinding(this.ref);
-  }
+  refreshAnimToWatch = async (ForFirstTime = null) => {
+    const { id } = this.state;
 
-  linkAnimToWatch() {
-    const { id, Anim } = this.state;
+    try {
+      const AnimToWatch = await base.fetch(
+        ForFirstTime !== null
+          ? `/${ForFirstTime.split("-")[0]}/${ForFirstTime}`
+          : `/${id.split("-")[0]}/${id}`,
+        {
+          context: this,
+        }
+      );
 
-    this.setState({
-      AnimToWatch: Anim[id.split("-")[0]][id],
-      type: id.split("-")[0],
-    });
-  }
+      this.setState({ AnimToWatch: AnimToWatch });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  addValue = (path, value) => {
+    base
+      .post(path, {
+        data: value,
+      })
+      .then(this.refreshAnimToWatch)
+      .catch((err) => console.error(err));
+  };
+
+  deleteValue = (path) => {
+    base
+      .remove(path)
+      .then(this.refreshAnimToWatch)
+      .catch((err) => console.error(err));
+  };
+
+  updateValue = (path, value) => {
+    base
+      .update(path, {
+        data: value,
+      })
+      .then(this.refreshAnimToWatch)
+      .catch((err) => console.error(err));
+  };
+
+  getValue = async (path) => {
+    const value = await base.fetch(path, { context: this });
+
+    return value;
+  };
 
   addEp = (Season, nbEpToAdd) => {
-    const CopyAnim = { ...this.state.Anim };
-    const { id } = this.state;
+    const { id, AnimToWatch } = this.state;
     const idSaison = parseInt(Season.name.split(" ")[1]) - 1;
+    let Stockage = [];
 
     for (let i = 0; i < nbEpToAdd; i++) {
-      CopyAnim.serie[id].AnimEP[idSaison].Episodes = [
-        ...CopyAnim.serie[id].AnimEP[idSaison].Episodes,
+      Stockage = [
+        ...Stockage,
         {
           finished: false,
-          id: CopyAnim.serie[id].AnimEP[idSaison].Episodes.length + 1,
+          id: AnimToWatch.AnimEP[idSaison].Episodes.length + (i + 1),
         },
       ];
     }
-    CopyAnim.serie[id].AnimEP[idSaison].finished = false;
+
+    this.addValue(
+      `/serie/${id}/AnimEP/${idSaison}/Episodes`,
+      AnimToWatch.AnimEP[idSaison].Episodes.concat(Stockage)
+    );
+    this.updateValue(`/serie/${id}/AnimEP/${idSaison}`, {
+      finished: false,
+    });
+    this.updateValue(`/serie/${id}`, { finishedAnim: false });
 
     this.setState({
       nbEpToAdd: 1,
       ShowModalAddEp: false,
       SeasonToAddEp: null,
-      Anim: CopyAnim,
     });
   };
 
   addSeason = (nbEp) => {
-    const CopyAnim = { ...this.state.Anim };
-    const { id } = this.state;
+    const { id, AnimToWatch } = this.state;
 
     let EpObj = [];
+    let Stockage = [];
 
     for (let j = 0; j < parseInt(nbEp); j++) {
       EpObj = [...EpObj, { id: j + 1, finished: false }];
     }
 
-    CopyAnim.serie[id].AnimEP = [
-      ...CopyAnim.serie[id].AnimEP,
+    Stockage = [
+      ...AnimToWatch.AnimEP,
       {
-        name: `Saison ${CopyAnim.serie[id].AnimEP.length + 1}`,
+        name: `Saison ${AnimToWatch.AnimEP.length + 1}`,
         Episodes: EpObj,
         finished: false,
       },
     ];
 
-    CopyAnim.serie[id].finishedAnim = false;
+    this.addValue(`/serie/${id}/AnimEP`, Stockage);
+    this.updateValue(`/serie/${id}`, { finishedAnim: false });
 
     this.setState({
       nbEpToAdd: 1,
       ShowModalAddSeasonEp: false,
-      Anim: CopyAnim,
     });
   };
 
@@ -148,15 +218,13 @@ class Watch extends Component {
   };
 
   finishedEp = (Saison, EpFinishedID) => {
-    const StateCopy = { ...this.state.Anim };
     const { id } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
-    StateCopy.serie[id].AnimEP[idSaison].Episodes[
-      EpFinishedID - 2
-    ].finished = true;
-
-    this.setState({ Anim: StateCopy });
+    this.updateValue(
+      `/serie/${id}/AnimEP/${idSaison}/Episodes/${EpFinishedID - 2}`,
+      { finished: true }
+    );
   };
 
   StartNextEP = (Saison = null, EpFinishedID = null) => {
@@ -181,17 +249,15 @@ class Watch extends Component {
   };
 
   endOfSaison = (Saison, EpFinishedID) => {
-    const StateCopy = { ...this.state.Anim };
-    const { id } = this.state;
+    const { id, AnimToWatch } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
-    StateCopy.serie[id].AnimEP[idSaison].finished = true;
+    this.updateValue(`/serie/${id}/AnimEP/${idSaison}`, { finished: true });
 
-    if (StateCopy.serie[id].AnimEP.length === idSaison + 1)
-      StateCopy.serie[id].finishedAnim = true;
+    if (AnimToWatch.AnimEP.length === idSaison + 1)
+      this.updateValue(`/serie/${id}`, { finishedAnim: true });
 
     this.finishedEp(Saison, EpFinishedID + 1);
-    this.setState({ Anim: StateCopy });
     this.StopModeWatch();
   };
 
@@ -201,28 +267,26 @@ class Watch extends Component {
   };
 
   EndFilm = () => {
-    const CopyAnim = { ...this.state.Anim };
     const { id } = this.state;
 
-    CopyAnim.film[id].finished = true;
-
-    this.setState({ Anim: CopyAnim });
+    this.updateValue(`/film/${id}`, { finished: true });
     this.StopModeWatch();
   };
 
   handleDelete = () => {
-    const CopyAnim = { ...this.state.Anim };
     const { type, id } = this.state;
 
-    CopyAnim[type][id] = null;
-    this.setState({ Anim: CopyAnim, uid: null });
+    this.updateValue(`/${type}`, { [id]: null });
+    this.setState({ uid: null, RedirectHome: true });
   };
 
   render() {
     const {
-      Anim,
       AnimToWatch,
       uid,
+      id,
+      RedirectHome,
+      proprio,
       type,
       isFirstTime,
       modeStart,
@@ -235,15 +299,9 @@ class Watch extends Component {
       ShowModalAddSeasonEp,
     } = this.state;
 
-    if (Anim.proprio) {
-      if (Anim.proprio !== uid || !uid) {
-        return <Redirect to="/" />;
-      } else if (isFirstTime) {
-        this.setState({ isFirstTime: false });
-        this.linkAnimToWatch();
-        return <Redirect to="/Watch" />;
-      }
-    } else {
+    if (RedirectHome) return <Redirect to="/" />;
+
+    if (!uid) {
       return (
         <Spinner
           style={{
@@ -255,6 +313,15 @@ class Watch extends Component {
           variant="warning"
         />
       );
+    }
+
+    if (uid !== proprio) return <Redirect to="/" />;
+
+    if (id === null) {
+      return <Redirect to="/" />;
+    } else if (isFirstTime) {
+      this.setState({ isFirstTime: false });
+      return <Redirect to="/Watch" />;
     }
 
     let MyAnimAccordeon = null;
@@ -301,7 +368,7 @@ class Watch extends Component {
             </div>
           </header>
           <section id="ToWatch">
-            <Link push={true} to="/">
+            <Link push="true" to="/">
               <Button variant="primary">
                 <span className="fas fa-arrow-left"></span> Retour
               </Button>
