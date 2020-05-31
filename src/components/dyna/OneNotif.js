@@ -51,7 +51,14 @@ const OneNotif = ({ name, day, time, paused, fn }) => {
   };
 
   return (
-    <div className="notif">
+    <div
+      className="notif"
+      style={{
+        border: `2px solid rgb(${Math.round(Math.random() * 255)}, ${Math.round(
+          Math.random() * 255
+        )}, ${Math.round(Math.random() * 255)})`,
+      }}
+    >
       <div className="name">{name}</div>
       <div className="time">
         Se déclenche tous les {toDayString()} à {toHourMinute()}

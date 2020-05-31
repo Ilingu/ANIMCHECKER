@@ -214,6 +214,13 @@ export default class Notif extends Component {
           >
             <span className="fas fa-plus-circle"></span> Notif
           </Button>
+          <Button
+            variant="outline-secondary"
+            block
+            onClick={() => this.setState({ ShowModalAddNotif: false })}
+          >
+            Changer la couleurs des notif
+          </Button>
           <div id="returnAlert">
             {ResText === null && typeAlert === null ? null : (
               <Alert

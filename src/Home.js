@@ -15,6 +15,11 @@ import base, { firebaseApp } from "./db/base";
 import firebase from "firebase/app";
 import "firebase/auth";
 
+/* For notif:
+  const nameVar = new Date().getHours() * 3600 + new Date().getMinutes() * 60;
+    => Donneras le temps à la même unités que le time stocké dans firebase puis après on a juste à faire si c'est >= && bon jour alors notify sinon null
+*/
+
 export default class Home extends Component {
   state = {
     // Firebase
