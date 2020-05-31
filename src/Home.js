@@ -43,10 +43,21 @@ export default class Home extends Component {
     // Alerts
     ResText: null,
     typeAlert: null,
+    // A2HS
+    AddToHomeScreen: null,
   };
 
   componentDidMount() {
     const self = this;
+    // A2HS
+    window.addEventListener("beforeinstallprompt", (e) => {
+      console.log("HERE");
+      e.preventDefault();
+      self.setState({
+        AddToHomeScreen: e,
+      });
+    });
+    // Firebase
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         self.handleAuth({ user });
@@ -55,6 +66,23 @@ export default class Home extends Component {
       self.refreshValueFirebase();
     });
   }
+  AddToHome = () => {
+    const { AddToHomeScreen } = this.state;
+
+    if (AddToHomeScreen) {
+      AddToHomeScreen.prompt();
+      AddToHomeScreen.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === "accepted") {
+          alert("Thanks :)");
+        }
+        this.setState({
+          AddToHomeScreen: null,
+        });
+      });
+    } else {
+      console.error("Error To Open The Prompt");
+    }
+  };
 
   refreshValueFirebase = async () => {
     try {
@@ -149,6 +177,7 @@ export default class Home extends Component {
       });
     }
 
+    // this.notifyMe();
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -358,6 +387,32 @@ export default class Home extends Component {
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
     });
+  };
+
+  notifyMe = () => {
+    if (window.Notification) {
+      if (Notification.permission === "granted") {
+        new Notification("Hi there!", {
+          body: "How are you doing?",
+          icon: "https://bit.ly/2DYqRrh",
+        });
+      } else {
+        Notification.requestPermission()
+          .then(function (p) {
+            if (p === "granted") {
+              new Notification("Hi there!", {
+                body: "How are you doing?",
+                icon: "https://bit.ly/2DYqRrh",
+              });
+            } else {
+              console.log("User blocked notifications.");
+            }
+          })
+          .catch(function (err) {
+            console.error(err);
+          });
+      }
+    }
   };
 
   newNextAnim = (event) => {
@@ -605,6 +660,7 @@ export default class Home extends Component {
               openModalNewAnim: () => this.setState({ ShowModalType: true }),
               search: this.SearchAnim,
               logOut: this.logOut,
+              addToHome: this.AddToHome,
             }}
           >
             <MyAnim

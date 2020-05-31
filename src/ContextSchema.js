@@ -4,4 +4,5 @@ export default createContext({
   openModalNewAnim: () => {},
   search: Function,
   logOut: Function,
+  addToHome: Function,
 });

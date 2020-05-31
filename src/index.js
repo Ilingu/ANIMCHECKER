@@ -9,7 +9,7 @@ import Watch from "./components/Watch";
 import NotFound from "./components/Error/NotFound";
 // CSS
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./Assets/CSS/App.css";
+import "./CSS/App.css";
 // Service Worker
 import * as serviceWorker from "./serviceWorker";
 

@@ -20,7 +20,6 @@ const Header = () => {
       Anim !== ""
     ) {
       Context.search(Anim);
-    } else {
     }
   };
 
@@ -51,6 +50,16 @@ const Header = () => {
               onClick={Context.logOut}
             >
               LogOut
+            </Button>
+          </Nav.Item>
+          <Nav.Item>
+            <Button
+              variant="outline-secondary"
+              style={{ marginLeft: "10px" }}
+              id="AdueHSbtn"
+              onClick={Context.addToHome}
+            >
+              Add to Home Screen
             </Button>
           </Nav.Item>
         </Nav>

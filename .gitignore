@@ -4,16 +4,15 @@
 /node_modules
 /.pnp
 .pnp.js
-
-# CSS
-/src/Assets/CSS/App.css.map
-/src/Assets/CSS/App.scss
+/src/CSS/App.css.map
+/src/CSS/App.scss
 
 # testing
 /coverage
 
 # production
 /build
+/_redirects
 
 # misc
 /.env
