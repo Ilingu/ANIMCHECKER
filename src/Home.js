@@ -545,6 +545,7 @@ export default class Home extends Component {
             title={serieFirebase[key].name}
             isFinished={serieFirebase[key].finishedAnim}
             deleteAnim={this.deleteValue}
+            isAlleged={!serieFirebase[key].AnimEP ? true : false}
             inMyAnim={true}
           />
         ))
@@ -556,6 +557,7 @@ export default class Home extends Component {
               url={filmFireBase[key].imageUrl}
               title={filmFireBase[key].name}
               isFinished={filmFireBase[key].finished}
+              isAlleged={false}
               inMyAnim={true}
             />
           ))

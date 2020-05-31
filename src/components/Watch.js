@@ -280,6 +280,15 @@ class Watch extends Component {
     this.setState({ uid: null, RedirectHome: true });
   };
 
+  handleAlleger = () => {
+    const { type, id } = this.state;
+
+    if (type !== "film") {
+      this.updateValue(`/serie/${id}`, { AnimEP: null });
+      this.setState({ uid: null, RedirectHome: true });
+    }
+  };
+
   render() {
     const {
       AnimToWatch,
@@ -378,6 +387,9 @@ class Watch extends Component {
               onClick={() => this.setState({ ShowModalAddSeasonEp: true })}
             >
               <span className="fas fa-plus"></span> Ajouter une saison
+            </Button>
+            <Button variant="warning" onClick={this.handleAlleger}>
+              <span className="fas fa-window-close"></span> Alléger cet anime
             </Button>
             <Button variant="danger" onClick={this.handleDelete}>
               <span className="fas fa-trash-alt"></span> Supprimer cet anime

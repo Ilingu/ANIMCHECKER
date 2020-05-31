@@ -425,6 +425,14 @@ hr {
         opacity: 1;
       }
     }
+    .MyAnimPoster.alleged {
+      .action {
+        .delete {
+          top: calc(50% - 66px / 2);
+          left: calc(50% - 35px);
+        }
+      }
+    }
   }
   .content.none {
     display: unset;

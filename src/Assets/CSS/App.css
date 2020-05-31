@@ -530,6 +530,11 @@ hr {
   opacity: 1;
 }
 
+#MyAnime .content .MyAnimPoster.alleged .action .delete {
+  top: calc(50% - 66px / 2);
+  left: calc(50% - 35px);
+}
+
 #MyAnime .content.none {
   display: unset;
   position: relative;

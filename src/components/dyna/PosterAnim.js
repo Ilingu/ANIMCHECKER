@@ -11,6 +11,7 @@ const PosterAnim = ({
   inMyAnim,
   isFinished,
   deleteAnim,
+  isAlleged,
 }) => {
   if (!inMyAnim) {
     return (
@@ -25,18 +26,28 @@ const PosterAnim = ({
     );
   } else {
     return (
-      <div className={isFinished ? "MyAnimPoster finished" : "MyAnimPoster"}>
+      <div
+        className={
+          isFinished && isAlleged
+            ? "MyAnimPoster finished alleged"
+            : isFinished
+            ? "MyAnimPoster finished"
+            : "MyAnimPoster"
+        }
+      >
         {isFinished ? <h4>{title}</h4> : null}
 
         <div className="ImgInterract">
           <img src={url} alt="Img of Anim" />
         </div>
         <div className="action">
-          <Link push="true" to={`/Watch/${id}`}>
-            <div className="watch">
-              <span className="fas fa-eye"></span>
-            </div>
-          </Link>
+          {isAlleged ? null : (
+            <Link push="false" to={`/Watch/${id}`}>
+              <div className="watch">
+                <span className="fas fa-eye"></span>
+              </div>
+            </Link>
+          )}
 
           <div
             className="delete"
@@ -45,7 +56,13 @@ const PosterAnim = ({
             <span className="fas fa-trash-alt"></span>
           </div>
         </div>
-        {isFinished ? (
+        {isFinished && isAlleged ? (
+          <h5>
+            <span className="fas fa-check"></span> + Allégé
+          </h5>
+        ) : isAlleged ? (
+          <h5>{title}: Allégé</h5>
+        ) : isFinished ? (
           <h5>
             <span className="fas fa-check"></span>
           </h5>
