@@ -12,7 +12,6 @@ import "firebase/auth";
 class Watch extends Component {
   state = {
     // Firebase
-    Anim: {},
     AnimToWatch: {},
     // Auth
     uid: null,
@@ -500,7 +499,7 @@ class Watch extends Component {
             <Modal.Title>Rajouter des episode</Modal.Title>
           </Modal.Header>
           <Modal.Body id="ModalBody">
-            <Form id="AddAnim">
+            <Form id="Addep">
               <Form.Group controlId="duree">
                 <Form.Label>Nombres d'ep à rajouter</Form.Label>
                 <Form.Control
@@ -543,7 +542,7 @@ class Watch extends Component {
             <Modal.Title>Ajouter une Saison</Modal.Title>
           </Modal.Header>
           <Modal.Body id="ModalBody">
-            <Form id="AddAnim">
+            <Form id="AddSEP">
               <Form.Group controlId="duree">
                 <Form.Label>Rajouter les EP</Form.Label>
                 <Form.Control

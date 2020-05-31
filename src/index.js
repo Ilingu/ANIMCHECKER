@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import Home from "./Home";
 // Components
 import Watch from "./components/Watch";
+import Notif from "./components/Notif";
 import NotFound from "./components/Error/NotFound";
 // CSS
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -19,6 +20,7 @@ const Root = () => (
       <Route exact path="/" component={Home} />
       <Route exact path={`/Watch/:id`} component={Watch} />
       <Route exact path="/Watch" component={Watch} />
+      <Route exact path="/notificator" component={Notif} />
       <Route component={NotFound} />
     </Switch>
   </Router>

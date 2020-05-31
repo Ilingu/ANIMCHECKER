@@ -43,7 +43,7 @@ const MyAnim = ({
               </Nav.Link>
             </Nav.Item>
           </Nav>
-          <div className="return">
+          <div id="returnAlert">
             {ResText === null && typeAlert === null ? null : (
               <Alert variant={typeAlert} onClose={onClose} dismissible>
                 <p>{ResText}</p>

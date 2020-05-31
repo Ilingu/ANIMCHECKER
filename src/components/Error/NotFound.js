@@ -12,7 +12,7 @@ const NotFound = () => {
         The page you're looking for doesn't exist or existed but now no longer.{" "}
         <br /> Please Go Back
       </p>
-      <Link push={false} to="/">
+      <Link push="false" to="/">
         <Button variant="outline-danger">
           <span className="fas fa-arrow-left"> Go Home</span>
         </Button>

@@ -25,31 +25,23 @@ const Header = () => {
 
   return (
     <Navbar bg="light" expand="lg">
-      <Link push="true" to="/">
-        <Navbar.Brand>ASI-Check</Navbar.Brand>
-      </Link>
+      <Navbar.Brand>ACK</Navbar.Brand>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
           <Nav.Link href="https://discord.gg/Jrmks5b" target="_blank">
             Discord Anime
           </Nav.Link>
+          <Link push="true" to="/notificator">
+            <Button variant="outline-info">My Notif</Button>
+          </Link>
           <Nav.Item>
             <Button
               variant="outline-success"
               style={{ marginLeft: "10px" }}
               onClick={Context.openModalNewAnim}
             >
-              Create Anime/Moovie (manually)
-            </Button>
-          </Nav.Item>
-          <Nav.Item>
-            <Button
-              variant="outline-warning"
-              style={{ marginLeft: "10px" }}
-              onClick={Context.logOut}
-            >
-              LogOut
+              New Anime (manually)
             </Button>
           </Nav.Item>
           <Nav.Item>
@@ -59,7 +51,16 @@ const Header = () => {
               id="AdueHSbtn"
               onClick={Context.addToHome}
             >
-              Add to Home Screen
+              <span className="fas fa-plus-circle"></span> Home Screen
+            </Button>
+          </Nav.Item>
+          <Nav.Item>
+            <Button
+              variant="outline-warning"
+              style={{ marginLeft: "10px" }}
+              onClick={Context.logOut}
+            >
+              <span className="fas fa-sign-out-alt"></span>
             </Button>
           </Nav.Item>
         </Nav>

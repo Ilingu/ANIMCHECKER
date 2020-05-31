@@ -111,13 +111,6 @@ export default class Home extends Component {
           ResText: "Votre requête d'ajout a réussite.",
           typeAlert: "success",
         });
-
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2000);
       })
       .catch((err) => {
         console.error(err);
@@ -125,14 +118,14 @@ export default class Home extends Component {
           ResText: "Votre requête d'ajout à echoué.",
           typeAlert: "danger",
         });
-
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2000);
       });
+
+    setTimeout(() => {
+      this.setState({
+        ResText: null,
+        typeAlert: null,
+      });
+    }, 2500);
   };
 
   deleteValue = async (path) => {
