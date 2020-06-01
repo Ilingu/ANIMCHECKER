@@ -1,9 +1,7 @@
 {
-  "short_name": "ACK",
   "name": "AnimChecker",
+  "short_name": "ACK",
   "description": "List of your anime",
-  "lang": "fr",
-  "orientation": "any",
   "icons": [
     {
       "src": "Icon.png",
@@ -11,8 +9,9 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#333333"
+  "orientation": "portrait",
+  "background_color": "#333333",
+  "theme_color": "#ff6d00"
 }

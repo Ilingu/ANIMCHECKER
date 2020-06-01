@@ -56,7 +56,6 @@ export default class Home extends Component {
     const self = this;
     // A2HS
     window.addEventListener("beforeinstallprompt", (e) => {
-      console.log("HERE");
       e.preventDefault();
       self.setState({
         AddToHomeScreen: e,
@@ -388,14 +387,15 @@ export default class Home extends Component {
   };
 
   notifyMe = () => {
+    const self = this;
     if (window.Notification) {
       if (Notification.permission === "granted") {
-        this.doNotif();
+        self.doNotif();
       } else {
         Notification.requestPermission()
           .then(function (p) {
             if (p === "granted") {
-              this.doNotif();
+              self.doNotif();
             } else {
               console.log("User blocked notifications.");
             }
