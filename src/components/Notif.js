@@ -86,6 +86,7 @@ export default class Notif extends Component {
               day,
               time,
               paused: false,
+              called: false,
             },
           },
         })
@@ -181,19 +182,23 @@ export default class Notif extends Component {
     let MyNotif = "Vous avez aucune notif d'anime rajoutez-en !";
 
     if (Object.keys(Notif).length !== 0) {
-      MyNotif = Object.keys(Notif).map((key) => (
-        <OneNotif
-          key={key}
-          name={Notif[key].name}
-          day={Notif[key].day}
-          time={Notif[key].time}
-          paused={Notif[key].paused}
-          fn={[
-            () => this.updatePaused(key, !Notif[key].paused),
-            () => this.handleDelete(key),
-          ]}
-        />
-      ));
+      console.log(Notif);
+      MyNotif = Object.keys(Notif).map((key, i) => {
+        console.log(i);
+        return (
+          <OneNotif
+            key={key}
+            name={Notif[key].name}
+            day={Notif[key].day}
+            time={Notif[key].time}
+            paused={Notif[key].paused}
+            fn={[
+              () => this.updatePaused(key, !Notif[key].paused),
+              () => this.handleDelete(key),
+            ]}
+          />
+        );
+      });
     }
 
     return (

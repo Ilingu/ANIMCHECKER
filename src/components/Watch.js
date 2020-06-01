@@ -381,17 +381,23 @@ class Watch extends Component {
                 <span className="fas fa-arrow-left"></span> Retour
               </Button>
             </Link>
-            <Button
-              variant="success"
-              onClick={() => this.setState({ ShowModalAddSeasonEp: true })}
-            >
-              <span className="fas fa-plus"></span> Ajouter une saison
-            </Button>
-            <Button variant="warning" onClick={this.handleAlleger}>
-              <span className="fas fa-window-close"></span> Alléger cet anime
-            </Button>
+            {type === "serie" ? (
+              <Fragment>
+                <Button
+                  variant="success"
+                  onClick={() => this.setState({ ShowModalAddSeasonEp: true })}
+                >
+                  <span className="fas fa-plus"></span> Ajouter une saison
+                </Button>
+                <Button variant="warning" onClick={this.handleAlleger}>
+                  <span className="fas fa-window-close"></span> Alléger cet
+                  anime
+                </Button>
+              </Fragment>
+            ) : null}
             <Button variant="danger" onClick={this.handleDelete}>
-              <span className="fas fa-trash-alt"></span> Supprimer cet anime
+              <span className="fas fa-trash-alt"></span> Supprimer{" "}
+              {AnimToWatch.name}
             </Button>
 
             <header>

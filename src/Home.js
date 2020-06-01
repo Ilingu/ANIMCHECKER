@@ -175,7 +175,7 @@ export default class Home extends Component {
       });
     }
 
-    // this.notifyMe();
+    this.notifyMe();
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -330,7 +330,7 @@ export default class Home extends Component {
         ) {
           IsGood = true;
 
-          self.addValue("/serie", {
+          self.addValue("/film", {
             ...self.state.filmFireBase,
             [`film-${Date.now()}`]: {
               name: title,
@@ -390,18 +390,12 @@ export default class Home extends Component {
   notifyMe = () => {
     if (window.Notification) {
       if (Notification.permission === "granted") {
-        new Notification("Hi there!", {
-          body: "How are you doing?",
-          icon: "https://bit.ly/2DYqRrh",
-        });
+        this.doNotif();
       } else {
         Notification.requestPermission()
           .then(function (p) {
             if (p === "granted") {
-              new Notification("Hi there!", {
-                body: "How are you doing?",
-                icon: "https://bit.ly/2DYqRrh",
-              });
+              this.doNotif();
             } else {
               console.log("User blocked notifications.");
             }
@@ -410,6 +404,39 @@ export default class Home extends Component {
             console.error(err);
           });
       }
+    }
+  };
+
+  doNotif = async () => {
+    try {
+      const NotifFirebase = await base.fetch("/Notif", { context: this }),
+        TimeNow = new Date().getHours() * 3600 + new Date().getMinutes() * 60;
+
+      Object.keys(NotifFirebase).forEach((notifKey) => {
+        if (
+          new Date().getDay().toString() === NotifFirebase[notifKey].day &&
+          TimeNow >= NotifFirebase[notifKey].time &&
+          !NotifFirebase[notifKey].called &&
+          !NotifFirebase[notifKey].paused
+        ) {
+          new Notification(`Sortie Anime: ${NotifFirebase[notifKey].name} !`, {
+            body: `Nouvel Episode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
+            icon: "https://myanimchecker.netlify.app/favicon.ico",
+          });
+          base.update(`/Notif/${notifKey}`, {
+            data: { called: true },
+          });
+        } else if (
+          new Date().getDay().toString() !== NotifFirebase[notifKey].day &&
+          NotifFirebase[notifKey].called
+        ) {
+          base.update(`/Notif/${notifKey}`, {
+            data: { called: false },
+          });
+        }
+      });
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -487,11 +514,18 @@ export default class Home extends Component {
       .catch((err) => console.error(err));
   };
 
-  openNext = () => {
+  openNext = (onDefault = null) => {
     const { type } = this.state;
 
-    if (type === "serie") this.setState({ ShowModalAddAnim: true });
-    else this.setState({ ShowModalAddFilm: true });
+    if (onDefault !== null) {
+      onDefault === "serie"
+        ? this.setState({ ShowModalAddAnim: true })
+        : this.setState({ ShowModalAddFilm: true });
+    } else {
+      type === "serie"
+        ? this.setState({ ShowModalAddAnim: true })
+        : this.setState({ ShowModalAddFilm: true });
+    }
 
     this.setState({ animToDetails: [] });
   };
@@ -585,8 +619,8 @@ export default class Home extends Component {
     }
 
     if (
-      Object.keys(filmFireBase).length !== 0 &&
-      Object.keys(serieFirebase).length !== 0 &&
+      (Object.keys(filmFireBase).length !== 0 ||
+        Object.keys(serieFirebase).length !== 0) &&
       SwitchMyAnim
     ) {
       MyAnimList = Object.keys(serieFirebase)
@@ -610,6 +644,7 @@ export default class Home extends Component {
               url={filmFireBase[key].imageUrl}
               title={filmFireBase[key].name}
               isFinished={filmFireBase[key].finished}
+              deleteAnim={this.deleteValue}
               isAlleged={false}
               inMyAnim={true}
             />
@@ -646,7 +681,7 @@ export default class Home extends Component {
               type: animToDetails[1].type === "Movie" ? "film" : "serie",
               imageUrl: animToDetails[1].image_url,
             });
-            this.openNext();
+            this.openNext(animToDetails[1].type === "Movie" ? "film" : "serie");
           }}
         />
       );

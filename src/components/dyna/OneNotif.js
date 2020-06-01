@@ -35,11 +35,13 @@ const OneNotif = ({ name, day, time, paused, fn }) => {
   };
 
   const toHourMinute = () => {
-    let baseCalcul = Math.round(((time / 3600) * 30) / 0.5),
-      HMSplit = (baseCalcul / 60).toString().split("."),
-      decimalToMin =
-        parseFloat("0." + HMSplit[1].split("")[0] + HMSplit[1].split("")[1]) *
-        60;
+    let baseCalcul = Math.round(((time / 3600) * 30) / 0.5);
+    let HMSplit = (baseCalcul / 60).toString().split(".");
+    let decimalToMin =
+      HMSplit.length === 1
+        ? 0
+        : parseFloat("0." + HMSplit[1].split("")[0] + HMSplit[1].split("")[1]) *
+          60;
 
     return baseCalcul >= 60
       ? `${parseInt(HMSplit[0]) < 10 ? `0${HMSplit[0]}` : HMSplit[0]}:${
