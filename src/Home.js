@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import React, { Component, Fragment } from "react";
 import axios from "axios";
 // Components
@@ -14,11 +15,6 @@ import { Modal, Button, Form } from "react-bootstrap";
 import base, { firebaseApp } from "./db/base";
 import firebase from "firebase/app";
 import "firebase/auth";
-
-/* For notif:
-  const nameVar = new Date().getHours() * 3600 + new Date().getMinutes() * 60;
-    => Donneras le temps à la même unités que le time stocké dans firebase puis après on a juste à faire si c'est >= && bon jour alors notify sinon null
-*/
 
 export default class Home extends Component {
   state = {
@@ -70,6 +66,7 @@ export default class Home extends Component {
       self.refreshValueFirebase();
     });
   }
+
   AddToHome = () => {
     const { AddToHomeScreen } = this.state;
 
@@ -545,6 +542,12 @@ export default class Home extends Component {
     });
   };
 
+  shuffleArray = (array) => {
+    return array.sort(() => {
+      return Math.random() - 0.5;
+    });
+  };
+  
   render() {
     const {
       filmFireBase,
@@ -650,6 +653,7 @@ export default class Home extends Component {
             />
           ))
         );
+      MyAnimList = this.shuffleArray(MyAnimList);
     } else if (
       !SwitchMyAnim &&
       Object.keys(NextAnimFireBase).length !== 0 &&
