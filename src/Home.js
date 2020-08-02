@@ -33,6 +33,12 @@ export default class Home extends Component {
     SwitchMyAnim: true,
     animToDetails: [],
     NextAnimToDelete: null,
+    SearchInAnimeList: [false, null],
+    RefreshRandomizeAnime: true,
+    RefreshRandomizeAnime2: true,
+    MyAnimListSaved: null,
+    MyNextAnimListSaved: null,
+    ModeFindAnime: [false, null],
     // Form
     title: "",
     type: "serie",
@@ -41,6 +47,7 @@ export default class Home extends Component {
     nbEP: "",
     NextAnim: "",
     CodeNumber: ["", 1],
+    titleSearchAnime: "",
     // Alerts
     ResText: null,
     typeAlert: null,
@@ -92,6 +99,8 @@ export default class Home extends Component {
       const film = await base.fetch("/film", { context: this });
 
       this.setState({
+        RefreshRandomizeAnime: true,
+        RefreshRandomizeAnime2: true,
         NextAnimFireBase: NextAnim,
         serieFirebase: serie,
         filmFireBase: film,
@@ -217,6 +226,68 @@ export default class Home extends Component {
       .catch((err) => console.error(err));
   };
 
+  SearchAnimInList = () => {
+    const {
+        SearchInAnimeList,
+        titleSearchAnime,
+        serieFirebase,
+        filmFireBase,
+        NextAnimFireBase,
+      } = this.state,
+      self = this;
+    if (
+      SearchInAnimeList[0] !== undefined &&
+      titleSearchAnime &&
+      typeof titleSearchAnime === "string" &&
+      titleSearchAnime.trim().length !== 0 &&
+      titleSearchAnime !== ""
+    ) {
+      let index = [];
+      if (SearchInAnimeList[1]) {
+        // Anime
+        Object.values(serieFirebase)
+          .concat(Object.values(filmFireBase))
+          .filter((anime, i) => {
+            if (
+              anime.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+              anime.name.toLowerCase().includes(titleSearchAnime.toLowerCase())
+            )
+              index = [...index, i];
+          });
+        next(
+          index.map(
+            (In) =>
+              Object.keys(serieFirebase).concat(Object.keys(filmFireBase))[In]
+          )
+        );
+      } else {
+        // NextAnime
+        Object.values(NextAnimFireBase).filter((NextAnime, i) => {
+          if (
+            NextAnime.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+            NextAnime.name
+              .toLowerCase()
+              .includes(titleSearchAnime.toLowerCase())
+          )
+            index = [...index, i];
+        });
+        next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
+      }
+
+      function next(key) {
+        key.length === 0
+          ? self.setState({
+              ResText: `Aucun anime trouvé pour: ${titleSearchAnime}`,
+              typeAlert: "danger",
+            })
+          : self.setState({ ModeFindAnime: [true, key] });
+        self.cancelModal();
+      }
+    } else {
+      this.cancelModal();
+    }
+  };
+
   addAnime = () => {
     const { title, nbEP, type, durer, imageUrl, NextAnimToDelete } = this.state;
     const self = this;
@@ -296,8 +367,10 @@ export default class Home extends Component {
             ShowModalAddAnim: false,
             ShowModalAddFilm: false,
             ShowModalType: false,
+            SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
             animToDetails: [],
             // Form
+            titleSearchAnime: "",
             title: "",
             type: "serie",
             durer: 110,
@@ -343,8 +416,10 @@ export default class Home extends Component {
             ShowModalAddAnim: false,
             ShowModalAddFilm: false,
             ShowModalType: false,
+            SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
             animToDetails: [],
             // Form
+            titleSearchAnime: "",
             title: "",
             type: "serie",
             durer: 110,
@@ -533,7 +608,9 @@ export default class Home extends Component {
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
       ShowModalType: false,
+      SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
       NextAnimToDelete: null,
+      titleSearchAnime: "",
       title: "",
       type: "serie",
       durer: 110,
@@ -547,7 +624,7 @@ export default class Home extends Component {
       return Math.random() - 0.5;
     });
   };
-  
+
   render() {
     const {
       filmFireBase,
@@ -570,6 +647,13 @@ export default class Home extends Component {
       NextAnim,
       CodeNumber,
       nbEP,
+      SearchInAnimeList,
+      RefreshRandomizeAnime,
+      RefreshRandomizeAnime2,
+      MyAnimListSaved,
+      MyNextAnimListSaved,
+      titleSearchAnime,
+      ModeFindAnime,
     } = this.state;
 
     if (!uid) {
@@ -601,9 +685,6 @@ export default class Home extends Component {
     }
 
     let animList = null;
-    let MyAnimList = "Vous avez aucun anime :/\nRajoutez-en !";
-    let MyNextAnimList =
-      "Vous avez mis aucun anime comme souhait dans cette section\nRajoutez-en";
 
     if (findAnim.length !== 0) {
       animList = findAnim.map((anim) => (
@@ -624,54 +705,65 @@ export default class Home extends Component {
     if (
       (Object.keys(filmFireBase).length !== 0 ||
         Object.keys(serieFirebase).length !== 0) &&
-      SwitchMyAnim
+      SwitchMyAnim &&
+      RefreshRandomizeAnime
     ) {
-      MyAnimList = Object.keys(serieFirebase)
-        .map((key) => (
-          <Poster
-            key={key}
-            id={key}
-            url={serieFirebase[key].imageUrl}
-            title={serieFirebase[key].name}
-            isFinished={serieFirebase[key].finishedAnim}
-            deleteAnim={this.deleteValue}
-            isAlleged={!serieFirebase[key].AnimEP ? true : false}
-            inMyAnim={true}
-          />
-        ))
-        .concat(
-          Object.keys(filmFireBase).map((key) => (
-            <Poster
-              key={key}
-              id={key}
-              url={filmFireBase[key].imageUrl}
-              title={filmFireBase[key].name}
-              isFinished={filmFireBase[key].finished}
-              deleteAnim={this.deleteValue}
-              isAlleged={false}
-              inMyAnim={true}
-            />
-          ))
-        );
-      MyAnimList = this.shuffleArray(MyAnimList);
+      this.setState({
+        RefreshRandomizeAnime: false,
+        MyAnimListSaved: this.shuffleArray(
+          Object.keys(serieFirebase)
+            .map((key) => (
+              <Poster
+                key={key}
+                id={key}
+                url={serieFirebase[key].imageUrl}
+                title={serieFirebase[key].name}
+                isFinished={serieFirebase[key].finishedAnim}
+                deleteAnim={this.deleteValue}
+                isAlleged={!serieFirebase[key].AnimEP ? true : false}
+                inMyAnim={true}
+              />
+            ))
+            .concat(
+              Object.keys(filmFireBase).map((key) => (
+                <Poster
+                  key={key}
+                  id={key}
+                  url={filmFireBase[key].imageUrl}
+                  title={filmFireBase[key].name}
+                  isFinished={filmFireBase[key].finished}
+                  deleteAnim={this.deleteValue}
+                  isAlleged={false}
+                  inMyAnim={true}
+                />
+              ))
+            )
+        ),
+      });
     } else if (
       !SwitchMyAnim &&
       Object.keys(NextAnimFireBase).length !== 0 &&
-      NextAnimFireBase !== undefined
+      NextAnimFireBase !== undefined &&
+      RefreshRandomizeAnime2
     ) {
-      MyNextAnimList = Object.keys(NextAnimFireBase).map((key) => (
-        <NextAnimCO
-          key={key}
-          name={NextAnimFireBase[key].name}
-          handleClick={() => {
-            this.setState({
-              ShowModalType: true,
-              title: NextAnimFireBase[key].name,
-              NextAnimToDelete: key,
-            });
-          }}
-        />
-      ));
+      this.setState({
+        RefreshRandomizeAnime2: false,
+        MyNextAnimListSaved: this.shuffleArray(
+          Object.keys(NextAnimFireBase).map((key) => (
+            <NextAnimCO
+              key={key}
+              name={NextAnimFireBase[key].name}
+              handleClick={() => {
+                this.setState({
+                  ShowModalType: true,
+                  title: NextAnimFireBase[key].name,
+                  NextAnimToDelete: key,
+                });
+              }}
+            />
+          ))
+        ),
+      });
     }
 
     if (animToDetails !== null && animToDetails.length >= 2)
@@ -710,9 +802,63 @@ export default class Home extends Component {
               NextAnim={NextAnim}
               ResText={ResText}
               typeAlert={typeAlert}
-              MyAnimList={MyAnimList}
-              MyNextAnimList={MyNextAnimList}
+              ModeFindAnime={ModeFindAnime[0]}
+              MyAnimList={
+                ModeFindAnime[0] && SearchInAnimeList[1]
+                  ? ModeFindAnime[1].map((key) => (
+                      <Poster
+                        key={key}
+                        id={key}
+                        url={
+                          { ...serieFirebase, ...filmFireBase }[key].imageUrl
+                        }
+                        title={{ ...serieFirebase, ...filmFireBase }[key].name}
+                        isFinished={
+                          { ...serieFirebase, ...filmFireBase }[key]
+                            .finishedAnim
+                        }
+                        deleteAnim={this.deleteValue}
+                        isAlleged={
+                          { ...serieFirebase, ...filmFireBase }[key].AnimEP ===
+                          undefined
+                            ? false
+                            : !{ ...serieFirebase, ...filmFireBase }[key].AnimEP
+                            ? true
+                            : false
+                        }
+                        inMyAnim={true}
+                      />
+                    ))
+                  : MyAnimListSaved || "Vous avez aucun anime :/\nRajoutez-en !"
+              }
+              MyNextAnimList={
+                ModeFindAnime[0] && !SearchInAnimeList[1]
+                  ? ModeFindAnime[1].map((key) => (
+                      <NextAnimCO
+                        key={key}
+                        name={NextAnimFireBase[key].name}
+                        handleClick={() => {
+                          this.setState({
+                            ShowModalType: true,
+                            title: NextAnimFireBase[key].name,
+                            NextAnimToDelete: key,
+                          });
+                        }}
+                      />
+                    ))
+                  : MyNextAnimListSaved ||
+                    "Vous avez mis aucun anime comme souhait dans cette section\nRajoutez-en"
+              }
+              CloseModeFindAnime={() =>
+                this.setState({
+                  SearchInAnimeList: [false, null],
+                  ModeFindAnime: [false, null],
+                })
+              }
               handleSubmit={this.newNextAnim}
+              SearchInAnimeListFn={(type) =>
+                this.setState({ SearchInAnimeList: [true, type] })
+              }
               onClose={() =>
                 this.setState({
                   ResText: null,
@@ -731,6 +877,38 @@ export default class Home extends Component {
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={SearchInAnimeList[0]} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Chercher un Animé</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <Form>
+                <Form.Group controlId="searchInAnimeList">
+                  <Form.Label>Nom de l'animé:</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Titre de l'anime à rechercher"
+                    autoComplete="off"
+                    value={titleSearchAnime}
+                    onChange={(event) =>
+                      this.setState({
+                        titleSearchAnime: event.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button variant="info" onClick={this.SearchAnimInList}>
+                <span className="fas fa-search"></span> Chercher
               </Button>
             </Modal.Footer>
           </Modal>
@@ -796,7 +974,7 @@ export default class Home extends Component {
                 </Form.Group>
                 <Form.Group controlId="saison">
                   <Form.Label>
-                    Nombre d'épisode (séparé d'un "," pour chnager de saison pas
+                    Nombre d'épisode (séparé d'un "," pour changer de saison pas
                     d'espace !)
                   </Form.Label>
                   <Form.Control

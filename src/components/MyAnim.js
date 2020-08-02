@@ -16,73 +16,107 @@ const MyAnim = ({
   MyNextAnimList,
   handleSubmit,
   onClose,
-}) => {
-  return (
-    <div className="container">
-      <Header />
+  SearchInAnimeListFn,
+  ModeFindAnime,
+  CloseModeFindAnime,
+}) => (
+  <div className="container">
+    <Header />
 
-      <section id="MyAnime">
-        <header>
-          <Nav fill variant="tabs">
-            <Nav.Item>
-              <Nav.Link
-                eventKey="link-1"
-                active={SwitchMyAnimVar}
-                onClick={SwitchMyAnim}
-              >
-                My Anim
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                eventKey="link-2"
-                active={!SwitchMyAnimVar}
-                onClick={SwitchMyNextAnim}
-              >
-                My next anim
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
-          <div id="returnAlert">
-            {ResText === null && typeAlert === null ? null : (
-              <Alert variant={typeAlert} onClose={onClose} dismissible>
-                <p>{ResText}</p>
-              </Alert>
-            )}
-          </div>
-        </header>
-        <div className={SwitchMyAnimVar ? "content" : "content none"}>
-          {SwitchMyAnimVar ? (
-            MyAnimList
-          ) : (
-            <Fragment>
-              <header>
-                <h4>Ici tu met les anime que tu veux regarder plus tard: </h4>
-                <Form onSubmit={handleSubmit}>
-                  <Form.Group controlId="type">
-                    <Form.Label>Le nom ton prochain anime: </Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Nom de cette anime"
-                      autoComplete="off"
-                      value={NextAnim}
-                      onChange={NextAnimChange}
-                    />
-                  </Form.Group>
-                  <Button variant="success" type="submit">
-                    <span className="fas fa-plus"></span> Ajouter {}
-                  </Button>
-                </Form>
-                <hr />
-              </header>
-              <div className="NextAnimContainer">{MyNextAnimList}</div>
-              <br />
-            </Fragment>
+    {ModeFindAnime ? (
+      <Button
+        variant="outline-danger"
+        onClick={() => CloseModeFindAnime()}
+        style={{
+          position: "absolute",
+          left: "calc(50% - 100px)",
+          borderRadius: "100px",
+          zIndex: "50",
+          top: "170px",
+          width: "200px",
+        }}
+      >
+        <span className="fas fa-times-circle"></span>
+      </Button>
+    ) : null}
+
+    <section id="MyAnime">
+      <header>
+        <Nav fill variant="tabs">
+          <Nav.Item>
+            <Nav.Link
+              eventKey="link-1"
+              active={SwitchMyAnimVar}
+              onClick={ModeFindAnime ? null : SwitchMyAnim}
+            >
+              My Anim{" "}
+              {SwitchMyAnimVar ? (
+                <Button
+                  variant="link"
+                  onClick={() => SearchInAnimeListFn(true)}
+                >
+                  <span className="fas fa-search"></span>
+                </Button>
+              ) : null}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link
+              eventKey="link-2"
+              active={!SwitchMyAnimVar}
+              onClick={ModeFindAnime ? null : SwitchMyNextAnim}
+            >
+              My next anim{" "}
+              {!SwitchMyAnimVar ? (
+                <Button
+                  variant="link"
+                  onClick={() => SearchInAnimeListFn(false)}
+                >
+                  <span className="fas fa-search"></span>
+                </Button>
+              ) : null}
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+        <div id="returnAlert">
+          {ResText === null && typeAlert === null ? null : (
+            <Alert variant={typeAlert} onClose={onClose} dismissible>
+              <p>{ResText}</p>
+            </Alert>
           )}
         </div>
-      </section>
-    </div>
-  );
-};
+      </header>
+      <div className={SwitchMyAnimVar ? "content" : "content none"}>
+        {SwitchMyAnimVar ? (
+          MyAnimList
+        ) : (
+          <Fragment>
+            <header>
+              <h4>Ici tu met les anime que tu veux regarder plus tard: </h4>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group controlId="type">
+                  <Form.Label>Le nom ton prochain anime: </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Nom de cette anime"
+                    autoComplete="off"
+                    value={NextAnim}
+                    onChange={NextAnimChange}
+                  />
+                </Form.Group>
+                <Button variant="success" type="submit">
+                  <span className="fas fa-plus"></span> Ajouter {}
+                </Button>
+              </Form>
+              <hr />
+            </header>
+            <div className="NextAnimContainer">{MyNextAnimList}</div>
+            <br />
+          </Fragment>
+        )}
+      </div>
+    </section>
+  </div>
+);
 
 export default MyAnim;
