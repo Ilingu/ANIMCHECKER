@@ -226,7 +226,7 @@ export default class Home extends Component {
       .catch((err) => console.error(err));
   };
 
-  SearchAnimInList = () => {
+  SearchAnimInList = (event) => {
     const {
         SearchInAnimeList,
         titleSearchAnime,
@@ -253,6 +253,7 @@ export default class Home extends Component {
               anime.name.toLowerCase().includes(titleSearchAnime.toLowerCase())
             )
               index = [...index, i];
+            return null;
           });
         next(
           index.map(
@@ -270,6 +271,7 @@ export default class Home extends Component {
               .includes(titleSearchAnime.toLowerCase())
           )
             index = [...index, i];
+          return null;
         });
         next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
       }
@@ -361,26 +363,7 @@ export default class Home extends Component {
           });
 
           // reset
-          self.setState({
-            findAnim: [],
-            ShowModalSearch: false,
-            ShowModalAddAnim: false,
-            ShowModalAddFilm: false,
-            ShowModalType: false,
-            SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
-            animToDetails: [],
-            // Form
-            titleSearchAnime: "",
-            title: "",
-            type: "serie",
-            durer: 110,
-            nbEP: "",
-            NextAnim: "",
-            imageUrl: null,
-            // Alerts
-            ResText: null,
-            typeAlert: null,
-          });
+          reset();
         } else {
           self.setState({
             ResText: "Tous les champs doivent être remplie correctement",
@@ -410,26 +393,7 @@ export default class Home extends Component {
           });
 
           // Reset
-          self.setState({
-            findAnim: [],
-            ShowModalSearch: false,
-            ShowModalAddAnim: false,
-            ShowModalAddFilm: false,
-            ShowModalType: false,
-            SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
-            animToDetails: [],
-            // Form
-            titleSearchAnime: "",
-            title: "",
-            type: "serie",
-            durer: 110,
-            nbEP: "",
-            NextAnim: "",
-            imageUrl: null,
-            // Alerts
-            ResText: null,
-            typeAlert: null,
-          });
+          reset();
         } else {
           self.setState({
             ResText: "Tous les champs doivent être remplie correctement",
@@ -448,6 +412,30 @@ export default class Home extends Component {
         self.deleteValue(`/NextAnim/${NextAnimToDelete}`);
         self.setState({
           NextAnimToDelete: null,
+        });
+      }
+
+      function reset() {
+        // Reset
+        self.setState({
+          findAnim: [],
+          ShowModalSearch: false,
+          ShowModalAddAnim: false,
+          ShowModalAddFilm: false,
+          ShowModalType: false,
+          SearchInAnimeList: [false, self.state.SearchInAnimeList[1]],
+          animToDetails: [],
+          // Form
+          titleSearchAnime: "",
+          title: "",
+          type: "serie",
+          durer: 110,
+          nbEP: "",
+          NextAnim: "",
+          imageUrl: null,
+          // Alerts
+          ResText: null,
+          typeAlert: null,
         });
       }
     }
@@ -820,7 +808,12 @@ export default class Home extends Component {
                         deleteAnim={this.deleteValue}
                         isAlleged={
                           { ...serieFirebase, ...filmFireBase }[key].AnimEP ===
-                          undefined
+                            undefined &&
+                          { ...serieFirebase, ...filmFireBase }[key].durer ===
+                            undefined
+                            ? true
+                            : { ...serieFirebase, ...filmFireBase }[key]
+                                .durer !== undefined
                             ? false
                             : !{ ...serieFirebase, ...filmFireBase }[key].AnimEP
                             ? true
