@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 // Context
 import ContextForMyAnim from "../ContextSchema";
 // CSS
-import { Navbar, Nav, Form, Button } from "react-bootstrap";
+import { Navbar, Nav, Form, Button, Dropdown } from "react-bootstrap";
 
 const Header = () => {
   const [Anim, SetAnim] = useState("");
@@ -29,9 +29,6 @@ const Header = () => {
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
-          <Nav.Link href="https://discord.gg/Jrmks5b" target="_blank">
-            Discord Anime
-          </Nav.Link>
           <Link push="true" to="/notificator">
             <Button variant="outline-info">My Notif</Button>
           </Link>
@@ -41,7 +38,7 @@ const Header = () => {
               style={{ marginLeft: "10px" }}
               onClick={Context.openModalNewAnim}
             >
-              New Anime (manually)
+              New Anime
             </Button>
           </Nav.Item>
           <Nav.Item>
@@ -51,7 +48,7 @@ const Header = () => {
               id="AdueHSbtn"
               onClick={Context.addToHome}
             >
-              <span className="fas fa-plus-circle"></span> Home Screen
+              <span className="fas fa-plus-circle"></span> Install
             </Button>
           </Nav.Item>
           <Nav.Item>
@@ -77,6 +74,33 @@ const Header = () => {
             <span className="fas fa-search"></span>
           </Button>
         </Form>
+        <aside id="account">
+          <Dropdown>
+            <Dropdown.Toggle variant="light" id="dropdown-basic">
+              <span className="fas fa-user"></span>
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>
+              <h5>Bonjour, </h5>
+              <Dropdown.Item onClick={Context.openPalmares}>
+                <span
+                  className="fas fa-trophy"
+                  style={{ color: "gold" }}
+                ></span>{" "}
+                Palmarès
+              </Dropdown.Item>
+              <Dropdown.Item>
+                <Link push="true" to="/Settings">
+                  <span
+                    className="fas fa-cog fa-spin"
+                    style={{ color: "grey" }}
+                  ></span>{" "}
+                  Parametres
+                </Link>
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </aside>
       </Navbar.Collapse>
     </Navbar>
   );

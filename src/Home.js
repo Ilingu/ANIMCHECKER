@@ -30,6 +30,7 @@ export default class Home extends Component {
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
     ShowModalType: false,
+    PalmaresModal: false,
     SwitchMyAnim: true,
     animToDetails: [],
     NextAnimToDelete: null,
@@ -39,6 +40,7 @@ export default class Home extends Component {
     MyAnimListSaved: null,
     MyNextAnimListSaved: null,
     ModeFindAnime: [false, null],
+    palmares: null,
     // Form
     title: "",
     type: "serie",
@@ -215,13 +217,35 @@ export default class Home extends Component {
   };
 
   logOut = () => {
-    const CopyState = { ...this.state.Anim };
     firebase
       .auth()
       .signOut()
       .then(() => {
-        CopyState.proprio = "";
-        this.setState({ Anim: CopyState });
+        this.setState({
+          // Firebase
+          NextAnimFireBase: {},
+          filmFireBase: {},
+          serieFirebase: {},
+          uid: null,
+          proprio: null,
+          // Bon fonctionnement de l'app
+          findAnim: [],
+          ShowModalSearch: false,
+          ShowModalAddAnim: false,
+          ShowModalAddFilm: false,
+          ShowModalType: false,
+          PalmaresModal: false,
+          palmares: null,
+          SwitchMyAnim: true,
+          animToDetails: [],
+          NextAnimToDelete: null,
+          SearchInAnimeList: [false, null],
+          RefreshRandomizeAnime: true,
+          RefreshRandomizeAnime2: true,
+          MyAnimListSaved: null,
+          MyNextAnimListSaved: null,
+          ModeFindAnime: [false, null],
+        });
       })
       .catch((err) => console.error(err));
   };
@@ -423,6 +447,8 @@ export default class Home extends Component {
           ShowModalAddAnim: false,
           ShowModalAddFilm: false,
           ShowModalType: false,
+          PalmaresModal: false,
+          palmares: null,
           SearchInAnimeList: [false, self.state.SearchInAnimeList[1]],
           animToDetails: [],
           // Form
@@ -590,12 +616,62 @@ export default class Home extends Component {
     this.setState({ animToDetails: [] });
   };
 
+  findPalmares = () => {
+    const CopyState = { ...this.state };
+    const DurerTotal = Object.values(CopyState.filmFireBase).reduce(
+      (acc, currentVal) => acc + currentVal.durer,
+      0
+    );
+    const FinishedTotalSerie = Object.values(CopyState.serieFirebase).reduce(
+      (acc, currentVal) => {
+        const add = currentVal.finishedAnim ? 1 : 0;
+        return acc + add;
+      },
+      0
+    );
+    const FinishedTotalFilm = Object.values(CopyState.filmFireBase).reduce(
+      (acc, currentVal) => {
+        const add = currentVal.finished ? 1 : 0;
+        return acc + add;
+      },
+      0
+    );
+    const AllegedTotal = Object.values(CopyState.serieFirebase).reduce(
+      (acc, currentVal) => {
+        const add = currentVal.AnimEP ? 0 : 1;
+        return acc + add;
+      },
+      0
+    );
+
+    return {
+      nbNextAnime: Object.keys(CopyState.NextAnimFireBase).length,
+      nbFilm: Object.keys(CopyState.filmFireBase).length,
+      nbSeries: Object.keys(CopyState.serieFirebase).length,
+      durerFilm: (
+        parseFloat("0." + (DurerTotal / 60).toString().split(".")[1]) * 0.6 +
+        parseInt((DurerTotal / 60).toString().split(".")[0])
+      ).toString(),
+      EnCours:
+        Object.keys(CopyState.serieFirebase).length -
+        FinishedTotalSerie +
+        (Object.keys(CopyState.filmFireBase).length - FinishedTotalFilm),
+      Finished: FinishedTotalSerie + FinishedTotalFilm,
+      alleged: [
+        AllegedTotal,
+        parseInt((AllegedTotal / FinishedTotalSerie) * 100),
+      ],
+    };
+  };
+
   cancelModal = () => {
     this.setState({
       ShowModalSearch: false,
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
       ShowModalType: false,
+      PalmaresModal: false,
+      palmares: null,
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
       NextAnimToDelete: null,
       titleSearchAnime: "",
@@ -629,6 +705,7 @@ export default class Home extends Component {
       typeAlert,
       type,
       ShowModalAddFilm,
+      PalmaresModal,
       ShowModalType,
       durer,
       SwitchMyAnim,
@@ -642,6 +719,7 @@ export default class Home extends Component {
       MyNextAnimListSaved,
       titleSearchAnime,
       ModeFindAnime,
+      palmares,
     } = this.state;
 
     if (!uid) {
@@ -778,6 +856,11 @@ export default class Home extends Component {
               search: this.SearchAnim,
               logOut: this.logOut,
               addToHome: this.AddToHome,
+              openPalmares: () =>
+                this.setState({
+                  PalmaresModal: true,
+                  palmares: this.findPalmares(),
+                }),
             }}
           >
             <MyAnim
@@ -867,6 +950,82 @@ export default class Home extends Component {
               <Modal.Title>Animé(s) trouvé(s)</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">{animList}</Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={PalmaresModal} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>
+                <span
+                  className="fas fa-trophy"
+                  style={{ color: "gold" }}
+                ></span>{" "}
+                Palmarès de tes animes
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              {palmares ? (
+                <ul id="palamaresUl">
+                  <li>
+                    <span className="palma">Animes en cours:</span>{" "}
+                    {palmares.EnCours}
+                  </li>
+                  <li>
+                    <span className="palma">Animes finis:</span>{" "}
+                    {palmares.Finished}
+                  </li>
+                  <li>
+                    <span className="palma">Nombres Anime Allégé:</span>{" "}
+                    {palmares.alleged[0]} ={">"}{" "}
+                    {palmares.alleged[1] <= 25
+                      ? `Il y a que ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, c'est pas sympa pour la planète (en allegant tu libère de la place sur le serveur faisant consommer moins d'énergie: 1 serie sur le serveur pendant 1H = 1 amploue allumée 24H) vise les 50%!`
+                      : palmares.alleged[1] <= 50 && palmares.alleged[1] > 25
+                      ? `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, ils faut encore plus les allégé pour économisé plus de place sur le serveur ce qui le fera moins consommer d'énergie (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
+                      : palmares.alleged[1] <= 75 && palmares.alleged[1] > 50
+                      ? `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, c'est bien malgré que tu pourrais encore plus en allégé (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
+                      : palmares.alleged[1] < 100 && palmares.alleged[1] > 75
+                      ? `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, c'est très bien malgré que tu pourrais encore plus en allégé (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
+                      : `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, Merci enormémant pour les avoir tous allégé continue comme ça ! (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`}
+                  </li>
+                  <li>
+                    <span className="palma">
+                      Durée Total de tous tes films:
+                    </span>{" "}
+                    {`${palmares.durerFilm.split(".")[0]}H ${
+                      palmares.durerFilm.split(".")[1]
+                    }Min`}
+                  </li>
+                  <li>
+                    <span className="palma">Nombre Total Film:</span>{" "}
+                    {palmares.nbFilm}
+                  </li>
+                  <li>
+                    <span className="palma">Nombre Total Series:</span>{" "}
+                    {palmares.nbSeries}
+                  </li>
+                  <li>
+                    <span className="palma">
+                      Nombre Total de tes prochains anime:
+                    </span>{" "}
+                    {palmares.nbNextAnime}
+                  </li>
+                  <li>
+                    <span className="palma">Nombre Total d'anime:</span>{" "}
+                    {palmares.nbFilm + palmares.nbSeries}
+                  </li>
+                  <li>
+                    <span className="palma">
+                      Nombre Total d'element stocké:
+                    </span>{" "}
+                    {palmares.nbFilm + palmares.nbSeries + palmares.nbNextAnime}
+                  </li>
+                </ul>
+              ) : null}
+            </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler

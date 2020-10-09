@@ -36,6 +36,12 @@ hr {
   background-color: #fff;
 }
 
+a,
+a:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
 .fixedOnBottom {
   position: fixed;
   bottom: 0;
@@ -45,6 +51,59 @@ hr {
 
 .container {
   min-height: 100vh;
+}
+
+@media screen and (max-width: 992px) {
+  .container > nav .navbar-collapse {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+  }
+  .container > nav .navbar-collapse .navbar-nav {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: row;
+            flex-direction: row;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container > nav .navbar-collapse {
+    display: unset;
+  }
+  .container > nav .navbar-collapse #searchForm {
+    margin-top: 7px;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  .container > nav .navbar-collapse #searchForm {
+    width: 250px;
+  }
+  .container > nav .navbar-collapse #searchForm div {
+    width: 250px;
+  }
+  .container > nav .navbar-collapse #searchForm div input {
+    width: 250px;
+  }
+}
+
+.modal #palamaresUl {
+  color: gold;
+  list-style: inside circle;
+}
+
+.modal #palamaresUl .palma {
+  font-weight: bold;
+  text-decoration: underline;
+  color: #007bff !important;
 }
 
 #login {
@@ -116,8 +175,13 @@ hr {
 
 #searchForm button {
   position: absolute;
+  top: 0;
   height: 38px;
   right: 0;
+}
+
+#account {
+  margin-left: 10px;
 }
 
 #btnHome {

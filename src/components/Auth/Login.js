@@ -35,7 +35,7 @@ const Login = ({ authenticate, forForm, verificateCode }) => {
 
   return (
     <section className="container" id="login">
-      <div id="recaptcha-container"></div>
+      {forForm[1] === 1 ? <div id="recaptcha-container"></div> : null}
       <h2>Connecte toi pour faire des list d'anime:</h2>
       {stepToShow}
     </section>

@@ -13,7 +13,6 @@ const PosterAnim = ({
   deleteAnim,
   isAlleged,
 }) => {
-  console.log(isAlleged);
   if (!inMyAnim) {
     return (
       <div className="poster" onClick={() => SeeInDetails(id)}>

@@ -5,4 +5,5 @@ export default createContext({
   search: Function,
   logOut: Function,
   addToHome: Function,
+  openPalmares: Function,
 });
