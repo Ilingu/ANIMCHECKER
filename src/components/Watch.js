@@ -3,7 +3,7 @@ import { Redirect, Link } from "react-router-dom";
 // Components
 import AnimEpCo from "./dyna/AnimEp";
 // CSS
-import { Spinner, Button, Modal, Form } from "react-bootstrap";
+import { Spinner, Button, Modal, Form, Dropdown } from "react-bootstrap";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
@@ -23,6 +23,7 @@ class Watch extends Component {
     isFirstTime: true,
     RedirectHome: false,
     ToOpen: "",
+    ShowModalVerification: [false, null],
     // Repere
     repereSaison: {},
     repereEpisode: [],
@@ -298,6 +299,7 @@ class Watch extends Component {
       type,
       isFirstTime,
       modeStart,
+      ShowModalVerification,
       repereEpisode,
       repereSaison,
       ToOpen,
@@ -377,28 +379,61 @@ class Watch extends Component {
           </header>
           <section id="ToWatch">
             <Link push="true" to="/">
-              <Button variant="primary">
+              <Button variant="primary" className="btnBackDesing">
                 <span className="fas fa-arrow-left"></span> Retour
               </Button>
             </Link>
-            {type === "serie" ? (
-              <Fragment>
-                <Button
-                  variant="success"
-                  onClick={() => this.setState({ ShowModalAddSeasonEp: true })}
-                >
-                  <span className="fas fa-plus"></span> Ajouter une saison
-                </Button>
-                <Button variant="warning" onClick={this.handleAlleger}>
-                  <span className="fas fa-window-close"></span> Alléger cet
-                  anime
-                </Button>
-              </Fragment>
-            ) : null}
-            <Button variant="danger" onClick={this.handleDelete}>
-              <span className="fas fa-trash-alt"></span> Supprimer{" "}
-              {AnimToWatch.name}
-            </Button>
+            <Dropdown>
+              <Dropdown.Toggle variant="outline-secondary" id="DropdownAction">
+                <span className="fas fa-bars"></span>
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+                {type === "serie" ? (
+                  <Fragment>
+                    <Dropdown.Item>
+                      <Button
+                        variant="success"
+                        block
+                        onClick={() =>
+                          this.setState({ ShowModalAddSeasonEp: true })
+                        }
+                      >
+                        <span className="fas fa-plus"></span> Ajouter une saison
+                      </Button>
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      <Button
+                        variant="warning"
+                        block
+                        onClick={() =>
+                          this.setState({
+                            ShowModalVerification: [true, "alleger"],
+                          })
+                        }
+                      >
+                        <span className="fas fa-window-close"></span> Alléger
+                        cet anime
+                      </Button>
+                    </Dropdown.Item>
+                  </Fragment>
+                ) : null}
+                <Dropdown.Item>
+                  <Button
+                    variant="danger"
+                    block
+                    onClick={() =>
+                      this.setState({
+                        ShowModalVerification: [true, "supprimer"],
+                      })
+                    }
+                  >
+                    <span className="fas fa-trash-alt"></span> Supprimer{" "}
+                    {AnimToWatch.name}
+                  </Button>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
 
             <header>
               <h1>{type === "serie" ? "Anime:" : "Film:"}</h1>
@@ -497,6 +532,53 @@ class Watch extends Component {
         </div>
 
         {/* MODAL */}
+        <Modal
+          show={ShowModalVerification[0]}
+          size="lg"
+          onHide={() => this.setState({ ShowModalVerification: [false, null] })}
+        >
+          <Modal.Header id="ModalTitle" closeButton>
+            <Modal.Title
+              style={{
+                color:
+                  ShowModalVerification[1] === "alleger"
+                    ? "#ffc107"
+                    : "#dc3545",
+              }}
+            >
+              Êtes-vous sûre de vouloir {ShowModalVerification[1]}{" "}
+              {AnimToWatch.name} ?
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body id="ModalBody">
+            En faisant ça {AnimToWatch.name}{" "}
+            {ShowModalVerification[1] === "alleger"
+              ? "ne sera pas supprimer mais il sera inaccessible: en gros vous le verez toujours dans votre liste d'anime mais vous ne pourrez plus voir vos épisodes et saisons fini et restant car ils seront supprimer, l'anime sera là en temps que déco, pour dire 'ba voilà j'ai la preuve d'avoir fini cette anime' (je vous conseille de la faire quand l'anime n'aura pas de suite)."
+              : "sera entièrement supprimer avec aucune possiblité de le récupérer, en gros il n'existera plus."}
+          </Modal.Body>
+          <Modal.Footer id="ModalFooter">
+            <Button
+              variant="secondary"
+              onClick={() =>
+                this.setState({ ShowModalVerification: [false, null] })
+              }
+            >
+              Annuler
+            </Button>
+            <Button
+              variant={
+                ShowModalVerification[1] === "alleger" ? "warning" : "danger"
+              }
+              onClick={() =>
+                ShowModalVerification[1] === "alleger"
+                  ? this.handleAlleger()
+                  : this.handleDelete()
+              }
+            >
+              {ShowModalVerification[1] === "alleger" ? "Alleger" : "Supprimer"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
         <Modal
           show={ShowModalAddEp}
           onHide={() => this.setState({ ShowModalAddEp: false })}

@@ -30,6 +30,7 @@ export default class Home extends Component {
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
     ShowModalType: false,
+    ShowModalVerification: false,
     PalmaresModal: false,
     SwitchMyAnim: true,
     animToDetails: [],
@@ -50,6 +51,7 @@ export default class Home extends Component {
     NextAnim: "",
     CodeNumber: ["", 1],
     titleSearchAnime: "",
+    DeletePathVerif: null,
     // Alerts
     ResText: null,
     typeAlert: null,
@@ -101,6 +103,7 @@ export default class Home extends Component {
       const film = await base.fetch("/film", { context: this });
 
       this.setState({
+        ModeFindAnime: [false, null],
         RefreshRandomizeAnime: true,
         RefreshRandomizeAnime2: true,
         NextAnimFireBase: NextAnim,
@@ -144,12 +147,12 @@ export default class Home extends Component {
     base
       .remove(path)
       .then(() => {
+        this.cancelModal();
         this.refreshValueFirebase();
         this.setState({
           ResText: "Votre requête de suppression a réussite.",
           typeAlert: "success",
         });
-
         setTimeout(() => {
           this.setState({
             ResText: null,
@@ -159,6 +162,7 @@ export default class Home extends Component {
       })
       .catch((err) => {
         console.error(err);
+        this.cancelModal();
         this.setState({
           ResText: "Votre requête de suppression a échoué.",
           typeAlert: "danger",
@@ -235,6 +239,7 @@ export default class Home extends Component {
           ShowModalAddFilm: false,
           ShowModalType: false,
           PalmaresModal: false,
+          ShowModalVerification: false,
           palmares: null,
           SwitchMyAnim: true,
           animToDetails: [],
@@ -251,6 +256,7 @@ export default class Home extends Component {
   };
 
   SearchAnimInList = (event) => {
+    event.preventDefault();
     const {
         SearchInAnimeList,
         titleSearchAnime,
@@ -314,7 +320,8 @@ export default class Home extends Component {
     }
   };
 
-  addAnime = () => {
+  addAnime = (event) => {
+    event.preventDefault();
     const { title, nbEP, type, durer, imageUrl, NextAnimToDelete } = this.state;
     const self = this;
 
@@ -347,6 +354,7 @@ export default class Home extends Component {
     }
 
     function next() {
+      self.setState({ ModeFindAnime: [false, null] });
       let IsGood = false;
       if (type === "serie") {
         if (
@@ -448,11 +456,13 @@ export default class Home extends Component {
           ShowModalAddFilm: false,
           ShowModalType: false,
           PalmaresModal: false,
+          ShowModalVerification: false,
           palmares: null,
           SearchInAnimeList: [false, self.state.SearchInAnimeList[1]],
           animToDetails: [],
           // Form
           titleSearchAnime: "",
+          DeletePathVerif: null,
           title: "",
           type: "serie",
           durer: 110,
@@ -470,6 +480,10 @@ export default class Home extends Component {
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
     });
+  };
+
+  DeleteAnimVerification = (path) => {
+    this.setState({ ShowModalVerification: true, DeletePathVerif: path });
   };
 
   notifyMe = () => {
@@ -538,6 +552,7 @@ export default class Home extends Component {
       NextAnim.trim().length !== 0 &&
       NextAnim !== ""
     ) {
+      this.setState({ ModeFindAnime: [false, null] });
       this.addValue("/NextAnim", {
         ...this.state.NextAnimFireBase,
         [`NextAnim${Date.now()}`]: {
@@ -671,16 +686,25 @@ export default class Home extends Component {
       ShowModalAddFilm: false,
       ShowModalType: false,
       PalmaresModal: false,
+      ShowModalVerification: false,
       palmares: null,
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
       NextAnimToDelete: null,
       titleSearchAnime: "",
+      DeletePathVerif: null,
       title: "",
       type: "serie",
       durer: 110,
       nbEP: "",
       imageUrl: null,
     });
+  };
+
+  durerStrToIntMin = (str) => {
+    const hour = parseInt(str.split(" ")[0]),
+      minute = parseInt(str.split(" ")[2]);
+
+    return hour * 60 + minute;
   };
 
   shuffleArray = (array) => {
@@ -702,10 +726,12 @@ export default class Home extends Component {
       ShowModalAddAnim,
       title,
       ResText,
+      DeletePathVerif,
       typeAlert,
       type,
       ShowModalAddFilm,
       PalmaresModal,
+      ShowModalVerification,
       ShowModalType,
       durer,
       SwitchMyAnim,
@@ -785,7 +811,7 @@ export default class Home extends Component {
                 url={serieFirebase[key].imageUrl}
                 title={serieFirebase[key].name}
                 isFinished={serieFirebase[key].finishedAnim}
-                deleteAnim={this.deleteValue}
+                deleteAnim={this.DeleteAnimVerification}
                 isAlleged={!serieFirebase[key].AnimEP ? true : false}
                 inMyAnim={true}
               />
@@ -798,7 +824,7 @@ export default class Home extends Component {
                   url={filmFireBase[key].imageUrl}
                   title={filmFireBase[key].name}
                   isFinished={filmFireBase[key].finished}
-                  deleteAnim={this.deleteValue}
+                  deleteAnim={this.DeleteAnimVerification}
                   isAlleged={false}
                   inMyAnim={true}
                 />
@@ -841,6 +867,14 @@ export default class Home extends Component {
             this.setState({
               title: animToDetails[1].title,
               type: animToDetails[1].type === "Movie" ? "film" : "serie",
+              durer:
+                animToDetails[1].type === "Movie"
+                  ? this.durerStrToIntMin(animToDetails[1].duration)
+                  : 110,
+              nbEP:
+                animToDetails[1].type === "Movie"
+                  ? ""
+                  : animToDetails[0].episodes.length,
               imageUrl: animToDetails[1].image_url,
             });
             this.openNext(animToDetails[1].type === "Movie" ? "film" : "serie");
@@ -888,7 +922,7 @@ export default class Home extends Component {
                           { ...serieFirebase, ...filmFireBase }[key]
                             .finishedAnim
                         }
-                        deleteAnim={this.deleteValue}
+                        deleteAnim={this.DeleteAnimVerification}
                         isAlleged={
                           { ...serieFirebase, ...filmFireBase }[key].AnimEP ===
                             undefined &&
@@ -953,6 +987,42 @@ export default class Home extends Component {
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal
+            show={ShowModalVerification}
+            size="lg"
+            onHide={this.cancelModal}
+          >
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title
+                style={{
+                  color: "#dc3545",
+                }}
+              >
+                Êtes-vous sûre de vouloir supprimer{" "}
+                {DeletePathVerif !== null && ShowModalVerification
+                  ? filmFireBase[DeletePathVerif.split("/")[2]] !== undefined
+                    ? filmFireBase[DeletePathVerif.split("/")[2]].name
+                    : serieFirebase[DeletePathVerif.split("/")[2]].name
+                  : null}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              En faisant ça cette anime sera entièrement supprimer avec aucune
+              possiblité de le récupérer, en gros il n'existera plus.
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => this.deleteValue(DeletePathVerif)}
+              >
+                Supprimer
               </Button>
             </Modal.Footer>
           </Modal>
@@ -1038,7 +1108,7 @@ export default class Home extends Component {
               <Modal.Title>Chercher un Animé</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
-              <Form>
+              <Form onSubmit={this.SearchAnimInList}>
                 <Form.Group controlId="searchInAnimeList">
                   <Form.Label>Nom de l'animé:</Form.Label>
                   <Form.Control
@@ -1070,7 +1140,13 @@ export default class Home extends Component {
               <Modal.Title>Type d'anime</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
-              <Form>
+              <Form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  this.setState({ ShowModalType: false });
+                  this.openNext();
+                }}
+              >
                 <Form.Group controlId="type">
                   <Form.Label>Série OU Film</Form.Label>
                   <Form.Control
@@ -1109,12 +1185,12 @@ export default class Home extends Component {
               <Modal.Title>Ajouter une série</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
-              <Form id="AddAnim">
+              <Form id="AddAnim" onSubmit={this.addAnime}>
                 <Form.Group controlId="titre">
                   <Form.Label>Titre</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Titre de l'anime/film"
+                    placeholder="Titre de la série"
                     autoComplete="off"
                     value={title}
                     onChange={(event) =>
@@ -1156,12 +1232,12 @@ export default class Home extends Component {
               <Modal.Title>Ajouter un Film</Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
-              <Form id="AddAnim">
+              <Form id="AddAnim" onSubmit={this.addAnime}>
                 <Form.Group controlId="titre">
                   <Form.Label>Titre</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Titre de l'anime/film"
+                    placeholder="Titre du film"
                     autoComplete="off"
                     value={title}
                     onChange={(event) =>

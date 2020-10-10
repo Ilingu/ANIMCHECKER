@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Redirect } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 // Components
 import OneNotif from "./dyna/OneNotif";
 // CSS
@@ -204,6 +204,12 @@ export default class Notif extends Component {
     return (
       <section id="Notif" className="container">
         <header>
+          <Link push="true" to="/">
+            <Button className="btnBackDesing">
+              <span className="fas fa-arrow-left"></span> Retour
+            </Button>
+          </Link>
+
           <h2>
             <span className="fas fa-cog fa-spin"></span> Notif params{" "}
             <span className="fas fa-cog fa-spin"></span>

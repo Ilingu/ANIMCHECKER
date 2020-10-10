@@ -50,8 +50,7 @@ const OneAnim = ({ details, back, handleAdd }) => {
           <div className="content">
             <ul>
               <li>
-                Duration:{" "}
-                <span className="info">{details[1].duration}/EP (moyenne)</span>
+                Durée: <span className="info">{details[1].duration}</span>
               </li>
               <li>
                 Type:{" "}

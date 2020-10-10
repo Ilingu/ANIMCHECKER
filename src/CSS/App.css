@@ -42,6 +42,15 @@ a:hover {
   color: inherit;
 }
 
+.btnBackDesing {
+  position: absolute;
+  left: 0;
+  top: 0px;
+  color: #007bff;
+  background-color: #fff;
+  border-radius: 50px;
+}
+
 .fixedOnBottom {
   position: fixed;
   bottom: 0;
@@ -816,6 +825,15 @@ a:hover {
 #Watch .nonStartMod button {
   margin-left: 10px;
   margin-top: 5px;
+}
+
+#Watch .nonStartMod #DropdownAction {
+  position: absolute;
+  right: 30px;
+}
+
+#Watch .nonStartMod #DropdownAction::after {
+  display: none;
 }
 
 #Watch .nonStartMod .content {

@@ -30,6 +30,8 @@ const PosterAnim = ({
         className={
           isFinished && isAlleged
             ? "MyAnimPoster finished alleged"
+            : !isFinished && isAlleged
+            ? "MyAnimPoster alleged"
             : isFinished
             ? "MyAnimPoster finished"
             : "MyAnimPoster"
