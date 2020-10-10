@@ -115,29 +115,24 @@ a:hover {
   color: #007bff !important;
 }
 
-#login {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+.loginForm {
+  margin-left: calc(50% - 150px);
+  padding: 10px;
   width: 300px;
-  min-height: 100px;
   -webkit-box-shadow: 4px 4px 8px #000;
           box-shadow: 4px 4px 8px #000;
 }
 
-#login h2 {
+.loginForm h2 {
+  font-size: 20px !important;
+}
+
+.loginForm h2 {
   font-size: 0.89rem;
   font-weight: bold;
 }
 
-#login .google-button {
+.loginForm .google-button {
   cursor: pointer;
   background-color: #f7f7f7;
   color: #212121;

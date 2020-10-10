@@ -7,6 +7,7 @@ import NextAnimCO from "./components/dyna/NextAnim";
 import OneAnim from "./components/OneAnim";
 import MyAnim from "./components/MyAnim";
 import Login from "./components/Auth/Login";
+import PseudoCO from "./components/Auth/Pseudo";
 // Context
 import ContextForMyAnim from "./ContextSchema";
 // CSS
@@ -19,9 +20,14 @@ import "firebase/auth";
 export default class Home extends Component {
   state = {
     // Firebase
+    Pseudo: !JSON.parse(window.localStorage.getItem("Pseudo"))
+      ? null
+      : JSON.parse(window.localStorage.getItem("Pseudo")),
+    NumTel: "",
     NextAnimFireBase: {},
     filmFireBase: {},
     serieFirebase: {},
+    AuthenticateMethod: false,
     uid: null,
     proprio: null,
     // Bon fonctionnement de l'app
@@ -69,14 +75,28 @@ export default class Home extends Component {
       });
     });
     // Firebase
+    if (this.state.Pseudo) {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          self.handleAuth({ user });
+        }
+
+        self.setState({ AuthenticateMethod: true });
+        self.refreshValueFirebase();
+      });
+    }
+  }
+
+  reAuth = () => {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        self.handleAuth({ user });
+        this.handleAuth({ user });
       }
 
-      self.refreshValueFirebase();
+      this.setState({ AuthenticateMethod: true });
+      this.refreshValueFirebase();
     });
-  }
+  };
 
   AddToHome = () => {
     const { AddToHomeScreen } = this.state;
@@ -98,9 +118,15 @@ export default class Home extends Component {
 
   refreshValueFirebase = async () => {
     try {
-      const NextAnim = await base.fetch("/NextAnim", { context: this });
-      const serie = await base.fetch("/serie", { context: this });
-      const film = await base.fetch("/film", { context: this });
+      const NextAnim = await base.fetch(`${this.state.Pseudo}/NextAnim`, {
+        context: this,
+      });
+      const serie = await base.fetch(`${this.state.Pseudo}/serie`, {
+        context: this,
+      });
+      const film = await base.fetch(`${this.state.Pseudo}/film`, {
+        context: this,
+      });
 
       this.setState({
         ModeFindAnime: [false, null],
@@ -178,10 +204,10 @@ export default class Home extends Component {
   };
 
   handleAuth = async (authData) => {
-    const box = await base.fetch("/", { context: this });
+    const box = await base.fetch(this.state.Pseudo, { context: this });
 
     if (!box.proprio) {
-      await base.post("/proprio", {
+      await base.post(`${this.state.Pseudo}/proprio`, {
         data: authData.user.uid,
       });
     }
@@ -200,7 +226,7 @@ export default class Home extends Component {
     );
     firebaseApp
       .auth()
-      .signInWithPhoneNumber("+33652114944", window.recaptchaVerifier)
+      .signInWithPhoneNumber(this.state.NumTel, window.recaptchaVerifier)
       .then((confirmationResult) => {
         window.confirmationResult = confirmationResult;
         this.setState({
@@ -384,7 +410,7 @@ export default class Home extends Component {
             };
           });
 
-          self.addValue("/serie", {
+          self.addValue(`${self.state.Pseudo}/serie`, {
             ...self.state.serieFirebase,
             [`serie-${Date.now()}`]: {
               name: title,
@@ -414,7 +440,7 @@ export default class Home extends Component {
         ) {
           IsGood = true;
 
-          self.addValue("/film", {
+          self.addValue(`${self.state.Pseudo}/film`, {
             ...self.state.filmFireBase,
             [`film-${Date.now()}`]: {
               name: title,
@@ -441,7 +467,7 @@ export default class Home extends Component {
       }
 
       if (IsGood && NextAnimToDelete !== null) {
-        self.deleteValue(`/NextAnim/${NextAnimToDelete}`);
+        self.deleteValue(`${self.state.Pseudo}/NextAnim/${NextAnimToDelete}`);
         self.setState({
           NextAnimToDelete: null,
         });
@@ -509,7 +535,9 @@ export default class Home extends Component {
 
   doNotif = async () => {
     try {
-      const NotifFirebase = await base.fetch("/Notif", { context: this }),
+      const NotifFirebase = await base.fetch(`${this.state.Pseudo}/Notif`, {
+          context: this,
+        }),
         TimeNow = new Date().getHours() * 3600 + new Date().getMinutes() * 60;
 
       Object.keys(NotifFirebase).forEach((notifKey) => {
@@ -523,14 +551,14 @@ export default class Home extends Component {
             body: `Nouvel Episode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
             icon: "https://myanimchecker.netlify.app/favicon.ico",
           });
-          base.update(`/Notif/${notifKey}`, {
+          base.update(`${this.state.Pseudo}/Notif/${notifKey}`, {
             data: { called: true },
           });
         } else if (
           new Date().getDay().toString() !== NotifFirebase[notifKey].day &&
           NotifFirebase[notifKey].called
         ) {
-          base.update(`/Notif/${notifKey}`, {
+          base.update(`${this.state.Pseudo}/Notif/${notifKey}`, {
             data: { called: false },
           });
         }
@@ -553,7 +581,7 @@ export default class Home extends Component {
       NextAnim !== ""
     ) {
       this.setState({ ModeFindAnime: [false, null] });
-      this.addValue("/NextAnim", {
+      this.addValue(`${this.state.Pseudo}/NextAnim`, {
         ...this.state.NextAnimFireBase,
         [`NextAnim${Date.now()}`]: {
           name: NextAnim,
@@ -715,11 +743,13 @@ export default class Home extends Component {
 
   render() {
     const {
+      Pseudo,
       filmFireBase,
       serieFirebase,
       NextAnimFireBase,
       uid,
       proprio,
+      AuthenticateMethod,
       ShowModalSearch,
       findAnim,
       animToDetails,
@@ -748,11 +778,26 @@ export default class Home extends Component {
       palmares,
     } = this.state;
 
+    if (!Pseudo) {
+      return (
+        <PseudoCO
+          Submit={(PseudoArgs) => {
+            this.setState({ Pseudo: PseudoArgs });
+            window.localStorage.setItem("Pseudo", JSON.stringify(PseudoArgs));
+          }}
+        />
+      );
+    } else if (!AuthenticateMethod) {
+      this.reAuth();
+    }
+
     if (!uid) {
       return (
         <Login
-          authenticate={this.authenticate}
           verificateCode={this.verificateCode}
+          SubmitLogin={(NumTel) => {
+            this.setState({ NumTel }, () => this.authenticate());
+          }}
           forForm={CodeNumber.concat([
             (event) =>
               this.setState({
@@ -808,6 +853,7 @@ export default class Home extends Component {
               <Poster
                 key={key}
                 id={key}
+                Pseudo={Pseudo}
                 url={serieFirebase[key].imageUrl}
                 title={serieFirebase[key].name}
                 isFinished={serieFirebase[key].finishedAnim}
@@ -821,6 +867,7 @@ export default class Home extends Component {
                 <Poster
                   key={key}
                   id={key}
+                  Pseudo={Pseudo}
                   url={filmFireBase[key].imageUrl}
                   title={filmFireBase[key].name}
                   isFinished={filmFireBase[key].finished}
@@ -887,6 +934,7 @@ export default class Home extends Component {
           <ContextForMyAnim.Provider
             value={{
               openModalNewAnim: () => this.setState({ ShowModalType: true }),
+              Pseudo,
               search: this.SearchAnim,
               logOut: this.logOut,
               addToHome: this.AddToHome,
@@ -914,6 +962,7 @@ export default class Home extends Component {
                       <Poster
                         key={key}
                         id={key}
+                        Pseudo={Pseudo}
                         url={
                           { ...serieFirebase, ...filmFireBase }[key].imageUrl
                         }

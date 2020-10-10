@@ -14,10 +14,12 @@ export default class Notif extends Component {
   state = {
     // Firebase
     Notif: {},
+    Pseudo: this.props.match.params.pseudo,
     // Auth
     uid: null,
     proprio: null,
     // Bon fonctionnement de l'app
+    isFirstTime: true,
     // Form
     name: "",
     day: new Date().getDay().toString(),
@@ -33,18 +35,20 @@ export default class Notif extends Component {
     const self = this;
 
     this.refreshNotif();
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        self.handleAuth({ user });
-      }
-    });
+    if (this.state.Pseudo) {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          self.handleAuth({ user });
+        }
+      });
+    }
   }
 
   handleAuth = async (authData) => {
-    const box = await base.fetch("/", { context: this });
+    const box = await base.fetch(this.state.Pseudo, { context: this });
 
     if (!box.proprio) {
-      await base.post("/proprio", {
+      await base.post(`${this.state.Pseudo}/proprio`, {
         data: authData.user.uid,
       });
     }
@@ -57,7 +61,7 @@ export default class Notif extends Component {
 
   refreshNotif = async () => {
     try {
-      const Notif = await base.fetch("/Notif", {
+      const Notif = await base.fetch(`${this.state.Pseudo}/Notif`, {
         context: this,
       });
 
@@ -78,7 +82,7 @@ export default class Notif extends Component {
       name !== ""
     ) {
       base
-        .post("/Notif", {
+        .post(`${this.state.Pseudo}/Notif`, {
           data: {
             ...Notif,
             [`notif${Date.now()}`]: {
@@ -118,7 +122,7 @@ export default class Notif extends Component {
 
   updatePaused = (key, value) => {
     base
-      .update(`/Notif/${key}`, {
+      .update(`${this.state.Pseudo}/Notif/${key}`, {
         data: { paused: value },
       })
       .then(this.refreshNotif)
@@ -127,7 +131,7 @@ export default class Notif extends Component {
 
   handleDelete = (key) => {
     base
-      .remove(`/Notif/${key}`)
+      .remove(`${this.state.Pseudo}/Notif/${key}`)
       .then(() => {
         this.refreshNotif();
         this.setState({
@@ -152,8 +156,10 @@ export default class Notif extends Component {
 
   render() {
     const {
+      Pseudo,
       uid,
       proprio,
+      isFirstTime,
       Notif,
       ShowModalAddNotif,
       name,
@@ -162,6 +168,12 @@ export default class Notif extends Component {
       ResText,
       typeAlert,
     } = this.state;
+
+    if (!Pseudo) return <Redirect to="/" />;
+    else if (isFirstTime) {
+      this.setState({ isFirstTime: false });
+      return <Redirect to="/notificator" />;
+    }
 
     if (!uid) {
       return (
@@ -182,9 +194,7 @@ export default class Notif extends Component {
     let MyNotif = "Vous avez aucune notif d'anime rajoutez-en !";
 
     if (Object.keys(Notif).length !== 0) {
-      console.log(Notif);
       MyNotif = Object.keys(Notif).map((key, i) => {
-        console.log(i);
         return (
           <OneNotif
             key={key}

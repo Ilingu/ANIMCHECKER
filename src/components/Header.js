@@ -29,7 +29,7 @@ const Header = () => {
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
-          <Link push="true" to="/notificator">
+          <Link push="true" to={`/notificator/${Context.Pseudo}`}>
             <Button variant="outline-info">My Notif</Button>
           </Link>
           <Nav.Item>

@@ -1,16 +1,52 @@
 // React
-import React, { Fragment } from "react";
-// CSS
+import React, { Fragment, useState } from "react";
+// Design
 import { Button, Form } from "react-bootstrap";
 
-const Login = ({ authenticate, forForm, verificateCode }) => {
+const Login = ({ forForm, verificateCode, SubmitLogin }) => {
+  const [NumTel, setNumTel] = useState("");
+
   let stepToShow = null;
 
   if (forForm[1] === 1) {
     stepToShow = (
-      <Button onClick={authenticate} className="google-button">
-        1. Envoyer le code
-      </Button>
+      <Fragment>
+        <Form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (
+              NumTel !== undefined &&
+              NumTel !== null &&
+              typeof NumTel === "string" &&
+              NumTel.trim().length !== 0 &&
+              /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im.test(
+                String(NumTel)
+              ) &&
+              (NumTel.trim() === "0652114944" ||
+                NumTel.trim() === "+33652114944" ||
+                NumTel.trim() === "0769311078" ||
+                NumTel.trim() === "+33769311078" ||
+                NumTel.trim() === "0783005958" ||
+                NumTel.trim() === "+33783005958")
+            ) {
+              SubmitLogin(NumTel.trim());
+            }
+          }}
+        >
+          <Form.Group controlId="login">
+            <Form.Control
+              type="text"
+              placeholder="1. Ton Numéro de téléphone"
+              autoComplete="off"
+              value={NumTel}
+              onChange={(event) => setNumTel(event.target.value)}
+            />
+          </Form.Group>
+          <Button type="submit" block className="google-button">
+            2. Envoyer le code
+          </Button>
+        </Form>
+      </Fragment>
     );
   } else if (forForm[1] === 2) {
     stepToShow = (
@@ -19,22 +55,22 @@ const Login = ({ authenticate, forForm, verificateCode }) => {
           <Form.Group controlId="login">
             <Form.Control
               type="text"
-              placeholder="2. Code reçu"
+              placeholder="3. Code reçu"
               autoComplete="off"
               value={forForm[0]}
               onChange={forForm[2]}
             />
           </Form.Group>
         </Form>
-        <Button className="google-button" onClick={verificateCode}>
-          3. Se Connecter
+        <Button className="google-button" block onClick={verificateCode}>
+          4. Se Connecter
         </Button>
       </Fragment>
     );
   }
 
   return (
-    <section className="container" id="login">
+    <section className="loginForm">
       {forForm[1] === 1 ? <div id="recaptcha-container"></div> : null}
       <h2>Connecte toi pour faire des list d'anime:</h2>
       {stepToShow}

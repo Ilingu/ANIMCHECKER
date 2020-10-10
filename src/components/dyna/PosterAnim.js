@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const PosterAnim = ({
+  Pseudo,
   url,
   score,
   title,
@@ -44,7 +45,7 @@ const PosterAnim = ({
         </div>
         <div className="action">
           {isAlleged ? null : (
-            <Link push="false" to={`/Watch/${id}`}>
+            <Link push="false" to={`/Watch/${Pseudo}/${id}`}>
               <div className="watch">
                 <span className="fas fa-eye"></span>
               </div>
@@ -53,7 +54,7 @@ const PosterAnim = ({
 
           <div
             className="delete"
-            onClick={() => deleteAnim(`/${id.split("-")[0]}/${id}`)}
+            onClick={() => deleteAnim(`${Pseudo}/${id.split("-")[0]}/${id}`)}
           >
             <span className="fas fa-trash-alt"></span>
           </div>

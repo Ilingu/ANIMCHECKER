@@ -12,6 +12,7 @@ import "firebase/auth";
 class Watch extends Component {
   state = {
     // Firebase
+    Pseudo: this.props.match.params.pseudo,
     AnimToWatch: {},
     // Auth
     uid: null,
@@ -47,18 +48,20 @@ class Watch extends Component {
       });
     }
 
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        self.handleAuth({ user });
-      }
-    });
+    if (this.state.Pseudo) {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          self.handleAuth({ user });
+        }
+      });
+    }
   }
 
   handleAuth = async (authData) => {
-    const box = await base.fetch("/", { context: this });
+    const box = await base.fetch(this.state.Pseudo, { context: this });
 
     if (!box.proprio) {
-      await base.post("/proprio", {
+      await base.post(`${this.state.Pseudo}/proprio`, {
         data: authData.user.uid,
       });
     }
@@ -75,8 +78,8 @@ class Watch extends Component {
     try {
       const AnimToWatch = await base.fetch(
         ForFirstTime !== null
-          ? `/${ForFirstTime.split("-")[0]}/${ForFirstTime}`
-          : `/${id.split("-")[0]}/${id}`,
+          ? `${this.state.Pseudo}/${ForFirstTime.split("-")[0]}/${ForFirstTime}`
+          : `${this.state.Pseudo}/${id.split("-")[0]}/${id}`,
         {
           context: this,
         }
@@ -135,13 +138,15 @@ class Watch extends Component {
     }
 
     this.addValue(
-      `/serie/${id}/AnimEP/${idSaison}/Episodes`,
+      `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes`,
       AnimToWatch.AnimEP[idSaison].Episodes.concat(Stockage)
     );
-    this.updateValue(`/serie/${id}/AnimEP/${idSaison}`, {
+    this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}`, {
       finished: false,
     });
-    this.updateValue(`/serie/${id}`, { finishedAnim: false });
+    this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+      finishedAnim: false,
+    });
 
     this.setState({
       nbEpToAdd: 1,
@@ -169,8 +174,10 @@ class Watch extends Component {
       },
     ];
 
-    this.addValue(`/serie/${id}/AnimEP`, Stockage);
-    this.updateValue(`/serie/${id}`, { finishedAnim: false });
+    this.addValue(`${this.state.Pseudo}/serie/${id}/AnimEP`, Stockage);
+    this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+      finishedAnim: false,
+    });
 
     this.setState({
       nbEpToAdd: 1,
@@ -222,7 +229,9 @@ class Watch extends Component {
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
     this.updateValue(
-      `/serie/${id}/AnimEP/${idSaison}/Episodes/${EpFinishedID - 2}`,
+      `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
+        EpFinishedID - 2
+      }`,
       { finished: true }
     );
   };
@@ -252,10 +261,14 @@ class Watch extends Component {
     const { id, AnimToWatch } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
-    this.updateValue(`/serie/${id}/AnimEP/${idSaison}`, { finished: true });
+    this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}`, {
+      finished: true,
+    });
 
     if (AnimToWatch.AnimEP.length === idSaison + 1)
-      this.updateValue(`/serie/${id}`, { finishedAnim: true });
+      this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+        finishedAnim: true,
+      });
 
     this.finishedEp(Saison, EpFinishedID + 1);
     this.StopModeWatch();
@@ -269,14 +282,14 @@ class Watch extends Component {
   EndFilm = () => {
     const { id } = this.state;
 
-    this.updateValue(`/film/${id}`, { finished: true });
+    this.updateValue(`${this.state.Pseudo}/film/${id}`, { finished: true });
     this.StopModeWatch();
   };
 
   handleDelete = () => {
     const { type, id } = this.state;
 
-    this.updateValue(`/${type}`, { [id]: null });
+    this.updateValue(`${this.state.Pseudo}/${type}`, { [id]: null });
     this.setState({ uid: null, RedirectHome: true });
   };
 
@@ -284,13 +297,14 @@ class Watch extends Component {
     const { type, id } = this.state;
 
     if (type !== "film") {
-      this.updateValue(`/serie/${id}`, { AnimEP: null });
+      this.updateValue(`${this.state.Pseudo}/serie/${id}`, { AnimEP: null });
       this.setState({ uid: null, RedirectHome: true });
     }
   };
 
   render() {
     const {
+      Pseudo,
       AnimToWatch,
       uid,
       id,
@@ -308,6 +322,8 @@ class Watch extends Component {
       SeasonToAddEp,
       ShowModalAddSeasonEp,
     } = this.state;
+
+    if (!Pseudo) return <Redirect to="/" />;
 
     if (RedirectHome) return <Redirect to="/" />;
 
