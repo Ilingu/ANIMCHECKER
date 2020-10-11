@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-expressions */
 import React, { Component, Fragment } from "react";
+import { Redirect } from "react-router-dom";
 import axios from "axios";
 // Components
 import Poster from "./components/dyna/PosterAnim";
@@ -32,6 +33,7 @@ export default class Home extends Component {
     proprio: null,
     // Bon fonctionnement de l'app
     findAnim: [],
+    RedirectPage: null,
     ShowModalSearch: false,
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
@@ -67,6 +69,36 @@ export default class Home extends Component {
 
   componentDidMount() {
     const self = this;
+    if (this.props.match.params.codemsg !== undefined) {
+      let ResText = null;
+      let typeAlert = null;
+      switch (this.props.match.params.codemsg) {
+        case "1":
+          ResText =
+            "Impossible d'accéder à cette page car cette anime est actuellement en pause. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+          typeAlert = "danger";
+          break;
+        case "2":
+          ResText = "Erreur aucun Pseudo n'a été acossié";
+          typeAlert = "danger";
+          break;
+        case "3":
+          ResText = "Ce n'est pas votre compte";
+          typeAlert = "danger";
+          break;
+        case "4":
+          ResText = "Auncun Anime à été trouvé";
+          typeAlert = "danger";
+          break;
+        case "5":
+          ResText = "Votre modification a bien été pris en compte";
+          typeAlert = "success";
+          break;
+        default:
+          break;
+      }
+      this.setState({ ResText, typeAlert, RedirectPage: "/" });
+    }
     // A2HS
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
@@ -167,6 +199,15 @@ export default class Home extends Component {
         typeAlert: null,
       });
     }, 2500);
+  };
+
+  updateValue = (path, value) => {
+    base
+      .update(path, {
+        data: value,
+      })
+      .then(this.refreshValueFirebase)
+      .catch((err) => console.error(err));
   };
 
   deleteValue = async (path) => {
@@ -348,7 +389,16 @@ export default class Home extends Component {
 
   addAnime = (event) => {
     event.preventDefault();
-    const { title, nbEP, type, durer, imageUrl, NextAnimToDelete } = this.state;
+    const {
+      title,
+      nbEP,
+      type,
+      durer,
+      imageUrl,
+      NextAnimToDelete,
+      filmFireBase,
+      serieFirebase,
+    } = this.state;
     const self = this;
 
     let imgUrl = imageUrl;
@@ -381,7 +431,8 @@ export default class Home extends Component {
 
     function next() {
       self.setState({ ModeFindAnime: [false, null] });
-      let IsGood = false;
+      let IsGood = false,
+        IsGoodForPost = true;
       if (type === "serie") {
         if (
           title !== undefined &&
@@ -410,18 +461,35 @@ export default class Home extends Component {
             };
           });
 
-          self.addValue(`${self.state.Pseudo}/serie`, {
-            ...self.state.serieFirebase,
-            [`serie-${Date.now()}`]: {
-              name: title,
-              imageUrl: imgUrl,
-              finishedAnim: false,
-              AnimEP: AnimSEP,
-            },
+          Object.keys(serieFirebase).forEach((key) => {
+            if (serieFirebase[key].name.toLowerCase() === title.toLowerCase()) {
+              IsGoodForPost = false;
+            }
           });
 
-          // reset
-          reset();
+          if (IsGoodForPost) {
+            self.addValue(`${self.state.Pseudo}/serie`, {
+              ...self.state.serieFirebase,
+              [`serie-${Date.now()}`]: {
+                name: title,
+                imageUrl: imgUrl,
+                finishedAnim: false,
+                AnimEP: AnimSEP,
+              },
+            });
+            // reset
+            reset();
+          } else {
+            self.setState({
+              ResText: `Vous avez déjà ajouter ${title} dans votre liste d'anime`,
+              typeAlert: "warning",
+            });
+            self.cancelModal();
+            setTimeout(() => {
+              // reset
+              reset();
+            }, 4000);
+          }
         } else {
           self.setState({
             ResText: "Tous les champs doivent être remplie correctement",
@@ -440,18 +508,35 @@ export default class Home extends Component {
         ) {
           IsGood = true;
 
-          self.addValue(`${self.state.Pseudo}/film`, {
-            ...self.state.filmFireBase,
-            [`film-${Date.now()}`]: {
-              name: title,
-              durer,
-              imageUrl: imgUrl,
-              finished: false,
-            },
+          Object.keys(filmFireBase).forEach((key) => {
+            if (filmFireBase[key].name.toLowerCase() === title.toLowerCase()) {
+              IsGoodForPost = false;
+            }
           });
 
-          // Reset
-          reset();
+          if (IsGoodForPost) {
+            self.addValue(`${self.state.Pseudo}/film`, {
+              ...self.state.filmFireBase,
+              [`film-${Date.now()}`]: {
+                name: title,
+                durer,
+                imageUrl: imgUrl,
+                finished: false,
+              },
+            });
+            // Reset
+            reset();
+          } else {
+            self.setState({
+              ResText: `Vous avez déjà ajouter ${title} dans votre liste d'anime`,
+              typeAlert: "warning",
+            });
+            self.cancelModal();
+            setTimeout(() => {
+              // reset
+              reset();
+            }, 4000);
+          }
         } else {
           self.setState({
             ResText: "Tous les champs doivent être remplie correctement",
@@ -571,7 +656,8 @@ export default class Home extends Component {
   newNextAnim = (event) => {
     event.preventDefault();
 
-    const { NextAnim } = this.state;
+    const { NextAnim, NextAnimFireBase } = this.state;
+    let IsGoodForPost = true;
 
     if (
       NextAnim !== undefined &&
@@ -581,12 +667,35 @@ export default class Home extends Component {
       NextAnim !== ""
     ) {
       this.setState({ ModeFindAnime: [false, null] });
-      this.addValue(`${this.state.Pseudo}/NextAnim`, {
-        ...this.state.NextAnimFireBase,
-        [`NextAnim${Date.now()}`]: {
-          name: NextAnim,
-        },
+
+      Object.keys(NextAnimFireBase).forEach((key) => {
+        if (
+          NextAnimFireBase[key].name.toLowerCase() === NextAnim.toLowerCase()
+        ) {
+          IsGoodForPost = false;
+        }
       });
+
+      if (IsGoodForPost) {
+        this.addValue(`${this.state.Pseudo}/NextAnim`, {
+          ...this.state.NextAnimFireBase,
+          [`NextAnim${Date.now()}`]: {
+            name: NextAnim,
+          },
+        });
+      } else {
+        this.setState({
+          ResText: `Vous avez déjà ajouter ${NextAnim} dans votre liste d'anime`,
+          typeAlert: "warning",
+        });
+        this.cancelModal();
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 4000);
+      }
 
       this.setState({ NextAnim: "" });
     } else {
@@ -750,6 +859,7 @@ export default class Home extends Component {
       uid,
       proprio,
       AuthenticateMethod,
+      RedirectPage,
       ShowModalSearch,
       findAnim,
       animToDetails,
@@ -821,6 +931,12 @@ export default class Home extends Component {
       );
     }
 
+    if (RedirectPage !== null) {
+      const RedirectSave = RedirectPage;
+      this.setState({ RedirectPage: null });
+      return <Redirect to={RedirectSave} />;
+    }
+
     let animList = null;
 
     if (findAnim.length !== 0) {
@@ -854,6 +970,15 @@ export default class Home extends Component {
                 key={key}
                 id={key}
                 Pseudo={Pseudo}
+                Paused={
+                  serieFirebase[key].Paused ? serieFirebase[key].Paused : false
+                }
+                UnPaused={(id) => {
+                  this.updateValue(`${Pseudo}/serie/${id}`, {
+                    Paused: false,
+                  });
+                  this.setState({ RedirectPage: `/Watch/${Pseudo}/${id}` });
+                }}
                 url={serieFirebase[key].imageUrl}
                 title={serieFirebase[key].name}
                 isFinished={serieFirebase[key].finishedAnim}
@@ -868,6 +993,7 @@ export default class Home extends Component {
                   key={key}
                   id={key}
                   Pseudo={Pseudo}
+                  Paused={false}
                   url={filmFireBase[key].imageUrl}
                   title={filmFireBase[key].name}
                   isFinished={filmFireBase[key].finished}
@@ -972,6 +1098,21 @@ export default class Home extends Component {
                             .finishedAnim
                         }
                         deleteAnim={this.DeleteAnimVerification}
+                        Paused={
+                          serieFirebase[key] !== undefined
+                            ? serieFirebase[key].Paused !== undefined
+                              ? serieFirebase[key].Paused
+                              : false
+                            : false
+                        }
+                        UnPaused={(id) => {
+                          this.updateValue(`${Pseudo}/serie/${id}`, {
+                            Paused: false,
+                          });
+                          this.setState({
+                            RedirectPage: `/Watch/${Pseudo}/${id}`,
+                          });
+                        }}
                         isAlleged={
                           { ...serieFirebase, ...filmFireBase }[key].AnimEP ===
                             undefined &&

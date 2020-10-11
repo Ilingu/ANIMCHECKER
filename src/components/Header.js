@@ -81,7 +81,7 @@ const Header = () => {
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-              <h5>Bonjour, </h5>
+              <h5>Bonjour, {Context.Pseudo}</h5>
               <Dropdown.Item onClick={Context.openPalmares}>
                 <span
                   className="fas fa-trophy"

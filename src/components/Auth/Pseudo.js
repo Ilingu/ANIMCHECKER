@@ -6,7 +6,7 @@ const Pseudo = ({ Submit }) => {
   const [Pseudo, setPseudo] = useState("");
 
   return (
-    <section className="container" class="loginForm">
+    <section className="loginForm">
       <h2>0. Identifiant</h2>
       <Form
         onSubmit={(event) => {
@@ -25,7 +25,7 @@ const Pseudo = ({ Submit }) => {
         <Form.Group controlId="login">
           <Form.Control
             type="text"
-            class
+            className
             placeholder="0. Votre (nom de compte)"
             autoComplete="off"
             value={Pseudo}

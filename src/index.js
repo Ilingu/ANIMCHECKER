@@ -24,6 +24,7 @@ const Root = () => (
       <Route exact path="/Settings" component={Settings} />
       <Route exact path={`/notificator/:pseudo`} component={Notif} />
       <Route exact path="/notificator" component={Notif} />
+      <Route exact path={`/:codemsg`} component={Home} />
       <Route component={NotFound} />
     </Switch>
   </Router>

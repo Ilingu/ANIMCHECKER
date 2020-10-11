@@ -8,10 +8,12 @@ const PosterAnim = ({
   title,
   type,
   id,
+  UnPaused,
   SeeInDetails,
   inMyAnim,
   isFinished,
   deleteAnim,
+  Paused,
   isAlleged,
 }) => {
   if (!inMyAnim) {
@@ -29,7 +31,9 @@ const PosterAnim = ({
     return (
       <div
         className={
-          isFinished && isAlleged
+          Paused
+            ? "MyAnimPoster Paused"
+            : isFinished && isAlleged
             ? "MyAnimPoster finished alleged"
             : !isFinished && isAlleged
             ? "MyAnimPoster alleged"
@@ -38,13 +42,21 @@ const PosterAnim = ({
             : "MyAnimPoster"
         }
       >
-        {isFinished ? <h4>{title}</h4> : null}
+        {isFinished || Paused ? <h4>{title}</h4> : null}
 
         <div className="ImgInterract">
           <img src={url} alt="Img of Anim" />
         </div>
         <div className="action">
-          {isAlleged ? null : (
+          {Paused ? (
+            <div
+              className="watch paused"
+              onClick={() => UnPaused(id)}
+              title={`Reprendre ${title}`}
+            >
+              <span className="fas fa-play-circle"></span>
+            </div>
+          ) : isAlleged ? null : (
             <Link push="false" to={`/Watch/${Pseudo}/${id}`}>
               <div className="watch">
                 <span className="fas fa-eye"></span>
@@ -59,7 +71,11 @@ const PosterAnim = ({
             <span className="fas fa-trash-alt"></span>
           </div>
         </div>
-        {isFinished && isAlleged ? (
+        {Paused ? (
+          <h5>
+            <span className="fas fa-pause"></span> En Pause
+          </h5>
+        ) : isFinished && isAlleged ? (
           <h5>
             <span className="fas fa-check"></span> + Allégé
           </h5>

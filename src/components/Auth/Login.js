@@ -35,7 +35,7 @@ const Login = ({ forForm, verificateCode, SubmitLogin }) => {
         >
           <Form.Group controlId="login">
             <Form.Control
-              type="text"
+              type="tel"
               placeholder="1. Ton Numéro de téléphone"
               autoComplete="off"
               value={NumTel}

@@ -169,7 +169,7 @@ export default class Notif extends Component {
       typeAlert,
     } = this.state;
 
-    if (!Pseudo) return <Redirect to="/" />;
+    if (!Pseudo) return <Redirect to="/2" />;
     else if (isFirstTime) {
       this.setState({ isFirstTime: false });
       return <Redirect to="/notificator" />;
@@ -189,7 +189,7 @@ export default class Notif extends Component {
       );
     }
 
-    if (uid !== proprio) return <Redirect to="/" />;
+    if (uid !== proprio) return <Redirect to="/3" />;
 
     let MyNotif = "Vous avez aucune notif d'anime rajoutez-en !";
 

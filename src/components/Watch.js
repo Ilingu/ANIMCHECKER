@@ -323,9 +323,9 @@ class Watch extends Component {
       ShowModalAddSeasonEp,
     } = this.state;
 
-    if (!Pseudo) return <Redirect to="/" />;
-
-    if (RedirectHome) return <Redirect to="/" />;
+    if (!Pseudo) return <Redirect to="/2" />;
+    if (AnimToWatch.Paused) return <Redirect to="/1" />;
+    if (RedirectHome) return <Redirect to="/5" />;
 
     if (!uid) {
       return (
@@ -341,10 +341,10 @@ class Watch extends Component {
       );
     }
 
-    if (uid !== proprio) return <Redirect to="/" />;
+    if (uid !== proprio) return <Redirect to="/3" />;
 
     if (id === null) {
-      return <Redirect to="/" />;
+      return <Redirect to="/4" />;
     } else if (isFirstTime) {
       this.setState({ isFirstTime: false });
       return <Redirect to="/Watch" />;
@@ -416,6 +416,20 @@ class Watch extends Component {
                         }
                       >
                         <span className="fas fa-plus"></span> Ajouter une saison
+                      </Button>
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      <Button
+                        variant="info"
+                        block
+                        onClick={() => {
+                          this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+                            Paused: true,
+                          });
+                          this.setState({ uid: null, RedirectHome: true });
+                        }}
+                      >
+                        <span className="fas fa-pause"></span> Mettre en Pause
                       </Button>
                     </Dropdown.Item>
                     <Dropdown.Item>
