@@ -41,7 +41,7 @@ const OneAnim = ({ details, back, handleAdd }) => {
           </h5>
         </header>
         <section id="infoSup">
-          <Button variant="primary" onClick={back}>
+          <Button variant="primary" onClick={back} className="btnBackDesing">
             <span className="fas fa-arrow-left"></span> Retour
           </Button>
           <header>

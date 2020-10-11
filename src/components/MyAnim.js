@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 // Components
 import Header from "./Header";
 // CSS
-import { Nav, Form, Button, Alert } from "react-bootstrap";
+import { Nav, Form, Button, Alert, Dropdown } from "react-bootstrap";
 
 const MyAnim = ({
   SwitchMyAnimVar,
@@ -18,6 +18,8 @@ const MyAnim = ({
   onClose,
   SearchInAnimeListFn,
   ModeFindAnime,
+  ModeFilter,
+  NewFilter,
   CloseModeFindAnime,
 }) => (
   <div className="container">
@@ -44,21 +46,56 @@ const MyAnim = ({
       <header>
         <Nav fill variant="tabs">
           <Nav.Item>
-            <Nav.Link
-              eventKey="link-1"
-              active={SwitchMyAnimVar}
+            <div
+              id="TabsHomeMade"
+              className={SwitchMyAnimVar ? "active" : ""}
               onClick={ModeFindAnime ? null : SwitchMyAnim}
             >
               My Anim{" "}
               {SwitchMyAnimVar ? (
-                <Button
-                  variant="link"
-                  onClick={() => SearchInAnimeListFn(true)}
-                >
-                  <span className="fas fa-search"></span>
-                </Button>
+                <Fragment>
+                  <Button
+                    variant="link"
+                    onClick={() => SearchInAnimeListFn(true)}
+                  >
+                    <span className="fas fa-search"></span>
+                  </Button>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="link" id="FilterBtn">
+                      <span className="fas fa-filter"></span>
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        active={ModeFilter === "NotFinished" ? true : false}
+                        onClick={() => NewFilter("NotFinished")}
+                      >
+                        En Cours
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "Finished" ? true : false}
+                        onClick={() => NewFilter("Finished")}
+                      >
+                        Finis
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "Paused" ? true : false}
+                        onClick={() => NewFilter("Paused")}
+                      >
+                        Pause
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        active={ModeFilter === "All" ? true : false}
+                        onClick={() => NewFilter("All")}
+                      >
+                        Tous
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Fragment>
               ) : null}
-            </Nav.Link>
+            </div>
           </Nav.Item>
           <Nav.Item>
             <Nav.Link

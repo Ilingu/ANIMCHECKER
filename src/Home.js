@@ -48,6 +48,7 @@ export default class Home extends Component {
     RefreshRandomizeAnime2: true,
     MyAnimListSaved: null,
     MyNextAnimListSaved: null,
+    ModeFilter: "NotFinished",
     ModeFindAnime: [false, null],
     palmares: null,
     // Form
@@ -69,6 +70,7 @@ export default class Home extends Component {
 
   componentDidMount() {
     const self = this;
+    // Recup Message Inter-page
     if (this.props.match.params.codemsg !== undefined) {
       let ResText = null;
       let typeAlert = null;
@@ -869,6 +871,7 @@ export default class Home extends Component {
       DeletePathVerif,
       typeAlert,
       type,
+      ModeFilter,
       ShowModalAddFilm,
       PalmaresModal,
       ShowModalVerification,
@@ -979,6 +982,7 @@ export default class Home extends Component {
                   });
                   this.setState({ RedirectPage: `/Watch/${Pseudo}/${id}` });
                 }}
+                ModeFilter={ModeFilter}
                 url={serieFirebase[key].imageUrl}
                 title={serieFirebase[key].name}
                 isFinished={serieFirebase[key].finishedAnim}
@@ -994,6 +998,7 @@ export default class Home extends Component {
                   id={key}
                   Pseudo={Pseudo}
                   Paused={false}
+                  ModeFilter={ModeFilter}
                   url={filmFireBase[key].imageUrl}
                   title={filmFireBase[key].name}
                   isFinished={filmFireBase[key].finished}
@@ -1082,6 +1087,14 @@ export default class Home extends Component {
               ResText={ResText}
               typeAlert={typeAlert}
               ModeFindAnime={ModeFindAnime[0]}
+              ModeFilter={ModeFilter}
+              NewFilter={(filter) => {
+                this.setState({
+                  ModeFilter: filter,
+                  SwitchMyAnim: true,
+                  RefreshRandomizeAnime: true,
+                });
+              }}
               MyAnimList={
                 ModeFindAnime[0] && SearchInAnimeList[1]
                   ? ModeFindAnime[1].map((key) => (
@@ -1113,6 +1126,7 @@ export default class Home extends Component {
                             RedirectPage: `/Watch/${Pseudo}/${id}`,
                           });
                         }}
+                        ModeFilter={ModeFilter}
                         isAlleged={
                           { ...serieFirebase, ...filmFireBase }[key].AnimEP ===
                             undefined &&
