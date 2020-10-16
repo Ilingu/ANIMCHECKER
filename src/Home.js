@@ -276,12 +276,7 @@ export default class Home extends Component {
       });
     }
 
-    this.refreshValueFirebase(() => {
-      this.notifyMe();
-      if (this.state.NumTel.trim() !== 0) {
-        this.verificatePhoneNum();
-      }
-    });
+    this.refreshValueFirebase(this.notifyMe);
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -313,16 +308,6 @@ export default class Home extends Component {
       .catch((err) => {
         console.error(err);
       });
-  };
-
-  verificatePhoneNum = () => {
-    const { Pseudo, PhoneNumFireBase, NumTel } = this.state;
-    if (!PhoneNumFireBase) {
-      this.updateValue(`${Pseudo}/`, { PhoneNum: NumTel });
-    } else if (PhoneNumFireBase !== NumTel) {
-      window.localStorage.removeItem("Pseudo");
-      this.logOut(true);
-    }
   };
 
   logOut = (doARefresh = false) => {
