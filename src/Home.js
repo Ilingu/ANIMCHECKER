@@ -29,6 +29,7 @@ export default class Home extends Component {
     filmFireBase: {},
     serieFirebase: {},
     AuthenticateMethod: false,
+    AllowUseReAuth: false,
     uid: null,
     proprio: null,
     // Bon fonctionnement de l'app
@@ -118,6 +119,8 @@ export default class Home extends Component {
         self.setState({ AuthenticateMethod: true });
         self.refreshValueFirebase();
       });
+    } else {
+      self.setState({ AllowUseReAuth: true });
     }
   }
 
@@ -127,7 +130,7 @@ export default class Home extends Component {
         this.handleAuth({ user });
       }
 
-      this.setState({ AuthenticateMethod: true });
+      this.setState({ AuthenticateMethod: true, AllowUseReAuth: false });
       this.refreshValueFirebase();
     });
   };
@@ -282,7 +285,7 @@ export default class Home extends Component {
     window.confirmationResult
       .confirm(this.state.CodeNumber[0])
       .then((result) => {
-        this.console.log(result.user);
+        console.log(result.user);
       })
       .catch((err) => {
         console.error(err);
@@ -861,6 +864,7 @@ export default class Home extends Component {
       uid,
       proprio,
       AuthenticateMethod,
+      AllowUseReAuth,
       RedirectPage,
       ShowModalSearch,
       findAnim,
@@ -900,7 +904,9 @@ export default class Home extends Component {
           }}
         />
       );
-    } else if (!AuthenticateMethod) {
+    }
+
+    if (!AuthenticateMethod && AllowUseReAuth) {
       this.reAuth();
     }
 

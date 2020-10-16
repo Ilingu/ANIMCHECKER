@@ -30,6 +30,16 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    <input type="hidden" value="%NODE_ENV%" id="node_env_mode" />
+    <script>
+      var mode = document.querySelector("#node_env_mode").value;
+      if (
+        mode === "production" &&
+        typeof window.__REACT_DEVTOOLS_GLOBAL_HOOK__ === "object"
+      ) {
+        window.__REACT_DEVTOOLS_GLOBAL_HOOK__.inject = function () { };
+      }
+    </script>
     <div id="root"></div>
   </body>
 </html>
