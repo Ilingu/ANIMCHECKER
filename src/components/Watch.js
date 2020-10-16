@@ -323,9 +323,9 @@ class Watch extends Component {
       ShowModalAddSeasonEp,
     } = this.state;
 
-    if (!Pseudo) return <Redirect to="/2" />;
-    if (AnimToWatch.Paused) return <Redirect to="/1" />;
-    if (RedirectHome) return <Redirect to="/5" />;
+    if (!Pseudo) return <Redirect to="/notifuser/2" />;
+    if (AnimToWatch.Paused) return <Redirect to="/notifuser/1" />;
+    if (RedirectHome) return <Redirect to="/notifuser/5" />;
 
     if (!uid) {
       return (
@@ -341,10 +341,10 @@ class Watch extends Component {
       );
     }
 
-    if (uid !== proprio) return <Redirect to="/3" />;
+    if (uid !== proprio) return <Redirect to="/notifuser/3" />;
 
     if (id === null) {
-      return <Redirect to="/4" />;
+      return <Redirect to="/notifuser/4" />;
     } else if (isFirstTime) {
       this.setState({ isFirstTime: false });
       return <Redirect to="/Watch" />;

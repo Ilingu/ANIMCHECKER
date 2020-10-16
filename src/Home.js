@@ -28,6 +28,8 @@ export default class Home extends Component {
     NextAnimFireBase: {},
     filmFireBase: {},
     serieFirebase: {},
+    PhoneNumFireBase: null,
+    NotifState: null,
     AuthenticateMethod: false,
     AllowUseReAuth: false,
     uid: null,
@@ -97,6 +99,13 @@ export default class Home extends Component {
           ResText = "Votre modification a bien été pris en compte";
           typeAlert = "success";
           break;
+        case "6":
+          this.logOut();
+          break;
+        case "7":
+          window.localStorage.removeItem("Pseudo");
+          this.logOut(true);
+          break;
         default:
           break;
       }
@@ -117,7 +126,6 @@ export default class Home extends Component {
         }
 
         self.setState({ AuthenticateMethod: true });
-        self.refreshValueFirebase();
       });
     } else {
       self.setState({ AllowUseReAuth: true });
@@ -131,7 +139,6 @@ export default class Home extends Component {
       }
 
       this.setState({ AuthenticateMethod: true, AllowUseReAuth: false });
-      this.refreshValueFirebase();
     });
   };
 
@@ -153,7 +160,7 @@ export default class Home extends Component {
     }
   };
 
-  refreshValueFirebase = async () => {
+  refreshValueFirebase = async (after = null) => {
     try {
       const NextAnim = await base.fetch(`${this.state.Pseudo}/NextAnim`, {
         context: this,
@@ -164,15 +171,26 @@ export default class Home extends Component {
       const film = await base.fetch(`${this.state.Pseudo}/film`, {
         context: this,
       });
-
-      this.setState({
-        ModeFindAnime: [false, null],
-        RefreshRandomizeAnime: true,
-        RefreshRandomizeAnime2: true,
-        NextAnimFireBase: NextAnim,
-        serieFirebase: serie,
-        filmFireBase: film,
+      const NotifState = await base.fetch(`${this.state.Pseudo}/NotifState`, {
+        context: this,
       });
+      const PhoneNum = await base.fetch(`${this.state.Pseudo}/PhoneNum`, {
+        context: this,
+      });
+
+      this.setState(
+        {
+          ModeFindAnime: [false, null],
+          RefreshRandomizeAnime: true,
+          RefreshRandomizeAnime2: true,
+          NextAnimFireBase: NextAnim,
+          serieFirebase: serie,
+          filmFireBase: film,
+          PhoneNumFireBase: PhoneNum,
+          NotifState,
+        },
+        after
+      );
     } catch (err) {
       console.error(err);
     }
@@ -258,7 +276,12 @@ export default class Home extends Component {
       });
     }
 
-    this.notifyMe();
+    this.refreshValueFirebase(() => {
+      this.notifyMe();
+      if (this.state.NumTel.trim() !== 0) {
+        this.verificatePhoneNum();
+      }
+    });
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -284,15 +307,25 @@ export default class Home extends Component {
   verificateCode = () => {
     window.confirmationResult
       .confirm(this.state.CodeNumber[0])
-      .then((result) => {
-        console.log(result.user);
+      .then(() => {
+        console.log("Connected");
       })
       .catch((err) => {
         console.error(err);
       });
   };
 
-  logOut = () => {
+  verificatePhoneNum = () => {
+    const { Pseudo, PhoneNumFireBase, NumTel } = this.state;
+    if (!PhoneNumFireBase) {
+      this.updateValue(`${Pseudo}/`, { PhoneNum: NumTel });
+    } else if (PhoneNumFireBase !== NumTel) {
+      window.localStorage.removeItem("Pseudo");
+      this.logOut(true);
+    }
+  };
+
+  logOut = (doARefresh = false) => {
     firebase
       .auth()
       .signOut()
@@ -323,6 +356,9 @@ export default class Home extends Component {
           MyNextAnimListSaved: null,
           ModeFindAnime: [false, null],
         });
+        if (doARefresh) {
+          window.location.reload();
+        }
       })
       .catch((err) => console.error(err));
   };
@@ -605,7 +641,12 @@ export default class Home extends Component {
   notifyMe = () => {
     const self = this;
     if (window.Notification) {
-      if (Notification.permission === "granted") {
+      if (
+        Notification.permission === "granted" &&
+        this.state.NotifState !== false &&
+        this.state.NotifState !== null &&
+        this.state.NotifState !== undefined
+      ) {
         self.doNotif();
       } else {
         Notification.requestPermission()
@@ -895,6 +936,12 @@ export default class Home extends Component {
       palmares,
     } = this.state;
 
+    if (RedirectPage !== null) {
+      const RedirectSave = RedirectPage;
+      this.setState({ RedirectPage: null });
+      return <Redirect to={RedirectSave} />;
+    }
+
     if (!Pseudo) {
       return (
         <PseudoCO
@@ -928,22 +975,26 @@ export default class Home extends Component {
     }
 
     if (uid !== proprio) {
-      base.removeBinding(this.ref);
-
       return (
-        <div>
-          <p>
-            Vous n'êtes pas le bonne utilisateur \n (PS: Si vous êtes pas le
-            développeur de cette App ça sert à rien de continuer)
-          </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <p>Ce n'est pas votre compte, veuillez vous déconnecter.</p>
+          <Button
+            variant="outline-warning"
+            onClick={() => {
+              window.localStorage.removeItem("Pseudo");
+              this.logOut();
+            }}
+          >
+            <span className="fas fa-sign-out-alt"></span> Se Déconnecter
+          </Button>
         </div>
       );
-    }
-
-    if (RedirectPage !== null) {
-      const RedirectSave = RedirectPage;
-      this.setState({ RedirectPage: null });
-      return <Redirect to={RedirectSave} />;
     }
 
     let animList = null;

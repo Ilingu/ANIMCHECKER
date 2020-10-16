@@ -62,6 +62,32 @@ a:hover {
   min-height: 100vh;
 }
 
+.container > nav #FakeDropdownItem {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 1.5rem;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+}
+
+.container > nav #FakeDropdownItem:hover,
+.container > nav #FakeDropdownItem:focus {
+  color: #16181b;
+  text-decoration: none;
+  background-color: #f8f9fa;
+}
+
+.container > nav #FakeDropdownItem:active {
+  color: #fff;
+  text-decoration: none;
+  background-color: #007bff;
+}
+
 @media screen and (max-width: 992px) {
   .container > nav .navbar-collapse {
     display: -webkit-box;
@@ -1124,7 +1150,8 @@ a:hover {
   border: 3px solid royalblue;
 }
 
-#Notif {
+#Notif,
+#Settings {
   position: relative;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1139,25 +1166,30 @@ a:hover {
   min-height: 100vh;
 }
 
-#Notif header {
+#Notif header,
+#Settings header {
   text-align: center;
 }
 
-#Notif header h2 {
+#Notif header h2,
+#Settings header h2 {
   font-size: 2.3rem;
   font-weight: bold;
 }
 
-#Notif header h2 span {
+#Notif header h2 span,
+#Settings header h2 span {
   color: grey;
 }
 
-#Notif header h4 {
+#Notif header h4,
+#Settings header h4 {
   font-size: 1.15rem;
   margin: 30px 0;
 }
 
-#Notif header button {
+#Notif header button,
+#Settings header button {
   margin-bottom: 10px;
 }
 
@@ -1191,6 +1223,32 @@ a:hover {
 
 #Notif #returnNotif .notif button {
   margin: 10px 10px 0 10px;
+}
+
+#Settings #ActionAccount {
+  overflow: auto;
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  left: 10px;
+  top: 75px;
+  width: 20%;
+  height: calc(100% - 75px);
+}
+
+#Settings #ActionAccount h1 {
+  text-align: center;
+  font-size: 1.9rem;
+  text-decoration: underline;
+}
+
+#Settings #ActionAccount .BtnActionAccount {
+  margin-bottom: 10px;
 }
 
 @-webkit-keyframes LToR {

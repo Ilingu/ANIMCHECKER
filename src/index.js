@@ -22,9 +22,10 @@ const Root = () => (
       <Route exact path={`/Watch/:pseudo/:id`} component={Watch} />
       <Route exact path="/Watch" component={Watch} />
       <Route exact path="/Settings" component={Settings} />
+      <Route exact path={`/Settings/:pseudo`} component={Settings} />
       <Route exact path={`/notificator/:pseudo`} component={Notif} />
       <Route exact path="/notificator" component={Notif} />
-      <Route exact path={`/:codemsg`} component={Home} />
+      <Route exact path={`/notifuser/:codemsg`} component={Home} />
       <Route component={NotFound} />
     </Switch>
   </Router>

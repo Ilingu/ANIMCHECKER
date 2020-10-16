@@ -89,15 +89,15 @@ const Header = () => {
                 ></span>{" "}
                 Palmarès
               </Dropdown.Item>
-              <Dropdown.Item>
-                <Link push="true" to="/Settings">
+              <div id="FakeDropdownItem">
+                <Link push="true" to={`/Settings/${Context.Pseudo}`}>
                   <span
                     className="fas fa-cog fa-spin"
                     style={{ color: "grey" }}
                   ></span>{" "}
                   Parametres
                 </Link>
-              </Dropdown.Item>
+              </div>
             </Dropdown.Menu>
           </Dropdown>
         </aside>

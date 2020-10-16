@@ -21,13 +21,7 @@ const Login = ({ forForm, verificateCode, SubmitLogin }) => {
               NumTel.trim().length !== 0 &&
               /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im.test(
                 String(NumTel)
-              ) &&
-              (NumTel.trim() === "0652114944" ||
-                NumTel.trim() === "+33652114944" ||
-                NumTel.trim() === "0769311078" ||
-                NumTel.trim() === "+33769311078" ||
-                NumTel.trim() === "0783005958" ||
-                NumTel.trim() === "+33783005958")
+              )
             ) {
               SubmitLogin(NumTel.trim());
             }
