@@ -17,8 +17,6 @@ distributed OR MODIFIE some version of MY webSite!!!
 
 ### Principal Developper: Chollet Arthur => All rights reserved
 
-### Principal Admin : Chollet, Arthur => All rights reserved
-
 ## Norme And Cookies
 
 ### All technologies are modern and up to date.
