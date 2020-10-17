@@ -106,9 +106,10 @@ class Settings extends Component {
           context: this,
         });
         this.addValue(`${newPseudo}/`, { ...AllDataUser }, () => {
-          this.deleteValue(`/${Pseudo}`, () =>
-            this.setState({ RedirectHome: "/notifuser/7" })
-          );
+          this.deleteValue(`/${Pseudo}`, () => {
+            window.localStorage.setItem("Pseudo", newPseudo);
+            this.setState({ RedirectHome: "/notifuser/6" });
+          });
         });
       } catch (err) {
         console.log();

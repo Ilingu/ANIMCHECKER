@@ -25,6 +25,7 @@ export default class Home extends Component {
       ? null
       : JSON.parse(window.localStorage.getItem("Pseudo")),
     NumTel: "",
+    NewLogin: false,
     NextAnimFireBase: {},
     filmFireBase: {},
     serieFirebase: {},
@@ -101,10 +102,6 @@ export default class Home extends Component {
           break;
         case "6":
           this.logOut();
-          break;
-        case "7":
-          window.localStorage.removeItem("Pseudo");
-          this.logOut(true);
           break;
         default:
           break;
@@ -276,7 +273,12 @@ export default class Home extends Component {
       });
     }
 
-    this.refreshValueFirebase(this.notifyMe);
+    this.refreshValueFirebase(() => {
+      this.notifyMe();
+      if (this.state.NewLogin) {
+        this.verificateNum();
+      }
+    });
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -304,13 +306,27 @@ export default class Home extends Component {
       .confirm(this.state.CodeNumber[0])
       .then(() => {
         console.log("Connected");
+        this.setState({ NewLogin: true });
       })
       .catch((err) => {
         console.error(err);
       });
   };
 
-  logOut = (doARefresh = false) => {
+  verificateNum = () => {
+    const { NumTel, PhoneNumFireBase, Pseudo } = this.state;
+
+    if (NumTel !== "") {
+      if (Object.keys(PhoneNumFireBase).length === 0) {
+        this.updateValue(`${Pseudo}/`, { PhoneNum: NumTel });
+      } else if (NumTel !== PhoneNumFireBase) {
+        window.localStorage.removeItem("Pseudo");
+        this.logOut(true);
+      }
+    }
+  };
+
+  logOut = (refresh = false) => {
     firebase
       .auth()
       .signOut()
@@ -341,7 +357,7 @@ export default class Home extends Component {
           MyNextAnimListSaved: null,
           ModeFindAnime: [false, null],
         });
-        if (doARefresh) {
+        if (refresh) {
           window.location.reload();
         }
       })
@@ -955,6 +971,10 @@ export default class Home extends Component {
                 CodeNumber: [event.target.value, CodeNumber[1]],
               }),
           ])}
+          resetPseudo={() => {
+            window.localStorage.removeItem("Pseudo");
+            this.setState({ Pseudo: null });
+          }}
         />
       );
     }

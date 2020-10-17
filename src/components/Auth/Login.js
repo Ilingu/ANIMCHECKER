@@ -3,7 +3,7 @@ import React, { Fragment, useState } from "react";
 // Design
 import { Button, Form } from "react-bootstrap";
 
-const Login = ({ forForm, verificateCode, SubmitLogin }) => {
+const Login = ({ forForm, verificateCode, SubmitLogin, resetPseudo }) => {
   const [NumTel, setNumTel] = useState("");
 
   let stepToShow = null;
@@ -65,6 +65,10 @@ const Login = ({ forForm, verificateCode, SubmitLogin }) => {
 
   return (
     <section className="loginForm">
+      <Button variant="primary" onClick={resetPseudo} className="btnBackDesing">
+        <span className="fas fa-arrow-left"></span> Retour (mon Pseudo est pas
+        le bon)
+      </Button>
       {forForm[1] === 1 ? <div id="recaptcha-container"></div> : null}
       <h2>Connecte toi pour faire des list d'anime:</h2>
       {stepToShow}
