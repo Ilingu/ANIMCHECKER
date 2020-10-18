@@ -907,7 +907,7 @@ a:hover {
 #Watch .nonStartMod section #badgeStreaming .BadgesME:hover #CancelBadge {
   display: block;
   position: absolute;
-  margin-left: calc(50%-8px);
+  left: calc(50% - 8px / 2);
 }
 
 #Watch .nonStartMod section #badgeStreaming .BadgesME.badge-pill:active {
