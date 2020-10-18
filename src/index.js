@@ -11,7 +11,7 @@ import Settings from "./components/Auth/Settings";
 import NotFound from "./components/Error/NotFound";
 // CSS
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./CSS/App.css";
+import "./Assets/CSS/App.css";
 // Service Worker
 import * as serviceWorker from "./serviceWorker";
 

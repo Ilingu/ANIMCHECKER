@@ -2,8 +2,15 @@ import React, { Component, Fragment } from "react";
 import { Redirect, Link } from "react-router-dom";
 // Components
 import AnimEpCo from "./dyna/AnimEp";
+// Img
+import ADNLogo from "../Assets/Img/ADNLogo.png";
+import CrunchyrollLogo from "../Assets/Img/CrunchyrollLogo.png";
+import MavLogo from "../Assets/Img/MAVLogo.png";
+import NekoSamaLogo from "../Assets/Img/NekoSamaLogo.svg";
+import NetflixLogo from "../Assets/Img/NetflixLogo.png";
+import WakanimLogo from "../Assets/Img/WakanimLogo.png";
 // CSS
-import { Spinner, Button, Modal, Form, Dropdown } from "react-bootstrap";
+import { Spinner, Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
@@ -14,6 +21,7 @@ class Watch extends Component {
     // Firebase
     Pseudo: this.props.match.params.pseudo,
     AnimToWatch: {},
+    Badges: [],
     // Auth
     uid: null,
     id: null,
@@ -24,6 +32,7 @@ class Watch extends Component {
     isFirstTime: true,
     RedirectHome: false,
     ToOpen: "",
+    ShowFormBadge: false,
     ShowModalVerification: [false, null],
     // Repere
     repereSaison: {},
@@ -84,8 +93,20 @@ class Watch extends Component {
           context: this,
         }
       );
-
-      this.setState({ AnimToWatch: AnimToWatch });
+      const BadgeFireBase = await base.fetch(
+        ForFirstTime !== null
+          ? `${this.state.Pseudo}/${
+              ForFirstTime.split("-")[0]
+            }/${ForFirstTime}/Badge`
+          : `${this.state.Pseudo}/${id.split("-")[0]}/${id}/Badge`,
+        {
+          context: this,
+        }
+      );
+      this.setState({
+        AnimToWatch,
+        Badges: Object.keys(BadgeFireBase).length !== 0 ? BadgeFireBase : [],
+      });
     } catch (err) {
       console.error(err);
     }
@@ -293,6 +314,12 @@ class Watch extends Component {
     this.setState({ uid: null, RedirectHome: true });
   };
 
+  handleDeleteBadge = (index) => {
+    const { Badges, Pseudo, type, id } = this.state;
+    Badges.splice(index, 1);
+    this.updateValue(`${Pseudo}/${type}/${id}/`, { Badge: Badges });
+  };
+
   handleAlleger = () => {
     const { type, id } = this.state;
 
@@ -306,12 +333,14 @@ class Watch extends Component {
     const {
       Pseudo,
       AnimToWatch,
+      Badges,
       uid,
       id,
       RedirectHome,
       proprio,
       type,
       isFirstTime,
+      ShowFormBadge,
       modeStart,
       ShowModalVerification,
       repereEpisode,
@@ -350,7 +379,8 @@ class Watch extends Component {
       return <Redirect to="/Watch" />;
     }
 
-    let MyAnimAccordeon = null;
+    let MyAnimAccordeon = null,
+      BadgesHtml = null;
 
     if (type === "serie") {
       MyAnimAccordeon = AnimToWatch.AnimEP.map((EpSaison) => (
@@ -371,6 +401,141 @@ class Watch extends Component {
           }}
         />
       ));
+    }
+
+    if (Badges.length !== 0) {
+      BadgesHtml = Badges.map((value, i) => {
+        if (value.toLowerCase() === "adn") {
+          return (
+            <Badge
+              key={i}
+              className="BadgesME"
+              variant="primary"
+              onClick={() => this.handleDeleteBadge(i)}
+            >
+              <img src={ADNLogo} alt="ADNLogo" />
+              <div id="CancelBadge">
+                <span className="fas fa-times"></span>
+              </div>
+            </Badge>
+          );
+        } else if (
+          value.toLowerCase() === "crunchyroll" ||
+          value.toLowerCase() === "crunchyrol"
+        ) {
+          return (
+            <Badge
+              key={i}
+              className="BadgesME"
+              variant="light"
+              onClick={() => this.handleDeleteBadge(i)}
+            >
+              <img src={CrunchyrollLogo} alt="CrunchyrollLogo" />
+              <div id="CancelBadge">
+                <span className="fas fa-times"></span>
+              </div>
+            </Badge>
+          );
+        } else if (
+          value.toLowerCase() === "mav" ||
+          value.toLowerCase() === "mavanime" ||
+          value.toLowerCase() === "mavanimes" ||
+          value.toLowerCase() === "mavanimeco" ||
+          value.toLowerCase() === "mavanimesco" ||
+          value.toLowerCase() === "mavanime.co" ||
+          value.toLowerCase() === "mavanimes.co"
+        ) {
+          return (
+            <Badge
+              key={i}
+              className="BadgesME"
+              variant="dark"
+              style={{ background: "#101010" }}
+              onClick={() => this.handleDeleteBadge(i)}
+            >
+              <img src={MavLogo} alt="MavLogo" />
+              <div id="CancelBadge">
+                <span className="fas fa-times"></span>
+              </div>
+            </Badge>
+          );
+        } else if (
+          value.toLowerCase() === "neko-sama" ||
+          value.toLowerCase() === "nekosama" ||
+          value.toLowerCase() === "neko-sama.fr" ||
+          value.toLowerCase() === "nekosama.fr" ||
+          value.toLowerCase() === "neko-samafr" ||
+          value.toLowerCase() === "nekosamafr"
+        ) {
+          return (
+            <Badge
+              key={i}
+              className="BadgesME"
+              variant="primary"
+              onClick={() => this.handleDeleteBadge(i)}
+            >
+              <img src={NekoSamaLogo} alt="NekoSamaLogo" />
+              <div id="CancelBadge">
+                <span className="fas fa-times"></span>
+              </div>
+            </Badge>
+          );
+        } else if (value.toLowerCase() === "netflix") {
+          return (
+            <Badge
+              key={i}
+              className="BadgesME"
+              variant="dark"
+              onClick={() => this.handleDeleteBadge(i)}
+            >
+              <img src={NetflixLogo} alt="NetflixLogo" />
+              <div id="CancelBadge">
+                <span className="fas fa-times"></span>
+              </div>
+            </Badge>
+          );
+        } else if (value.toLowerCase() === "wakanim") {
+          return (
+            <Badge
+              key={i}
+              className="BadgesME"
+              variant="dark"
+              onClick={() => this.handleDeleteBadge(i)}
+            >
+              <img src={WakanimLogo} alt="WakanimLogo" />
+              <div id="CancelBadge">
+                <span className="fas fa-times"></span>
+              </div>
+            </Badge>
+          );
+        }
+        const rdaColor = [
+          Math.round(Math.random() * 255),
+          Math.round(Math.random() * 255),
+          Math.round(Math.random() * 255),
+        ];
+
+        const grayScaleRdaColor =
+          0.2126 * rdaColor[0] + 0.7152 * rdaColor[1] + 0.0722 * rdaColor[2];
+
+        return (
+          <Badge
+            key={i}
+            className="BadgesME"
+            variant="primary"
+            onClick={() => this.handleDeleteBadge(i)}
+            style={{
+              background: `rgb(${rdaColor[0]},${rdaColor[1]},${rdaColor[2]})`,
+              color: grayScaleRdaColor < 128 ? "#fff" : "#212529",
+            }}
+          >
+            <div id="ValueBadge">{value}</div>
+            <div id="CancelBadge">
+              <span className="fas fa-times"></span>
+            </div>
+          </Badge>
+        );
+      });
     }
 
     return (
@@ -464,7 +629,38 @@ class Watch extends Component {
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
-
+            <div id="badgeStreaming">
+              <Badge
+                variant="warning"
+                className="BadgesME"
+                id="InputBadgeStreaming"
+                style={{ display: ShowFormBadge ? "block" : "none" }}
+                contentEditable="true"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    this.updateValue(`${Pseudo}/serie/${id}/`, {
+                      Badge: [
+                        ...Badges,
+                        document.querySelector("#InputBadgeStreaming")
+                          .innerText,
+                      ],
+                    });
+                    this.setState({ ShowFormBadge: false });
+                  }
+                }}
+              >
+                Nom du site
+              </Badge>
+              {BadgesHtml}
+              <Badge
+                pill
+                className="BadgesME"
+                variant="secondary"
+                onClick={() => this.setState({ ShowFormBadge: true })}
+              >
+                <span className="fas fa-plus-circle"></span>
+              </Badge>
+            </div>
             <header>
               <h1>{type === "serie" ? "Anime:" : "Film:"}</h1>
             </header>
