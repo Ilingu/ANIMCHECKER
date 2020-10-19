@@ -638,7 +638,7 @@ class Watch extends Component {
                 contentEditable="true"
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
-                    this.updateValue(`${Pseudo}/serie/${id}/`, {
+                    this.updateValue(`${Pseudo}/${type}/${id}/`, {
                       Badge: [
                         ...Badges,
                         document.querySelector("#InputBadgeStreaming")
