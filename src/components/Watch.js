@@ -324,7 +324,10 @@ class Watch extends Component {
     const { type, id } = this.state;
 
     if (type !== "film") {
-      this.updateValue(`${this.state.Pseudo}/serie/${id}`, { AnimEP: null });
+      this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+        AnimEP: null,
+        Badge: null,
+      });
       this.setState({ uid: null, RedirectHome: true });
     }
   };
