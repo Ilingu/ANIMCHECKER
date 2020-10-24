@@ -23,7 +23,9 @@ export default class Notif extends Component {
     // Form
     name: "",
     day: new Date().getDay().toString(),
-    time: 0,
+    time:
+      new Date().getHours() * 3600 +
+      Math.round(new Date().getMinutes() / 10) * 10 * 60,
     // Modal
     ShowModalAddNotif: false,
     // Alerts

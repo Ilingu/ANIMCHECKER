@@ -128,6 +128,21 @@ function checkValidServiceWorker(swUrl, config) {
     });
 }
 
+// eslint-disable-next-line no-restricted-globals
+self.addEventListener("notificationclick", function (e) {
+  const notification = e.notification;
+  const URL = notification.data.url;
+  const action = e.action;
+
+  if (action === "close") {
+    notification.close();
+  } else {
+    // eslint-disable-next-line no-undef
+    clients.openWindow(URL);
+    notification.close();
+  }
+});
+
 export function unregister() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.ready

@@ -94,7 +94,7 @@ const PosterAnim = ({
   } else if (ModeFilter === "All") {
     return templatePoster;
   } else if (ModeFilter === "NotFinished") {
-    return isFinished ? null : templatePoster;
+    return isFinished ? null : Paused ? null : templatePoster;
   } else if (ModeFilter === "Finished") {
     return isFinished ? templatePoster : null;
   } else {

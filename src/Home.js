@@ -649,7 +649,7 @@ export default class Home extends Component {
         this.state.NotifState !== undefined
       ) {
         self.doNotif();
-      } else {
+      } else if (Notification.permission !== "granted") {
         Notification.requestPermission()
           .then(function (p) {
             if (p === "granted") {
@@ -661,6 +661,8 @@ export default class Home extends Component {
           .catch(function (err) {
             console.error(err);
           });
+      } else {
+        console.error("Aucune notification pour ce compte");
       }
     }
   };
@@ -679,10 +681,34 @@ export default class Home extends Component {
           !NotifFirebase[notifKey].called &&
           !NotifFirebase[notifKey].paused
         ) {
-          new Notification(`Sortie Anime: ${NotifFirebase[notifKey].name} !`, {
-            body: `Nouvel Episode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
-            icon: "https://myanimchecker.netlify.app/favicon.ico",
-          });
+          navigator.serviceWorker
+            .getRegistration()
+            .then((reg) => {
+              reg.showNotification(
+                `Sortie Anime: ${NotifFirebase[notifKey].name} !`,
+                {
+                  body: `Nouvel Episode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
+                  icon: "https://myanimchecker.netlify.app/favicon.ico",
+                  vibrate: [100, 50, 100],
+                  data: {
+                    // eslint-disable-next-line no-restricted-globals
+                    url: self.location.origin,
+                    dateOfArrival: Date.now(),
+                    primaryKey: 1,
+                  },
+                }
+              );
+            })
+            .catch(() => {
+              new Notification(
+                `Sortie Anime: ${NotifFirebase[notifKey].name} !`,
+                {
+                  body: `Nouvel Episode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
+                  icon: "https://myanimchecker.netlify.app/favicon.ico",
+                }
+              );
+            });
+
           base.update(`${this.state.Pseudo}/Notif/${notifKey}`, {
             data: { called: true },
           });
