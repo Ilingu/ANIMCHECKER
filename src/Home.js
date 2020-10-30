@@ -655,7 +655,7 @@ export default class Home extends Component {
             if (p === "granted") {
               self.doNotif();
             } else {
-              console.log("User blocked notifications.");
+              console.log("User blocked notifications succefuly.");
             }
           })
           .catch(function (err) {
