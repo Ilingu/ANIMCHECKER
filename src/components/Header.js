@@ -44,7 +44,7 @@ const Header = () => {
         SetMicOn(false);
         SetShowMessage(true);
         SetShowMessageHtml(true);
-        SetResText("Le micro est maintenant éteind");
+        SetResText("Le micro est maintenant éteint");
         setTimeout(() => {
           SetShowMessage(false);
 

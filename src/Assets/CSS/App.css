@@ -84,7 +84,12 @@ a:hover {
 }
 
 .ackmessage span {
+  margin-right: 10px;
   color: #007bff;
+}
+
+.ackmessage.green span {
+  color: #28a745;
 }
 
 .ackmessage.show {
@@ -201,7 +206,7 @@ a:hover {
   }
 }
 
-@media screen and (max-width: 350px) {
+@media screen and (max-width: 400px) {
   .container > nav .navbar-collapse #searchForm {
     width: 250px;
   }
@@ -210,6 +215,10 @@ a:hover {
   }
   .container > nav .navbar-collapse #searchForm div input {
     width: 250px;
+    padding-right: 70px;
+  }
+  .container > nav .navbar-collapse #searchForm #SearchFormBtnVoice {
+    width: auto;
   }
 }
 
@@ -297,12 +306,19 @@ a:hover {
   top: calc(50% - 11px);
   right: 50px;
   color: #2121218e;
+  cursor: pointer;
 }
 
 #searchForm #SearchFormBtnVoice:active {
   color: #212121;
   -webkit-transition: 0.1s;
   transition: 0.1s;
+}
+
+@media screen and (max-width: 575px) {
+  #searchForm #SearchFormBtnVoice {
+    top: calc(50% - 18px);
+  }
 }
 
 #account {
@@ -322,6 +338,28 @@ a:hover {
   background-color: #222;
   max-height: 400px;
   overflow: auto;
+}
+
+#ModalBody #searchInAnimeList {
+  position: relative;
+}
+
+#ModalBody #searchInAnimeList #searchInAnimeListInput {
+  padding-right: 27px;
+}
+
+#ModalBody #searchInAnimeList #SearchFormBtnVoice {
+  position: absolute;
+  top: calc(50% + 4px);
+  right: 5px;
+  color: #2121218e;
+  cursor: pointer;
+}
+
+#ModalBody #searchInAnimeList #SearchFormBtnVoice:active {
+  color: #212121;
+  -webkit-transition: 0.1s;
+  transition: 0.1s;
 }
 
 #ModalBody .poster {
@@ -637,9 +675,24 @@ a:hover {
 }
 
 #MyAnime .content .MyAnimPoster {
+  position: relative;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   width: 200px !important;
   -webkit-transition: 0.7s;
   transition: 0.7s;
+}
+
+#MyAnime .content .MyAnimPoster .RatingStar {
+  position: absolute;
+  right: 0;
+  z-index: 10;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.609);
+  border-radius: 7px;
+  font-size: 15px;
 }
 
 #MyAnime .content .MyAnimPoster .ImgInterract {
@@ -715,6 +768,10 @@ a:hover {
   font-size: 1.2rem;
   text-align: center;
   text-decoration: underline;
+  -webkit-user-select: text;
+     -moz-user-select: text;
+      -ms-user-select: text;
+          user-select: text;
 }
 
 #MyAnime .content .MyAnimPoster:hover {
@@ -1045,6 +1102,14 @@ a:hover {
   width: 250px;
   border-radius: 5px;
   height: calc(318px + 25px);
+}
+
+#Watch .nonStartMod > header .img .RatingStar {
+  position: absolute;
+  right: 0;
+  padding: 5px;
+  border-radius: 7px;
+  background-color: rgba(0, 0, 0, 0.65);
 }
 
 #Watch .nonStartMod > header .img .play {

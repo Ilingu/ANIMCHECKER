@@ -927,7 +927,7 @@ export default class Home extends Component {
           MicOn: false,
           ShowMessage: true,
           ShowMessageHtml: true,
-          ResText: "Le micro est maintenant éteind",
+          ResText: "Le micro est maintenant éteint",
         });
         setTimeout(() => {
           this.setState({ ShowMessage: false });
@@ -1025,7 +1025,6 @@ export default class Home extends Component {
       MicOn,
       ShowMessage,
       ShowMessageHtml,
-      SecondMessage,
       durer,
       SwitchMyAnim,
       NextAnim,
@@ -1152,6 +1151,7 @@ export default class Home extends Component {
                 url={serieFirebase[key].imageUrl}
                 title={serieFirebase[key].name}
                 isFinished={serieFirebase[key].finishedAnim}
+                Rate={serieFirebase[key].Rate}
                 deleteAnim={this.DeleteAnimVerification}
                 isAlleged={!serieFirebase[key].AnimEP ? true : false}
                 inMyAnim={true}
@@ -1168,6 +1168,7 @@ export default class Home extends Component {
                   url={filmFireBase[key].imageUrl}
                   title={filmFireBase[key].name}
                   isFinished={filmFireBase[key].finished}
+                  Rate={filmFireBase[key].Rate}
                   deleteAnim={this.DeleteAnimVerification}
                   isAlleged={false}
                   inMyAnim={true}
@@ -1276,6 +1277,7 @@ export default class Home extends Component {
                           { ...serieFirebase, ...filmFireBase }[key]
                             .finishedAnim
                         }
+                        Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
                         deleteAnim={this.DeleteAnimVerification}
                         Paused={
                           serieFirebase[key] !== undefined
@@ -1479,10 +1481,11 @@ export default class Home extends Component {
             </Modal.Header>
             <Modal.Body id="ModalBody">
               <Form onSubmit={this.SearchAnimInList}>
-                <Form.Group controlId="searchInAnimeList">
+                <Form.Group id="searchInAnimeList">
                   <Form.Label>Nom de l'animé:</Form.Label>
                   <Form.Control
                     type="text"
+                    id="searchInAnimeListInput"
                     placeholder="Titre de l'anime à rechercher"
                     autoComplete="off"
                     value={titleSearchAnime}

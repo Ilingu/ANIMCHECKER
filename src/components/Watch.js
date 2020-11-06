@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from "react";
 import { Redirect, Link } from "react-router-dom";
+import Rating from "react-rating";
 // Components
 import AnimEpCo from "./dyna/AnimEp";
 // Img
@@ -33,14 +34,22 @@ class Watch extends Component {
     RedirectHome: false,
     ToOpen: "",
     ShowFormBadge: false,
-    ShowModalVerification: [false, null],
+    ShowModalRateAnime: false,
+    ShowMessage: false,
+    ShowMessageHtml: false,
+    SecondMessage: false,
+    AlreadyClicked: false,
+    ResText: null,
     // Repere
     repereSaison: {},
     repereEpisode: [],
     // Form
     SeasonToAddEp: null,
+    Rate: 0,
+    RateHover: 0,
     nbEpToAdd: 1,
     // Modal
+    ShowModalVerification: [false, null],
     ShowModalAddEp: false,
     ShowModalAddSeasonEp: false,
   };
@@ -128,12 +137,15 @@ class Watch extends Component {
       .catch((err) => console.error(err));
   };
 
-  updateValue = (path, value) => {
+  updateValue = (path, value, next = null) => {
     base
       .update(path, {
         data: value,
       })
-      .then(this.refreshAnimToWatch)
+      .then(() => {
+        this.refreshAnimToWatch();
+        if (next !== null) next();
+      })
       .catch((err) => console.error(err));
   };
 
@@ -246,14 +258,46 @@ class Watch extends Component {
   };
 
   finishedEp = (Saison, EpFinishedID) => {
-    const { id } = this.state;
+    const {
+      id,
+      repereEpisode,
+      repereSaison,
+      SecondMessage,
+      AlreadyClicked,
+    } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
     this.updateValue(
       `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
         EpFinishedID - 2
       }`,
-      { finished: true }
+      { finished: true },
+      () => {
+        this.setState({
+          SecondMessage: AlreadyClicked ? true : false,
+          AlreadyClicked: true,
+          ShowMessage: true,
+          ShowMessageHtml: true,
+          ResText: `Episode ${repereEpisode[1].id}(S${
+            Object.keys(repereSaison).length === 0
+              ? null
+              : repereSaison.name.split(" ")[1]
+          }) fini !`,
+        });
+
+        setTimeout(() => {
+          if (SecondMessage) {
+            this.setState({ SecondMessage: false });
+            return;
+          }
+
+          this.setState({ ShowMessage: false, AlreadyClicked: false });
+
+          setTimeout(() => {
+            this.setState({ ShowMessageHtml: false, ResText: null });
+          }, 900);
+        }, 2000);
+      }
     );
   };
 
@@ -287,9 +331,13 @@ class Watch extends Component {
     });
 
     if (AnimToWatch.AnimEP.length === idSaison + 1)
-      this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
-        finishedAnim: true,
-      });
+      this.updateValue(
+        `${this.state.Pseudo}/serie/${id}`,
+        {
+          finishedAnim: true,
+        },
+        () => this.setState({ ShowModalRateAnime: true })
+      );
 
     this.finishedEp(Saison, EpFinishedID + 1);
     this.StopModeWatch();
@@ -303,7 +351,11 @@ class Watch extends Component {
   EndFilm = () => {
     const { id } = this.state;
 
-    this.updateValue(`${this.state.Pseudo}/film/${id}`, { finished: true });
+    this.updateValue(
+      `${this.state.Pseudo}/film/${id}`,
+      { finished: true },
+      () => this.setState({ ShowModalRateAnime: true })
+    );
     this.StopModeWatch();
   };
 
@@ -343,9 +395,16 @@ class Watch extends Component {
       proprio,
       type,
       isFirstTime,
+      ShowModalRateAnime,
+      Rate,
       ShowFormBadge,
+      RateHover,
+      SecondMessage,
       modeStart,
       ShowModalVerification,
+      ShowMessage,
+      ShowMessageHtml,
+      ResText,
       repereEpisode,
       repereSaison,
       ToOpen,
@@ -551,6 +610,14 @@ class Watch extends Component {
             </h1>
             <div className="img">
               <img src={AnimToWatch.imageUrl} alt="Img of anim" />
+              {AnimToWatch.Rate ? (
+                <span
+                  style={{ color: "gold" }}
+                  className="RatingStar fas fa-star"
+                >
+                  {AnimToWatch.Rate}
+                </span>
+              ) : null}
               <div
                 className="play"
                 onClick={() => {
@@ -600,6 +667,7 @@ class Watch extends Component {
                         <span className="fas fa-pause"></span> Mettre en Pause
                       </Button>
                     </Dropdown.Item>
+
                     <Dropdown.Item>
                       <Button
                         variant="warning"
@@ -616,6 +684,26 @@ class Watch extends Component {
                     </Dropdown.Item>
                   </Fragment>
                 ) : null}
+                {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
+                  <Dropdown.Item>
+                    <Button
+                      style={{
+                        backgroundColor: "gold",
+                        color: "#212121",
+                        border: "none",
+                      }}
+                      block
+                      onClick={() =>
+                        this.setState({
+                          ShowModalRateAnime: true,
+                        })
+                      }
+                    >
+                      <span className="fas fa-star"></span> Changer la note
+                    </Button>
+                  </Dropdown.Item>
+                ) : null}
+
                 <Dropdown.Item>
                   <Button
                     variant="danger"
@@ -782,7 +870,7 @@ class Watch extends Component {
           <Modal.Body id="ModalBody">
             En faisant ça {AnimToWatch.name}{" "}
             {ShowModalVerification[1] === "alleger"
-              ? "ne sera pas supprimer mais il sera inaccessible: en gros vous le verez toujours dans votre liste d'anime mais vous ne pourrez plus voir vos épisodes et saisons fini et restant car ils seront supprimer, l'anime sera là en temps que déco, pour dire 'ba voilà j'ai la preuve d'avoir fini cette anime' (je vous conseille de la faire quand l'anime n'aura pas de suite)."
+              ? "ne sera pas supprimer mais il sera inaccessible: en gros vous le verez toujours dans votre liste d'anime mais vous ne pourrez plus voir vos épisodes restant/saisons fini, Badges car ils seront supprimer (la note ne sera pas supprimer) vous ne pourrez plus modifier l'anime (ajouter des saison/ep, changer la note... mais vous pourrez toujours le supprimer depuis la page global (la où il y a tout les animes)). L'anime sera là en temps que déco, pour dire 'ba voilà j'ai la preuve d'avoir fini cette anime' (je vous conseille de la faire quand l'anime n'aura pas de suite)."
               : "sera entièrement supprimer avec aucune possiblité de le récupérer, en gros il n'existera plus."}
           </Modal.Body>
           <Modal.Footer id="ModalFooter">
@@ -808,6 +896,99 @@ class Watch extends Component {
             </Button>
           </Modal.Footer>
         </Modal>
+
+        <Modal
+          show={ShowModalRateAnime}
+          size="lg"
+          onHide={() =>
+            this.setState({ ShowModalRateAnime: false, Rate: 0, RateHover: 0 })
+          }
+        >
+          <Modal.Header id="ModalTitle" closeButton>
+            <Modal.Title>Noté {AnimToWatch.name} / 10</Modal.Title>
+          </Modal.Header>
+          <Modal.Body id="ModalBody">
+            <Rating
+              value={Rate}
+              onChange={(Rate) => this.setState({ Rate })}
+              onHover={(Rate) => this.setState({ RateHover: Rate })}
+              step={0.5}
+              stop={10}
+            />
+            <p>{RateHover || Rate} étoiles</p>
+          </Modal.Body>
+          <Modal.Footer id="ModalFooter">
+            <Button
+              variant="secondary"
+              onClick={() =>
+                this.setState({
+                  ShowModalRateAnime: false,
+                  Rate: 0,
+                  RateHover: 0,
+                })
+              }
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="success"
+              onClick={() => {
+                if (
+                  Rate !== undefined &&
+                  Rate !== null &&
+                  Rate > 0 &&
+                  Rate <= 10 &&
+                  (AnimToWatch.finished || AnimToWatch.finishedAnim)
+                ) {
+                  this.updateValue(`${Pseudo}/${type}/${id}`, {
+                    Rate,
+                  });
+                  this.setState({
+                    ShowModalRateAnime: false,
+                    Rate: 0,
+                    RateHover: 0,
+                  });
+                } else {
+                  this.setState({
+                    AlreadyClicked: true,
+                    ShowMessage: true,
+                    ShowMessageHtml: true,
+                    ResText:
+                      "Impossible de noter si l'anime n'ai pas fini ou que la note soit incorrect.",
+                  });
+
+                  setTimeout(() => {
+                    if (SecondMessage) {
+                      this.setState({ SecondMessage: false });
+                      return;
+                    }
+
+                    this.setState({
+                      ShowMessage: false,
+                      AlreadyClicked: false,
+                    });
+
+                    setTimeout(() => {
+                      this.setState({ ShowMessageHtml: false, ResText: null });
+                    }, 900);
+                  }, 6000);
+                }
+              }}
+              disabled={
+                Rate !== undefined &&
+                Rate !== null &&
+                Rate > 0 &&
+                Rate <= 10 &&
+                (AnimToWatch.finished || AnimToWatch.finishedAnim)
+                  ? false
+                  : true
+              }
+            >
+              <span className="fas fa-check"></span> Valider
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
         <Modal
           show={ShowModalAddEp}
           onHide={() => this.setState({ ShowModalAddEp: false })}
@@ -890,6 +1071,11 @@ class Watch extends Component {
             </Button>
           </Modal.Footer>
         </Modal>
+        {ShowMessageHtml ? (
+          <div className={`ackmessage${ShowMessage ? " show" : " hide"} green`}>
+            <span className="fas fa-check-circle"></span> {ResText}
+          </div>
+        ) : null}
       </section>
     );
   }

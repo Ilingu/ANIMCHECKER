@@ -89,6 +89,12 @@ const MyAnim = ({
                       </Dropdown.Item>
                       <Dropdown.Divider />
                       <Dropdown.Item
+                        active={ModeFilter === "Rate" ? true : false}
+                        onClick={() => NewFilter("Rate")}
+                      >
+                        Note
+                      </Dropdown.Item>
+                      <Dropdown.Item
                         active={ModeFilter === "All" ? true : false}
                         onClick={() => NewFilter("All")}
                       >

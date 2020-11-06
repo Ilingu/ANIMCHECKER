@@ -8,6 +8,7 @@ const PosterAnim = ({
   title,
   type,
   id,
+  Rate,
   UnPaused,
   SeeInDetails,
   inMyAnim,
@@ -32,6 +33,11 @@ const PosterAnim = ({
       }
     >
       {isFinished || Paused ? <h4>{title}</h4> : null}
+      {Rate ? (
+        <span style={{ color: "gold" }} className="RatingStar fas fa-star">
+          {Rate}
+        </span>
+      ) : null}
 
       <div className="ImgInterract">
         <img src={url} alt="Img of Anim" />
@@ -97,8 +103,10 @@ const PosterAnim = ({
     return isFinished ? null : Paused ? null : templatePoster;
   } else if (ModeFilter === "Finished") {
     return isFinished ? templatePoster : null;
-  } else {
+  } else if (ModeFilter === "Paused") {
     return Paused ? templatePoster : null;
+  } else {
+    return Rate ? templatePoster : null;
   }
 };
 
