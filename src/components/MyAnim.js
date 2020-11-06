@@ -61,10 +61,13 @@ const MyAnim = ({
                     <span className="fas fa-search"></span>
                   </Button>
                   <Dropdown>
-                    <Dropdown.Toggle variant="link" id="FilterBtn">
+                    <Dropdown.Toggle
+                      variant="link"
+                      title="Filtre"
+                      id="FilterBtn"
+                    >
                       <span className="fas fa-filter"></span>
                     </Dropdown.Toggle>
-
                     <Dropdown.Menu>
                       <Dropdown.Item
                         active={ModeFilter === "NotFinished" ? true : false}
@@ -116,11 +119,11 @@ const MyAnim = ({
           </Nav.Item>
         </Nav>
         <div id="returnAlert">
-          {ResText === null && typeAlert === null ? null : (
+          {ResText !== null && typeAlert !== null ? (
             <Alert variant={typeAlert} onClose={onClose} dismissible>
               <p>{ResText}</p>
             </Alert>
-          )}
+          ) : null}
         </div>
       </header>
       <div className={SwitchMyAnimVar ? "content" : "content none"}>

@@ -17,6 +17,7 @@ body {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
+  overflow-x: hidden;
   min-height: 100vh;
   background-color: #212121;
   color: #ff6d00;
@@ -56,6 +57,88 @@ a:hover {
   bottom: 0;
   font-size: 1.5rem;
   font-weight: bold;
+}
+
+.ackmessage {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  min-height: 40px;
+  min-width: 200px;
+  max-width: 350px;
+  border-radius: 3px;
+  padding: 5px;
+  color: #212121;
+  background-color: rgba(241, 241, 241, 0.972);
+}
+
+.ackmessage span {
+  color: #007bff;
+}
+
+.ackmessage.show {
+  -webkit-animation: ShowMessage 1s ease-in 0s 1;
+          animation: ShowMessage 1s ease-in 0s 1;
+}
+
+.ackmessage.hide {
+  -webkit-animation: HideMessage 1s ease-out 0s 1;
+          animation: HideMessage 1s ease-out 0s 1;
+}
+
+@-webkit-keyframes ShowMessage {
+  from {
+    right: -350px;
+    top: 5px;
+  }
+  to {
+    right: 10px;
+    top: 5px;
+  }
+}
+
+@keyframes ShowMessage {
+  from {
+    right: -350px;
+    top: 5px;
+  }
+  to {
+    right: 10px;
+    top: 5px;
+  }
+}
+
+@-webkit-keyframes HideMessage {
+  from {
+    right: 10px;
+    top: 5px;
+  }
+  to {
+    right: -350px;
+    top: 5px;
+  }
+}
+
+@keyframes HideMessage {
+  from {
+    right: 10px;
+    top: 5px;
+  }
+  to {
+    right: -350px;
+    top: 5px;
+  }
 }
 
 .container {
@@ -195,19 +278,31 @@ a:hover {
   display: -ms-flexbox;
   display: flex;
   position: relative;
-  width: 300px;
+  width: 350px;
 }
 
 #searchForm .form-group input {
-  width: 300px;
-  padding-right: 45px;
+  width: 350px;
+  padding-right: 65px;
 }
 
-#searchForm button {
+#searchForm #SearchFormBtnSubmit {
   position: absolute;
   top: 0;
-  height: 38px;
   right: 0;
+}
+
+#searchForm #SearchFormBtnVoice {
+  position: absolute;
+  top: calc(50% - 11px);
+  right: 50px;
+  color: #2121218e;
+}
+
+#searchForm #SearchFormBtnVoice:active {
+  color: #212121;
+  -webkit-transition: 0.1s;
+  transition: 0.1s;
 }
 
 #account {

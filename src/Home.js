@@ -55,6 +55,10 @@ export default class Home extends Component {
     ModeFilter: "NotFinished",
     ModeFindAnime: [false, null],
     palmares: null,
+    MicOn: false,
+    ShowMessage: false,
+    ShowMessageHtml: false,
+    SecondMessage: false,
     // Form
     title: "",
     type: "serie",
@@ -889,6 +893,76 @@ export default class Home extends Component {
     };
   };
 
+  StartSpeechRecognition = () => {
+    const { SecondMessage } = this.state;
+    try {
+      const recognition = new (window.SpeechRecognition ||
+        window.webkitSpeechRecognition)();
+      recognition.start();
+
+      recognition.onstart = () => {
+        this.setState({
+          MicOn: true,
+          ShowMessage: true,
+          ShowMessageHtml: true,
+          ResText: "Le micro est bien allumé, vous pouvez parlez !",
+        });
+
+        setTimeout(() => {
+          if (SecondMessage) {
+            this.setState({ SecondMessage: false });
+            return;
+          }
+          this.setState({ ShowMessage: false });
+
+          setTimeout(() => {
+            this.setState({ ShowMessageHtml: false, ResText: null });
+          }, 900);
+        }, 3000);
+      };
+
+      recognition.onend = () => {
+        this.setState({
+          SecondMessage: true,
+          MicOn: false,
+          ShowMessage: true,
+          ShowMessageHtml: true,
+          ResText: "Le micro est maintenant éteind",
+        });
+        setTimeout(() => {
+          this.setState({ ShowMessage: false });
+
+          setTimeout(() => {
+            this.setState({ ShowMessageHtml: false, ResText: null });
+          }, 900);
+        }, 3000);
+      };
+
+      recognition.onresult = (event) => {
+        const current = event.resultIndex;
+
+        const transcript = event.results[current][0].transcript;
+        this.setState({ titleSearchAnime: transcript });
+      };
+    } catch (e) {
+      this.setState({
+        ShowMessage: true,
+        ShowMessageHtml: true,
+        ResText:
+          "Une erreur est survenue lors du traitement de votre requête. Il semblerait que votre naviguateur ne puisse pas ou veut pas démarrez cette fonction (veuillez verifier la version de votre navigateur ainsi que sa mordernité ou tout simplement les autorisations pour ce site).",
+      });
+
+      setTimeout(() => {
+        this.setState({ ShowMessage: false });
+
+        setTimeout(() => {
+          this.setState({ ShowMessageHtml: false, ResText: null });
+        }, 900);
+      }, 6000);
+      console.error(e);
+    }
+  };
+
   cancelModal = () => {
     this.setState({
       ShowModalSearch: false,
@@ -948,6 +1022,10 @@ export default class Home extends Component {
       PalmaresModal,
       ShowModalVerification,
       ShowModalType,
+      MicOn,
+      ShowMessage,
+      ShowMessageHtml,
+      SecondMessage,
       durer,
       SwitchMyAnim,
       NextAnim,
@@ -1414,6 +1492,16 @@ export default class Home extends Component {
                       })
                     }
                   />
+                  <div
+                    id="SearchFormBtnVoice"
+                    onClick={this.StartSpeechRecognition}
+                  >
+                    <span
+                      className={
+                        MicOn ? "fas fa-microphone" : "fas fa-microphone-slash"
+                      }
+                    ></span>
+                  </div>
                 </Form.Group>
               </Form>
             </Modal.Body>
@@ -1566,6 +1654,11 @@ export default class Home extends Component {
               </Button>
             </Modal.Footer>
           </Modal>
+          {ShowMessageHtml ? (
+            <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
+              <span className="fas fa-info"></span> {ResText}
+            </div>
+          ) : null}
         </Fragment>
       );
   }
