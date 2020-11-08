@@ -918,7 +918,7 @@ export default class Home extends Component {
           setTimeout(() => {
             this.setState({ ShowMessageHtml: false, ResText: null });
           }, 900);
-        }, 3000);
+        }, 3600);
       };
 
       recognition.onend = () => {
@@ -935,7 +935,7 @@ export default class Home extends Component {
           setTimeout(() => {
             this.setState({ ShowMessageHtml: false, ResText: null });
           }, 900);
-        }, 3000);
+        }, 3600);
       };
 
       recognition.onresult = (event) => {
@@ -958,7 +958,7 @@ export default class Home extends Component {
         setTimeout(() => {
           this.setState({ ShowMessageHtml: false, ResText: null });
         }, 900);
-      }, 6000);
+      }, 7000);
       console.error(e);
     }
   };

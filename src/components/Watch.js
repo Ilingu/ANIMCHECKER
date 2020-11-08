@@ -296,7 +296,7 @@ class Watch extends Component {
           setTimeout(() => {
             this.setState({ ShowMessageHtml: false, ResText: null });
           }, 900);
-        }, 2000);
+        }, 3000);
       }
     );
   };

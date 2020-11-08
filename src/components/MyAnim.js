@@ -76,6 +76,12 @@ const MyAnim = ({
                         En Cours
                       </Dropdown.Item>
                       <Dropdown.Item
+                        active={ModeFilter === "seasonAnim" ? true : false}
+                        onClick={() => NewFilter("seasonAnim")}
+                      >
+                        Anime de saison
+                      </Dropdown.Item>
+                      <Dropdown.Item
                         active={ModeFilter === "Finished" ? true : false}
                         onClick={() => NewFilter("Finished")}
                       >

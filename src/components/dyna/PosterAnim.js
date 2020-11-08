@@ -105,8 +105,10 @@ const PosterAnim = ({
     return isFinished ? templatePoster : null;
   } else if (ModeFilter === "Paused") {
     return Paused ? templatePoster : null;
-  } else {
+  } else if (ModeFilter === "Rate") {
     return Rate ? templatePoster : null;
+  } else {
+    return templatePoster;
   }
 };
 
