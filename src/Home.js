@@ -1141,12 +1141,23 @@ export default class Home extends Component {
                 Paused={
                   serieFirebase[key].Paused ? serieFirebase[key].Paused : false
                 }
+                isFav={serieFirebase[key].Fav ? serieFirebase[key].Fav : false}
+                fnFav={(id, FavVal) => {
+                  this.updateValue(`${Pseudo}/serie/${id}`, {
+                    Fav: FavVal,
+                  });
+                }}
                 UnPaused={(id) => {
                   this.updateValue(`${Pseudo}/serie/${id}`, {
                     Paused: false,
                   });
                   this.setState({ RedirectPage: `/Watch/${Pseudo}/${id}` });
                 }}
+                AnimeSeason={
+                  serieFirebase[key].AnimeSeason
+                    ? serieFirebase[key].AnimeSeason
+                    : false
+                }
                 ModeFilter={ModeFilter}
                 url={serieFirebase[key].imageUrl}
                 title={serieFirebase[key].name}
@@ -1164,9 +1175,16 @@ export default class Home extends Component {
                   id={key}
                   Pseudo={Pseudo}
                   Paused={false}
+                  fnFav={(id, FavVal) => {
+                    this.updateValue(`${Pseudo}/film/${id}`, {
+                      Fav: FavVal,
+                    });
+                  }}
+                  AnimeSeason={false}
                   ModeFilter={ModeFilter}
                   url={filmFireBase[key].imageUrl}
                   title={filmFireBase[key].name}
+                  isFav={filmFireBase[key].Fav ? filmFireBase[key].Fav : false}
                   isFinished={filmFireBase[key].finished}
                   Rate={filmFireBase[key].Rate}
                   deleteAnim={this.DeleteAnimVerification}
@@ -1277,6 +1295,13 @@ export default class Home extends Component {
                           { ...serieFirebase, ...filmFireBase }[key]
                             .finishedAnim
                         }
+                        AnimeSeason={
+                          serieFirebase[key] !== undefined
+                            ? serieFirebase[key].AnimeSeason !== undefined
+                              ? serieFirebase[key].AnimeSeason
+                              : false
+                            : false
+                        }
                         Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
                         deleteAnim={this.DeleteAnimVerification}
                         Paused={
@@ -1286,6 +1311,19 @@ export default class Home extends Component {
                               : false
                             : false
                         }
+                        isFav={
+                          { ...serieFirebase, ...filmFireBase }[key].Fav
+                            ? { ...serieFirebase, ...filmFireBase }[key].Fav
+                            : false
+                        }
+                        fnFav={(id, FavVal) => {
+                          this.updateValue(
+                            `${Pseudo}/${id.split("-")[0]}/${id}`,
+                            {
+                              Fav: FavVal,
+                            }
+                          );
+                        }}
                         UnPaused={(id) => {
                           this.updateValue(`${Pseudo}/serie/${id}`, {
                             Paused: false,

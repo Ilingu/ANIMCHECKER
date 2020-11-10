@@ -685,14 +685,36 @@ a:hover {
   transition: 0.7s;
 }
 
-#MyAnime .content .MyAnimPoster .RatingStar {
+#MyAnime .content .MyAnimPoster .RatingStar,
+#MyAnime .content .MyAnimPoster .FvBtn {
   position: absolute;
-  right: 0;
   z-index: 10;
   padding: 5px;
-  background-color: rgba(0, 0, 0, 0.609);
   border-radius: 7px;
   font-size: 15px;
+}
+
+#MyAnime .content .MyAnimPoster .RatingStar {
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.609);
+}
+
+#MyAnime .content .MyAnimPoster .FvBtn {
+  background-color: rgba(0, 0, 0, 0.274);
+  color: #ffc107;
+  cursor: pointer;
+}
+
+#MyAnime .content .MyAnimPoster .FvBtn.bottom {
+  bottom: 44px;
+}
+
+#MyAnime .content .MyAnimPoster .FvBtn.hide {
+  display: none;
+}
+
+#MyAnime .content .MyAnimPoster .FvBtn.show {
+  display: block;
 }
 
 #MyAnime .content .MyAnimPoster .ImgInterract {
@@ -788,6 +810,91 @@ a:hover {
   opacity: 1;
 }
 
+#MyAnime .content .MyAnimPoster.Season {
+  border-radius: 7px;
+  position: relative;
+}
+
+#MyAnime .content .MyAnimPoster.Season .ImgInterract img {
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  opacity: 1;
+  -webkit-transition: 1s;
+  transition: 1s;
+}
+
+#MyAnime .content .MyAnimPoster.Season:hover .ImgInterract img {
+  opacity: 0.2;
+}
+
+#MyAnime .content .MyAnimPoster.Season.hiver {
+  background-image: url("../Img/Hiver.jpg");
+  background-repeat: no-repeat;
+  background-size: 200px 290px;
+  background-color: rgba(77, 140, 207, 0.05);
+  color: #4d8ccf;
+}
+
+#MyAnime .content .MyAnimPoster.Season.hiver .FvBtn {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #37d9ee;
+}
+
+#MyAnime .content .MyAnimPoster.Season.hiver h4 {
+  color: #4d8ccf;
+}
+
+#MyAnime .content .MyAnimPoster.Season.printemps {
+  background-image: url("../Img/Printemps.jpg");
+  background-color: rgba(77, 187, 14, 0.05);
+  background-repeat: no-repeat;
+  background-size: 200px 290px;
+  color: #4dbb0e;
+}
+
+#MyAnime .content .MyAnimPoster.Season.printemps .FvBtn {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #64f311;
+}
+
+#MyAnime .content .MyAnimPoster.Season.printemps h4 {
+  color: #4dbb0e;
+}
+
+#MyAnime .content .MyAnimPoster.Season.ete {
+  background-image: url("../Img/Summer.jpg");
+  background-color: rgba(255, 193, 7, 0.05);
+  background-repeat: no-repeat;
+  background-size: 200px 290px;
+  color: #ffc107;
+}
+
+#MyAnime .content .MyAnimPoster.Season.ete .FvBtn {
+  background-color: rgba(0, 0, 0, 0.35);
+  color: #003ef8;
+}
+
+#MyAnime .content .MyAnimPoster.Season.ete h4 {
+  color: #ffc107;
+}
+
+#MyAnime .content .MyAnimPoster.Season.automne {
+  background-image: url("../Img/Automne.jpg");
+  background-color: rgba(167, 114, 0, 0.05);
+  background-repeat: no-repeat;
+  background-size: 200px 290px;
+  color: #a77200;
+}
+
+#MyAnime .content .MyAnimPoster.Season.automne .FvBtn {
+  background-color: rgba(0, 0, 0, 0.68);
+  color: #a77200;
+}
+
+#MyAnime .content .MyAnimPoster.Season.automne h4 {
+  color: #a77200;
+}
+
 #MyAnime .content .MyAnimPoster.Paused,
 #MyAnime .content .MyAnimPoster.finished {
   -webkit-transform: scale(0.95);
@@ -837,6 +944,11 @@ a:hover {
   color: rgba(23, 163, 184, 0.746);
   border-radius: 7px;
   background-color: #52525298;
+}
+
+#MyAnime .content .MyAnimPoster.Paused .FvBtn {
+  background-color: rgba(0, 0, 0, 0.274);
+  color: #21e0fd;
 }
 
 #MyAnime .content .MyAnimPoster.Paused h4 {

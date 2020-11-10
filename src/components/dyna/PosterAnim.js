@@ -1,6 +1,36 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+const WhitchSeason = () => {
+  const Month = new Date().getMonth() + 1;
+  let season = null;
+  switch (Month) {
+    case 12:
+    case 1:
+    case 2:
+      season = "hiver";
+      break;
+    case 3:
+    case 4:
+    case 5:
+      season = "printemps";
+      break;
+    case 6:
+    case 7:
+    case 8:
+      season = "ete";
+      break;
+    case 9:
+    case 10:
+    case 11:
+      season = "automne";
+      break;
+    default:
+      break;
+  }
+  return season;
+};
+
 const PosterAnim = ({
   Pseudo,
   url,
@@ -12,16 +42,23 @@ const PosterAnim = ({
   UnPaused,
   SeeInDetails,
   inMyAnim,
+  fnFav,
   isFinished,
   deleteAnim,
+  isFav,
   Paused,
+  AnimeSeason,
   ModeFilter,
   isAlleged,
 }) => {
+  let Fav = isFav;
+
   const templatePoster = (
     <div
       className={
-        Paused
+        AnimeSeason && !isFinished
+          ? `MyAnimPoster Season ${WhitchSeason()}`
+          : Paused
           ? "MyAnimPoster Paused"
           : isFinished && isAlleged
           ? "MyAnimPoster finished alleged"
@@ -31,8 +68,25 @@ const PosterAnim = ({
           ? "MyAnimPoster finished"
           : "MyAnimPoster"
       }
+      title={title}
     >
       {isFinished || Paused ? <h4>{title}</h4> : null}
+      <div
+        id="FavBtns"
+        title={isFav ? "Retirer des Fav" : "Ajouter au Fav"}
+        onClick={() => fnFav(id, !isFav)}
+      >
+        <span
+          className={`FvBtn fas fa-heart ${Fav ? "show" : "hide"}${
+            isFinished || Paused ? " bottom" : ""
+          }`}
+        ></span>
+        <span
+          className={`FvBtn far fa-heart ${!Fav ? "show" : "hide"}${
+            isFinished || Paused ? " bottom" : ""
+          }`}
+        ></span>
+      </div>
       {Rate ? (
         <span style={{ color: "gold" }} className="RatingStar fas fa-star">
           {Rate}
@@ -107,8 +161,10 @@ const PosterAnim = ({
     return Paused ? templatePoster : null;
   } else if (ModeFilter === "Rate") {
     return Rate ? templatePoster : null;
+  } else if (ModeFilter === "fav") {
+    return isFav ? templatePoster : null;
   } else {
-    return templatePoster;
+    return AnimeSeason ? templatePoster : null;
   }
 };
 

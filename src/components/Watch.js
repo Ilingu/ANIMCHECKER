@@ -335,6 +335,7 @@ class Watch extends Component {
         `${this.state.Pseudo}/serie/${id}`,
         {
           finishedAnim: true,
+          AnimeSeason: null,
         },
         () => this.setState({ ShowModalRateAnime: true })
       );
@@ -379,9 +380,40 @@ class Watch extends Component {
       this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
         AnimEP: null,
         Badge: null,
+        AnimeSeason: null,
       });
       this.setState({ uid: null, RedirectHome: true });
     }
+  };
+
+  WhitchSeason = () => {
+    const Month = new Date().getMonth() + 1;
+    let season = null;
+    switch (Month) {
+      case 12:
+      case 1:
+      case 2:
+        season = "snowflake";
+        break;
+      case 3:
+      case 4:
+      case 5:
+        season = "seedling";
+        break;
+      case 6:
+      case 7:
+      case 8:
+        season = "umbrella-beach";
+        break;
+      case 9:
+      case 10:
+      case 11:
+        season = "tree";
+        break;
+      default:
+        break;
+    }
+    return season;
   };
 
   render() {
@@ -667,7 +699,55 @@ class Watch extends Component {
                         <span className="fas fa-pause"></span> Mettre en Pause
                       </Button>
                     </Dropdown.Item>
+                    <Dropdown.Item>
+                      <Button
+                        variant="dark"
+                        onClick={() => {
+                          this.updateValue(
+                            `${this.state.Pseudo}/serie/${id}`,
+                            {
+                              AnimeSeason: AnimToWatch.AnimeSeason
+                                ? false
+                                : true,
+                            },
+                            () => {
+                              this.setState({
+                                ShowMessage: true,
+                                ShowMessageHtml: true,
+                                ResText: "Changement opéré !",
+                              });
 
+                              setTimeout(() => {
+                                if (SecondMessage) {
+                                  this.setState({ SecondMessage: false });
+                                  return;
+                                }
+
+                                this.setState({
+                                  ShowMessage: false,
+                                  AlreadyClicked: false,
+                                });
+
+                                setTimeout(() => {
+                                  this.setState({
+                                    ShowMessageHtml: false,
+                                    ResText: null,
+                                  });
+                                }, 900);
+                              }, 3000);
+                            }
+                          );
+                        }}
+                        block
+                      >
+                        <span
+                          className={`fas fa-${this.WhitchSeason()}`}
+                        ></span>{" "}
+                        {AnimToWatch.AnimeSeason
+                          ? "Anime Normal"
+                          : "Anime de saison"}
+                      </Button>
+                    </Dropdown.Item>
                     <Dropdown.Item>
                       <Button
                         variant="warning"

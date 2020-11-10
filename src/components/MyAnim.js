@@ -71,38 +71,66 @@ const MyAnim = ({
                     <Dropdown.Menu>
                       <Dropdown.Item
                         active={ModeFilter === "NotFinished" ? true : false}
-                        onClick={() => NewFilter("NotFinished")}
+                        onClick={() => {
+                          if (ModeFilter === "NotFinished") return;
+                          NewFilter("NotFinished");
+                        }}
                       >
                         En Cours
                       </Dropdown.Item>
                       <Dropdown.Item
                         active={ModeFilter === "seasonAnim" ? true : false}
-                        onClick={() => NewFilter("seasonAnim")}
+                        onClick={() => {
+                          if (ModeFilter === "seasonAnim") return;
+                          NewFilter("seasonAnim");
+                        }}
                       >
                         Anime de saison
                       </Dropdown.Item>
                       <Dropdown.Item
                         active={ModeFilter === "Finished" ? true : false}
-                        onClick={() => NewFilter("Finished")}
+                        onClick={() => {
+                          if (ModeFilter === "Finished") return;
+                          NewFilter("Finished");
+                        }}
                       >
                         Finis
                       </Dropdown.Item>
                       <Dropdown.Item
                         active={ModeFilter === "Paused" ? true : false}
-                        onClick={() => NewFilter("Paused")}
+                        onClick={() => {
+                          if (ModeFilter === "Paused") return;
+                          NewFilter("Paused");
+                        }}
                       >
                         Pause
                       </Dropdown.Item>
                       <Dropdown.Divider />
                       <Dropdown.Item
                         active={ModeFilter === "Rate" ? true : false}
-                        onClick={() => NewFilter("Rate")}
+                        onClick={() => {
+                          if (ModeFilter === "Rate") return;
+                          NewFilter("Rate");
+                        }}
                       >
                         Note
                       </Dropdown.Item>
                       <Dropdown.Item
+                        active={ModeFilter === "fav" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "fav") return;
+                          NewFilter("fav");
+                        }}
+                      >
+                        Favoris
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
                         active={ModeFilter === "All" ? true : false}
-                        onClick={() => NewFilter("All")}
+                        onClick={() => {
+                          if (ModeFilter === "All") return;
+                          NewFilter("All");
+                        }}
                       >
                         Tous
                       </Dropdown.Item>
