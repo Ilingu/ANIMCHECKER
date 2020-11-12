@@ -3,7 +3,16 @@ import React, { Fragment, useState } from "react";
 // Design
 import { Button, Form } from "react-bootstrap";
 
-const Login = ({ forForm, verificateCode, SubmitLogin, resetPseudo }) => {
+const Login = ({
+  forForm,
+  verificateCode,
+  SubmitLogin,
+  resetPseudo,
+  resetVpn,
+  ShowMessageHtml,
+  ShowMessage,
+  ResText,
+}) => {
   const [NumTel, setNumTel] = useState("");
 
   let stepToShow = null;
@@ -69,9 +78,18 @@ const Login = ({ forForm, verificateCode, SubmitLogin, resetPseudo }) => {
         <span className="fas fa-arrow-left"></span> Retour (mon Pseudo est pas
         le bon)
       </Button>
+      <Button variant="danger" id="resetVpnBtn" onClick={resetVpn}>
+        <span className="fas fa-exclamation-triangle"></span> Impossible de se
+        connecter
+      </Button>
       {forForm[1] === 1 ? <div id="recaptcha-container"></div> : null}
       <h2>Connecte toi pour faire des list d'anime:</h2>
       {stepToShow}
+      {ShowMessageHtml ? (
+        <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
+          <span className="fas fa-info"></span> {ResText}
+        </div>
+      ) : null}
     </section>
   );
 };

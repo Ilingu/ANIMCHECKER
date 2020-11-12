@@ -131,6 +131,8 @@ export default class Home extends Component {
     } else {
       self.setState({ AllowUseReAuth: true });
     }
+    // Verified Conn
+    this.AllowVpn(true);
   }
 
   reAuth = () => {
@@ -141,6 +143,29 @@ export default class Home extends Component {
 
       this.setState({ AuthenticateMethod: true, AllowUseReAuth: false });
     });
+  };
+
+  AllowVpn = (verifiedFirst = false) => {
+    // Allow Vpn
+    if (verifiedFirst) {
+      setTimeout(() => {
+        if (this.state.uid === null && this.state.proprio === null) {
+          window.localStorage.removeItem("firebase:previous_websocket_failure");
+        }
+      }, 2000);
+    } else {
+      let i = 0;
+      const interval = setInterval(() => {
+        i++;
+        if (i === 15) this.reAuth();
+        if (this.state.uid === null && this.state.proprio === null) {
+          // Allow Vpn
+          window.localStorage.removeItem("firebase:previous_websocket_failure");
+        } else {
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
   };
 
   AddToHome = () => {
@@ -269,6 +294,9 @@ export default class Home extends Component {
   };
 
   handleAuth = async (authData) => {
+    // Allow Vpn
+    window.localStorage.removeItem("firebase:previous_websocket_failure");
+    // Connection
     const box = await base.fetch(this.state.Pseudo, { context: this });
 
     if (!box.proprio) {
@@ -1074,6 +1102,25 @@ export default class Home extends Component {
                 CodeNumber: [event.target.value, CodeNumber[1]],
               }),
           ])}
+          ShowMessage={ShowMessage}
+          ShowMessageHtml={ShowMessageHtml}
+          ResText={ResText}
+          resetVpn={() => {
+            this.setState({
+              ShowMessage: true,
+              ShowMessageHtml: true,
+              ResText:
+                "Le système est actuellement entrain de régler le problème, vueillez patientez... (attente de 0s à 1-2min)",
+            });
+            this.AllowVpn(false);
+            setTimeout(() => {
+              this.setState({ ShowMessage: false });
+
+              setTimeout(() => {
+                this.setState({ ShowMessageHtml: false, ResText: null });
+              }, 900);
+            }, 7000);
+          }}
           resetPseudo={() => {
             window.localStorage.removeItem("Pseudo");
             this.setState({ Pseudo: null });
@@ -1237,7 +1284,7 @@ export default class Home extends Component {
               nbEP:
                 animToDetails[1].type === "Movie"
                   ? ""
-                  : animToDetails[0].episodes.length,
+                  : animToDetails[0].episodes.length.toString(),
               imageUrl: animToDetails[1].image_url,
             });
             this.openNext(animToDetails[1].type === "Movie" ? "film" : "serie");

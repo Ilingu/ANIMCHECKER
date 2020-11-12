@@ -241,6 +241,12 @@ a:hover {
           box-shadow: 4px 4px 8px #000;
 }
 
+.loginForm #resetVpnBtn {
+  position: absolute;
+  right: 0;
+  top: 0px;
+}
+
 .loginForm h2 {
   font-size: 20px !important;
 }
