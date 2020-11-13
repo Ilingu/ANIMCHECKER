@@ -31,12 +31,14 @@ export default class Home extends Component {
     serieFirebase: {},
     PhoneNumFireBase: null,
     NotifState: null,
+    FirstQuerie: false,
     AuthenticateMethod: false,
     AllowUseReAuth: false,
     uid: null,
     proprio: null,
     // Bon fonctionnement de l'app
     findAnim: [],
+    JustDefined: false,
     RedirectPage: null,
     ShowModalSearch: false,
     ShowModalAddAnim: false,
@@ -207,6 +209,7 @@ export default class Home extends Component {
           ModeFindAnime: [false, null],
           RefreshRandomizeAnime: true,
           RefreshRandomizeAnime2: true,
+          FirstQuerie: true,
           NextAnimFireBase: NextAnim,
           serieFirebase: serie,
           filmFireBase: film,
@@ -342,7 +345,7 @@ export default class Home extends Component {
       .confirm(this.state.CodeNumber[0])
       .then(() => {
         console.log("Connected");
-        this.setState({ NewLogin: true });
+        this.setState({ NewLogin: true, JustDefined: false });
       })
       .catch((err) => {
         console.error(err);
@@ -1059,9 +1062,11 @@ export default class Home extends Component {
       ShowMessage,
       ShowMessageHtml,
       durer,
+      FirstQuerie,
       SwitchMyAnim,
       NextAnim,
       CodeNumber,
+      JustDefined,
       nbEP,
       SearchInAnimeList,
       RefreshRandomizeAnime,
@@ -1083,7 +1088,7 @@ export default class Home extends Component {
       return (
         <PseudoCO
           Submit={(PseudoArgs) => {
-            this.setState({ Pseudo: PseudoArgs });
+            this.setState({ Pseudo: PseudoArgs, JustDefined: true });
             window.localStorage.setItem("Pseudo", JSON.stringify(PseudoArgs));
           }}
         />
@@ -1107,6 +1112,7 @@ export default class Home extends Component {
                 CodeNumber: [event.target.value, CodeNumber[1]],
               }),
           ])}
+          JustDefined={JustDefined}
           ShowMessage={ShowMessage}
           ShowMessageHtml={ShowMessageHtml}
           ResText={ResText}
@@ -1271,6 +1277,14 @@ export default class Home extends Component {
           ))
         ),
       });
+    } else if (
+      Object.keys(filmFireBase).length === 0 &&
+      Object.keys(serieFirebase).length === 0 &&
+      Object.keys(NextAnimFireBase).length === 0 &&
+      Pseudo &&
+      FirstQuerie
+    ) {
+      this.refreshValueFirebase();
     }
 
     if (animToDetails !== null && animToDetails.length >= 2)

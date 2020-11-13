@@ -9,6 +9,7 @@ const Login = ({
   SubmitLogin,
   resetPseudo,
   resetVpn,
+  JustDefined,
   ShowMessageHtml,
   ShowMessage,
   ResText,
@@ -74,10 +75,17 @@ const Login = ({
 
   return (
     <section className="loginForm">
-      <Button variant="primary" onClick={resetPseudo} className="btnBackDesing">
-        <span className="fas fa-arrow-left"></span> Retour (mon Pseudo est pas
-        le bon)
-      </Button>
+      {JustDefined ? (
+        <Button
+          variant="primary"
+          onClick={resetPseudo}
+          className="btnBackDesing"
+        >
+          <span className="fas fa-arrow-left"></span> Retour (mon Pseudo est pas
+          le bon)
+        </Button>
+      ) : null}
+
       <Button variant="danger" id="resetVpnBtn" onClick={resetVpn}>
         <span className="fas fa-exclamation-triangle"></span> Impossible de se
         connecter
