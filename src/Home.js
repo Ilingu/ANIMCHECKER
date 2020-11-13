@@ -132,7 +132,7 @@ export default class Home extends Component {
       self.setState({ AllowUseReAuth: true });
     }
     // Verified Conn
-    this.AllowVpn(true);
+    this.AllowVpn(false);
   }
 
   reAuth = () => {
@@ -145,25 +145,23 @@ export default class Home extends Component {
     });
   };
 
-  AllowVpn = (verifiedFirst = false) => {
+  AllowVpn = (Reconn, reFunc = null) => {
     // Allow Vpn
-    if (verifiedFirst) {
-      setTimeout(() => {
-        if (this.state.uid === null && this.state.proprio === null) {
-          window.localStorage.removeItem("firebase:previous_websocket_failure");
-        }
-      }, 2000);
+    if (Reconn && reFunc !== null) {
+      // Allow Vpn
+      window.localStorage.removeItem("firebase:previous_websocket_failure");
+      setTimeout(reFunc, 2000);
     } else {
       let i = 0;
       const interval = setInterval(() => {
-        i++;
-        if (i === 15) this.reAuth();
+        if (i === 6) this.reAuth();
         if (this.state.uid === null && this.state.proprio === null) {
           // Allow Vpn
           window.localStorage.removeItem("firebase:previous_websocket_failure");
         } else {
           clearInterval(interval);
         }
+        i++;
       }, 1000);
     }
   };
@@ -218,6 +216,7 @@ export default class Home extends Component {
         after
       );
     } catch (err) {
+      this.AllowVpn(true, () => this.refreshValueFirebase(after));
       console.error(err);
     }
   };
@@ -235,6 +234,7 @@ export default class Home extends Component {
         });
       })
       .catch((err) => {
+        this.AllowVpn(true, () => this.addValue(path, value));
         console.error(err);
         this.setState({
           ResText: "Votre requête d'ajout à echoué.",
@@ -256,7 +256,10 @@ export default class Home extends Component {
         data: value,
       })
       .then(this.refreshValueFirebase)
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(true, () => this.updateValue(path, value));
+        console.error(err);
+      });
   };
 
   deleteValue = async (path) => {
@@ -277,6 +280,7 @@ export default class Home extends Component {
         }, 2000);
       })
       .catch((err) => {
+        this.AllowVpn(true, () => this.deleteValue(path));
         console.error(err);
         this.cancelModal();
         this.setState({
@@ -754,6 +758,7 @@ export default class Home extends Component {
         }
       });
     } catch (err) {
+      this.AllowVpn(true, this.doNotif);
       console.error(err);
     }
   };
@@ -1074,7 +1079,7 @@ export default class Home extends Component {
       return <Redirect to={RedirectSave} />;
     }
 
-    if (!Pseudo) {
+    if (!Pseudo || typeof Pseudo !== "string") {
       return (
         <PseudoCO
           Submit={(PseudoArgs) => {

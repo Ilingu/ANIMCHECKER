@@ -90,6 +90,12 @@ class Watch extends Component {
     });
   };
 
+  AllowVpn = (reFunc) => {
+    // Allow Vpn
+    window.localStorage.removeItem("firebase:previous_websocket_failure");
+    setTimeout(reFunc, 2000);
+  };
+
   refreshAnimToWatch = async (ForFirstTime = null) => {
     const { id } = this.state;
 
@@ -117,6 +123,7 @@ class Watch extends Component {
         Badges: Object.keys(BadgeFireBase).length !== 0 ? BadgeFireBase : [],
       });
     } catch (err) {
+      this.AllowVpn(() => this.refreshAnimToWatch(ForFirstTime));
       console.error(err);
     }
   };
@@ -127,14 +134,20 @@ class Watch extends Component {
         data: value,
       })
       .then(this.refreshAnimToWatch)
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(() => this.addValue(path, value));
+        console.error(err);
+      });
   };
 
   deleteValue = (path) => {
     base
       .remove(path)
       .then(this.refreshAnimToWatch)
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(() => this.deleteValue(path));
+        console.error(err);
+      });
   };
 
   updateValue = (path, value, next = null) => {
@@ -146,7 +159,10 @@ class Watch extends Component {
         this.refreshAnimToWatch();
         if (next !== null) next();
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(() => this.updateValue(path, value, next));
+        console.error(err);
+      });
   };
 
   getValue = async (path) => {
@@ -446,7 +462,8 @@ class Watch extends Component {
       ShowModalAddSeasonEp,
     } = this.state;
 
-    if (!Pseudo) return <Redirect to="/notifuser/2" />;
+    if (!Pseudo || typeof Pseudo !== "string")
+      return <Redirect to="/notifuser/2" />;
     if (AnimToWatch.Paused) return <Redirect to="/notifuser/1" />;
     if (RedirectHome) return <Redirect to="/notifuser/5" />;
 

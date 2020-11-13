@@ -38,6 +38,12 @@ class Settings extends Component {
     }
   }
 
+  AllowVpn = (reFunc) => {
+    // Allow Vpn
+    window.localStorage.removeItem("firebase:previous_websocket_failure");
+    setTimeout(reFunc, 2000);
+  };
+
   refreshNotifState = async () => {
     try {
       const NotifState = await base.fetch(`${this.state.Pseudo}/NotifState`, {
@@ -45,6 +51,7 @@ class Settings extends Component {
       });
       this.setState({ NotifState });
     } catch (err) {
+      this.AllowVpn(this.refreshNotifState);
       console.error(err);
     }
   };
@@ -55,7 +62,10 @@ class Settings extends Component {
         data: value,
       })
       .then(after)
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(() => this.addValue(path, value, after));
+        console.error(err);
+      });
   };
 
   updateValue = (path, value, after = null) => {
@@ -64,14 +74,20 @@ class Settings extends Component {
         data: value,
       })
       .then(after)
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(() => this.updateValue(path, value, after));
+        console.error(err);
+      });
   };
 
   deleteValue = (path, after = null) => {
     base
       .remove(path)
       .then(after)
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(() => this.deleteValue(path, after));
+        console.error(err);
+      });
   };
 
   handleAuth = async (authData) => {
@@ -112,7 +128,8 @@ class Settings extends Component {
           });
         });
       } catch (err) {
-        console.log();
+        this.AllowVpn(() => this.ChangePseudo(event));
+        console.log(err);
       }
     } else {
       this.cancelState();
@@ -151,7 +168,8 @@ class Settings extends Component {
 
     if (RedirectHome !== null) return <Redirect to={RedirectHome} />;
 
-    if (!Pseudo) return <Redirect to="/notifuser/2" />;
+    if (!Pseudo || typeof Pseudo !== "string")
+      return <Redirect to="/notifuser/2" />;
     else if (isFirstTime) {
       this.setState({ isFirstTime: false });
       return <Redirect to="/Settings" />;

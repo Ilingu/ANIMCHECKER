@@ -61,6 +61,12 @@ export default class Notif extends Component {
     });
   };
 
+  AllowVpn = (reFunc) => {
+    // Allow Vpn
+    window.localStorage.removeItem("firebase:previous_websocket_failure");
+    setTimeout(reFunc, 2000);
+  };
+
   refreshNotif = async () => {
     try {
       const Notif = await base.fetch(`${this.state.Pseudo}/Notif`, {
@@ -69,6 +75,7 @@ export default class Notif extends Component {
 
       this.setState({ Notif });
     } catch (err) {
+      this.AllowVpn(this.refreshNotif);
       console.error(err);
     }
   };
@@ -105,6 +112,7 @@ export default class Notif extends Component {
           });
         })
         .catch((err) => {
+          this.AllowVpn(this.addNotif);
           console.error(err);
           this.setState({
             ResText: "Error: Impossible d'ajouter la notif, fatal: true",
@@ -128,7 +136,10 @@ export default class Notif extends Component {
         data: { paused: value },
       })
       .then(this.refreshNotif)
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.AllowVpn(() => this.updatePaused(key, value));
+        console.error(err);
+      });
   };
 
   handleDelete = (key) => {
@@ -142,6 +153,7 @@ export default class Notif extends Component {
         });
       })
       .catch((err) => {
+        this.AllowVpn(() => this.handleDelete(key));
         console.error(err);
         this.setState({
           ResText: "Error: Impossible de supprimer la notif :/",
@@ -171,7 +183,8 @@ export default class Notif extends Component {
       typeAlert,
     } = this.state;
 
-    if (!Pseudo) return <Redirect to="/notifuser/2" />;
+    if (!Pseudo || typeof Pseudo !== "string")
+      return <Redirect to="/notifuser/2" />;
     else if (isFirstTime) {
       this.setState({ isFirstTime: false });
       return <Redirect to="/notificator" />;
