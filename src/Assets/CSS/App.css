@@ -819,6 +819,13 @@ a:hover {
 #MyAnime .content .MyAnimPoster.Season {
   border-radius: 7px;
   position: relative;
+  background-repeat: no-repeat;
+  background-size: 200px 290px;
+}
+
+#MyAnime .content .MyAnimPoster.Season .ImgInterract {
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
 }
 
 #MyAnime .content .MyAnimPoster.Season .ImgInterract img {
@@ -835,8 +842,6 @@ a:hover {
 
 #MyAnime .content .MyAnimPoster.Season.hiver {
   background-image: url("../Img/Hiver.jpg");
-  background-repeat: no-repeat;
-  background-size: 200px 290px;
   background-color: rgba(77, 140, 207, 0.05);
   color: #4d8ccf;
 }
@@ -853,8 +858,6 @@ a:hover {
 #MyAnime .content .MyAnimPoster.Season.printemps {
   background-image: url("../Img/Printemps.jpg");
   background-color: rgba(77, 187, 14, 0.05);
-  background-repeat: no-repeat;
-  background-size: 200px 290px;
   color: #4dbb0e;
 }
 
@@ -870,8 +873,6 @@ a:hover {
 #MyAnime .content .MyAnimPoster.Season.ete {
   background-image: url("../Img/Summer.jpg");
   background-color: rgba(255, 193, 7, 0.05);
-  background-repeat: no-repeat;
-  background-size: 200px 290px;
   color: #ffc107;
 }
 
@@ -887,8 +888,6 @@ a:hover {
 #MyAnime .content .MyAnimPoster.Season.automne {
   background-image: url("../Img/Automne.jpg");
   background-color: rgba(167, 114, 0, 0.05);
-  background-repeat: no-repeat;
-  background-size: 200px 290px;
   color: #a77200;
 }
 
@@ -1058,6 +1057,9 @@ a:hover {
     width: 150px !important;
     height: 222px !important;
     border-radius: 7px;
+  }
+  #MyAnime .content .MyAnimPoster.Season {
+    background-size: 150px 222px !important;
   }
 }
 
