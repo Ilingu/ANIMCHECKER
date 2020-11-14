@@ -11,7 +11,7 @@ class Settings extends Component {
   state = {
     // FireBase
     Pseudo: this.props.match.params.pseudo,
-    NotifState: null,
+    ParamsOptn: null,
     // Auth
     uid: null,
     proprio: null,
@@ -26,6 +26,8 @@ class Settings extends Component {
     typeAlert: null,
   };
 
+  setIntervalVar = null;
+
   componentDidMount() {
     const self = this;
 
@@ -38,20 +40,31 @@ class Settings extends Component {
     }
   }
 
-  AllowVpn = (reFunc) => {
-    // Allow Vpn
-    window.localStorage.removeItem("firebase:previous_websocket_failure");
-    setTimeout(reFunc, 2000);
+  reAuth = () => {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.handleAuth({ user });
+      }
+    });
   };
 
-  refreshNotifState = async () => {
+  reconectFirebase = () => {
+    let i = 0;
+    this.setIntervalVar = setInterval(() => {
+      if (i === 5) this.reAuth();
+      // Allow Vpn
+      window.localStorage.removeItem("firebase:previous_websocket_failure");
+      i++;
+    }, 1000);
+  };
+
+  refreshParamsOptn = async () => {
     try {
-      const NotifState = await base.fetch(`${this.state.Pseudo}/NotifState`, {
+      const ParamsOptn = await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
         context: this,
       });
-      this.setState({ NotifState });
+      this.setState({ ParamsOptn });
     } catch (err) {
-      this.AllowVpn(this.refreshNotifState);
       console.error(err);
     }
   };
@@ -62,10 +75,7 @@ class Settings extends Component {
         data: value,
       })
       .then(after)
-      .catch((err) => {
-        this.AllowVpn(() => this.addValue(path, value, after));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   updateValue = (path, value, after = null) => {
@@ -74,24 +84,19 @@ class Settings extends Component {
         data: value,
       })
       .then(after)
-      .catch((err) => {
-        this.AllowVpn(() => this.updateValue(path, value, after));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   deleteValue = (path, after = null) => {
     base
       .remove(path)
       .then(after)
-      .catch((err) => {
-        this.AllowVpn(() => this.deleteValue(path, after));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   handleAuth = async (authData) => {
     const box = await base.fetch(this.state.Pseudo, { context: this });
+    const connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
@@ -99,7 +104,22 @@ class Settings extends Component {
       });
     }
 
-    this.refreshNotifState();
+    // Verified listener Conn
+    connectedRef.on("value", (snap) => {
+      if (snap.val() === true) {
+        if (this.setIntervalVar !== null) {
+          clearInterval(this.setIntervalVar);
+          console.warn("Firebase Connexion retablished");
+        }
+      } else {
+        this.reconectFirebase();
+        console.warn(
+          "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
+        );
+      }
+    });
+
+    this.refreshParamsOptn();
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -128,7 +148,6 @@ class Settings extends Component {
           });
         });
       } catch (err) {
-        this.AllowVpn(() => this.ChangePseudo(event));
         console.log(err);
       }
     } else {
@@ -153,7 +172,7 @@ class Settings extends Component {
   render() {
     const {
       Pseudo,
-      NotifState,
+      ParamsOptn,
       uid,
       proprio,
       RedirectHome,
@@ -226,35 +245,115 @@ class Settings extends Component {
             >
               <span className="fas fa-user"></span> Changer De Pseudo
             </Button>
-            {NotifState === null ? null : (
-              <Button
-                variant={
-                  NotifState === false ? "outline-info" : "outline-warning"
-                }
-                onClick={() =>
-                  this.updateValue(
-                    `${Pseudo}/`,
-                    {
-                      NotifState: NotifState === false ? true : false,
-                    },
-                    this.refreshNotifState
-                  )
-                }
-                className="BtnActionAccount"
-              >
-                {NotifState === false ? (
-                  <Fragment>
-                    <span className="fas fa-bell"></span>
-                    Activer{" "}
-                  </Fragment>
-                ) : (
-                  <Fragment>
-                    <span className="fas fa-bell-slash"></span>
-                    Désactiver{" "}
-                  </Fragment>
-                )}
-                les Notif
-              </Button>
+            {ParamsOptn === null ? null : (
+              <Fragment>
+                <Button
+                  variant={
+                    ParamsOptn.NotifState === false
+                      ? "outline-info"
+                      : "outline-warning"
+                  }
+                  onClick={() =>
+                    this.updateValue(
+                      `${Pseudo}/ParamsOptn`,
+                      {
+                        NotifState:
+                          ParamsOptn.NotifState === false ? true : false,
+                      },
+                      this.refreshParamsOptn
+                    )
+                  }
+                  className="BtnActionAccount"
+                >
+                  {ParamsOptn.NotifState === false ? (
+                    <Fragment>
+                      <span className="fas fa-bell"></span>
+                      Activer{" "}
+                    </Fragment>
+                  ) : (
+                    <Fragment>
+                      <span className="fas fa-bell-slash"></span>
+                      Désactiver{" "}
+                    </Fragment>
+                  )}
+                  les Notif
+                </Button>
+                <Button
+                  variant="outline-light"
+                  className="BtnActionAccount"
+                  onClick={() =>
+                    this.updateValue(
+                      `${Pseudo}/ParamsOptn`,
+                      {
+                        MyAnimRandom:
+                          ParamsOptn.MyAnimRandom === false ? true : false,
+                      },
+                      this.refreshParamsOptn
+                    )
+                  }
+                >
+                  <span className="fas fa-dice"></span> Mélange de la liste
+                  d'anime: {ParamsOptn.MyAnimRandom === false ? "Off" : "On"}
+                </Button>
+                <Form>
+                  <Form.Group controlId="animeAcueill">
+                    <Form.Control
+                      value={
+                        ParamsOptn.TypeAnimeHomePage
+                          ? ParamsOptn.TypeAnimeHomePage
+                          : "NotFinished"
+                      }
+                      onChange={(event) => {
+                        this.updateValue(
+                          `${Pseudo}/ParamsOptn`,
+                          {
+                            TypeAnimeHomePage: event.target.value,
+                          },
+                          this.refreshParamsOptn
+                        );
+                        this.setState({
+                          ResText: `A votre retour sur votre page d'accueil vous verez maintenant ${
+                            event.target.value === "All"
+                              ? "Tous vos Anime"
+                              : `vos animes ${event.target.value}`
+                          }`,
+                          typeAlert: "success",
+                        });
+                        setTimeout(() => {
+                          this.setState({
+                            ResText: null,
+                            typeAlert: null,
+                          });
+                        }, 3600);
+                      }}
+                      as="select"
+                      custom
+                    >
+                      <option value="NotFinished">
+                        Page d'accueil sur tes animes En Cours
+                      </option>
+                      <option value="seasonAnim">
+                        Page d'accueil sur tes animes De Saison
+                      </option>
+                      <option value="Finished">
+                        Page d'accueil sur tes animes Finis
+                      </option>
+                      <option value="Paused">
+                        Page d'accueil sur tes animes En Pauses
+                      </option>
+                      <option value="Rate">
+                        Page d'accueil sur tes animes Notés
+                      </option>
+                      <option value="fav">
+                        Page d'accueil sur tes animes Favoris
+                      </option>
+                      <option value="All">
+                        Page d'accueil sur Tous tes animes
+                      </option>
+                    </Form.Control>
+                  </Form.Group>
+                </Form>
+              </Fragment>
             )}
             <hr />
             <Button
@@ -354,14 +453,14 @@ class Settings extends Component {
                 this.deleteValue(`${Pseudo}/film`);
                 this.deleteValue(`${Pseudo}/NextAnim`);
                 this.deleteValue(`${Pseudo}/Notif`);
-                this.deleteValue(`${Pseudo}/NotifState`, () =>
+                this.deleteValue(`${Pseudo}/ParamsOptn`, () =>
                   this.setState({
                     ResText: "Toutes vos données ont bien été réinitialisées",
                     typeAlert: "success",
                   })
                 );
                 this.cancelState();
-                this.refreshNotifState();
+                this.refreshParamsOptn();
               }}
             >
               Supprimer les données

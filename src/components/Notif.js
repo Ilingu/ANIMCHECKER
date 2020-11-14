@@ -33,6 +33,8 @@ export default class Notif extends Component {
     typeAlert: null,
   };
 
+  setIntervalVar = null;
+
   componentDidMount() {
     const self = this;
 
@@ -46,8 +48,27 @@ export default class Notif extends Component {
     }
   }
 
+  reAuth = () => {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.handleAuth({ user });
+      }
+    });
+  };
+
+  reconectFirebase = () => {
+    let i = 0;
+    this.setIntervalVar = setInterval(() => {
+      if (i === 5) this.reAuth();
+      // Allow Vpn
+      window.localStorage.removeItem("firebase:previous_websocket_failure");
+      i++;
+    }, 1000);
+  };
+
   handleAuth = async (authData) => {
     const box = await base.fetch(this.state.Pseudo, { context: this });
+    const connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
@@ -55,16 +76,25 @@ export default class Notif extends Component {
       });
     }
 
+    // Verified listener Conn
+    connectedRef.on("value", (snap) => {
+      if (snap.val() === true) {
+        if (this.setIntervalVar !== null) {
+          clearInterval(this.setIntervalVar);
+          console.warn("Firebase Connexion retablished");
+        }
+      } else {
+        this.reconectFirebase();
+        console.warn(
+          "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
+        );
+      }
+    });
+
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
     });
-  };
-
-  AllowVpn = (reFunc) => {
-    // Allow Vpn
-    window.localStorage.removeItem("firebase:previous_websocket_failure");
-    setTimeout(reFunc, 2000);
   };
 
   refreshNotif = async () => {
@@ -75,7 +105,6 @@ export default class Notif extends Component {
 
       this.setState({ Notif });
     } catch (err) {
-      this.AllowVpn(this.refreshNotif);
       console.error(err);
     }
   };
@@ -112,7 +141,6 @@ export default class Notif extends Component {
           });
         })
         .catch((err) => {
-          this.AllowVpn(this.addNotif);
           console.error(err);
           this.setState({
             ResText: "Error: Impossible d'ajouter la notif, fatal: true",
@@ -136,10 +164,7 @@ export default class Notif extends Component {
         data: { paused: value },
       })
       .then(this.refreshNotif)
-      .catch((err) => {
-        this.AllowVpn(() => this.updatePaused(key, value));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   handleDelete = (key) => {
@@ -153,7 +178,6 @@ export default class Notif extends Component {
         });
       })
       .catch((err) => {
-        this.AllowVpn(() => this.handleDelete(key));
         console.error(err);
         this.setState({
           ResText: "Error: Impossible de supprimer la notif :/",

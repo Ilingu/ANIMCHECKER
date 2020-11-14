@@ -54,6 +54,8 @@ class Watch extends Component {
     ShowModalAddSeasonEp: false,
   };
 
+  setIntervalVar = null;
+
   componentDidMount() {
     const self = this;
 
@@ -75,8 +77,27 @@ class Watch extends Component {
     }
   }
 
+  reAuth = () => {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.handleAuth({ user });
+      }
+    });
+  };
+
+  reconectFirebase = () => {
+    let i = 0;
+    this.setIntervalVar = setInterval(() => {
+      if (i === 5) this.reAuth();
+      // Allow Vpn
+      window.localStorage.removeItem("firebase:previous_websocket_failure");
+      i++;
+    }, 1000);
+  };
+
   handleAuth = async (authData) => {
     const box = await base.fetch(this.state.Pseudo, { context: this });
+    const connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
@@ -84,16 +105,25 @@ class Watch extends Component {
       });
     }
 
+    // Verified listener Conn
+    connectedRef.on("value", (snap) => {
+      if (snap.val() === true) {
+        if (this.setIntervalVar !== null) {
+          clearInterval(this.setIntervalVar);
+          console.warn("Firebase Connexion retablished");
+        }
+      } else {
+        this.reconectFirebase();
+        console.warn(
+          "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
+        );
+      }
+    });
+
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
     });
-  };
-
-  AllowVpn = (reFunc) => {
-    // Allow Vpn
-    window.localStorage.removeItem("firebase:previous_websocket_failure");
-    setTimeout(reFunc, 2000);
   };
 
   refreshAnimToWatch = async (ForFirstTime = null) => {
@@ -108,22 +138,12 @@ class Watch extends Component {
           context: this,
         }
       );
-      const BadgeFireBase = await base.fetch(
-        ForFirstTime !== null
-          ? `${this.state.Pseudo}/${
-              ForFirstTime.split("-")[0]
-            }/${ForFirstTime}/Badge`
-          : `${this.state.Pseudo}/${id.split("-")[0]}/${id}/Badge`,
-        {
-          context: this,
-        }
-      );
+
       this.setState({
         AnimToWatch,
-        Badges: Object.keys(BadgeFireBase).length !== 0 ? BadgeFireBase : [],
+        Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
       });
     } catch (err) {
-      this.AllowVpn(() => this.refreshAnimToWatch(ForFirstTime));
       console.error(err);
     }
   };
@@ -134,20 +154,14 @@ class Watch extends Component {
         data: value,
       })
       .then(this.refreshAnimToWatch)
-      .catch((err) => {
-        this.AllowVpn(() => this.addValue(path, value));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   deleteValue = (path) => {
     base
       .remove(path)
       .then(this.refreshAnimToWatch)
-      .catch((err) => {
-        this.AllowVpn(() => this.deleteValue(path));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   updateValue = (path, value, next = null) => {
@@ -159,10 +173,7 @@ class Watch extends Component {
         this.refreshAnimToWatch();
         if (next !== null) next();
       })
-      .catch((err) => {
-        this.AllowVpn(() => this.updateValue(path, value, next));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   getValue = async (path) => {
@@ -659,6 +670,27 @@ class Watch extends Component {
             </h1>
             <div className="img">
               <img src={AnimToWatch.imageUrl} alt="Img of anim" />
+              {AnimToWatch.Fav ? (
+                <span
+                  title="Retirer des Favoris"
+                  className="FvBtn fas fa-heart"
+                  onClick={() =>
+                    this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
+                      Fav: false,
+                    })
+                  }
+                ></span>
+              ) : (
+                <span
+                  title="Ajouter aux Favoris"
+                  className="FvBtn far fa-heart"
+                  onClick={() =>
+                    this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
+                      Fav: true,
+                    })
+                  }
+                ></span>
+              )}
               {AnimToWatch.Rate ? (
                 <span
                   style={{ color: "gold" }}

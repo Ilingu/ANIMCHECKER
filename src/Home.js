@@ -30,7 +30,7 @@ export default class Home extends Component {
     filmFireBase: {},
     serieFirebase: {},
     PhoneNumFireBase: null,
-    NotifState: null,
+    ParamsOptn: null,
     FirstQuerie: false,
     AuthenticateMethod: false,
     AllowUseReAuth: false,
@@ -77,6 +77,8 @@ export default class Home extends Component {
     // A2HS
     AddToHomeScreen: null,
   };
+
+  setIntervalVar = null;
 
   componentDidMount() {
     const self = this;
@@ -134,8 +136,18 @@ export default class Home extends Component {
       self.setState({ AllowUseReAuth: true });
     }
     // Verified Conn
-    this.AllowVpn(false);
+    this.AllowVpn();
   }
+
+  reconectFirebase = () => {
+    let i = 0;
+    this.setIntervalVar = setInterval(() => {
+      if (i === 5) this.reAuth();
+      // Allow Vpn
+      window.localStorage.removeItem("firebase:previous_websocket_failure");
+      i++;
+    }, 1000);
+  };
 
   reAuth = () => {
     firebase.auth().onAuthStateChanged((user) => {
@@ -147,25 +159,19 @@ export default class Home extends Component {
     });
   };
 
-  AllowVpn = (Reconn, reFunc = null) => {
+  AllowVpn = () => {
     // Allow Vpn
-    if (Reconn && reFunc !== null) {
-      // Allow Vpn
-      window.localStorage.removeItem("firebase:previous_websocket_failure");
-      setTimeout(reFunc, 2000);
-    } else {
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i === 6) this.reAuth();
-        if (this.state.uid === null && this.state.proprio === null) {
-          // Allow Vpn
-          window.localStorage.removeItem("firebase:previous_websocket_failure");
-        } else {
-          clearInterval(interval);
-        }
-        i++;
-      }, 1000);
-    }
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i === 6) this.reAuth();
+      if (this.state.uid === null && this.state.proprio === null) {
+        // Allow Vpn
+        window.localStorage.removeItem("firebase:previous_websocket_failure");
+      } else {
+        clearInterval(interval);
+      }
+      i++;
+    }, 1000);
   };
 
   AddToHome = () => {
@@ -197,7 +203,7 @@ export default class Home extends Component {
       const film = await base.fetch(`${this.state.Pseudo}/film`, {
         context: this,
       });
-      const NotifState = await base.fetch(`${this.state.Pseudo}/NotifState`, {
+      const ParamsOptn = await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
         context: this,
       });
       const PhoneNum = await base.fetch(`${this.state.Pseudo}/PhoneNum`, {
@@ -209,17 +215,19 @@ export default class Home extends Component {
           ModeFindAnime: [false, null],
           RefreshRandomizeAnime: true,
           RefreshRandomizeAnime2: true,
+          ModeFilter: ParamsOptn.TypeAnimeHomePage
+            ? ParamsOptn.TypeAnimeHomePage
+            : "NotFinished",
           FirstQuerie: true,
           NextAnimFireBase: NextAnim,
           serieFirebase: serie,
           filmFireBase: film,
           PhoneNumFireBase: PhoneNum,
-          NotifState,
+          ParamsOptn,
         },
         after
       );
     } catch (err) {
-      this.AllowVpn(true, () => this.refreshValueFirebase(after));
       console.error(err);
     }
   };
@@ -237,7 +245,6 @@ export default class Home extends Component {
         });
       })
       .catch((err) => {
-        this.AllowVpn(true, () => this.addValue(path, value));
         console.error(err);
         this.setState({
           ResText: "Votre requête d'ajout à echoué.",
@@ -259,10 +266,7 @@ export default class Home extends Component {
         data: value,
       })
       .then(this.refreshValueFirebase)
-      .catch((err) => {
-        this.AllowVpn(true, () => this.updateValue(path, value));
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
   };
 
   deleteValue = async (path) => {
@@ -283,7 +287,6 @@ export default class Home extends Component {
         }, 2000);
       })
       .catch((err) => {
-        this.AllowVpn(true, () => this.deleteValue(path));
         console.error(err);
         this.cancelModal();
         this.setState({
@@ -305,12 +308,28 @@ export default class Home extends Component {
     window.localStorage.removeItem("firebase:previous_websocket_failure");
     // Connection
     const box = await base.fetch(this.state.Pseudo, { context: this });
+    const connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
         data: authData.user.uid,
       });
     }
+
+    // Verified listener Conn
+    connectedRef.on("value", (snap) => {
+      if (snap.val() === true) {
+        if (this.setIntervalVar !== null) {
+          clearInterval(this.setIntervalVar);
+          console.warn("Firebase Connexion retablished");
+        }
+      } else {
+        this.reconectFirebase();
+        console.warn(
+          "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
+        );
+      }
+    });
 
     this.refreshValueFirebase(() => {
       this.notifyMe();
@@ -680,12 +699,13 @@ export default class Home extends Component {
 
   notifyMe = () => {
     const self = this;
-    if (window.Notification) {
+    const { ParamsOptn } = this.state;
+    if (window.Notification && ParamsOptn !== null) {
       if (
         Notification.permission === "granted" &&
-        this.state.NotifState !== false &&
-        this.state.NotifState !== null &&
-        this.state.NotifState !== undefined
+        ParamsOptn.NotifState !== false &&
+        ParamsOptn.NotifState !== null &&
+        ParamsOptn.NotifState !== undefined
       ) {
         self.doNotif();
       } else if (Notification.permission !== "granted") {
@@ -761,7 +781,6 @@ export default class Home extends Component {
         }
       });
     } catch (err) {
-      this.AllowVpn(true, this.doNotif);
       console.error(err);
     }
   };
@@ -1064,6 +1083,7 @@ export default class Home extends Component {
       durer,
       FirstQuerie,
       SwitchMyAnim,
+      ParamsOptn,
       NextAnim,
       CodeNumber,
       JustDefined,
@@ -1123,7 +1143,7 @@ export default class Home extends Component {
               ResText:
                 "Le système est actuellement entrain de régler le problème, vueillez patientez... (attente de 0s à 1-2min)",
             });
-            this.AllowVpn(false);
+            this.AllowVpn();
             setTimeout(() => {
               this.setState({ ShowMessage: false });
 
@@ -1187,71 +1207,75 @@ export default class Home extends Component {
       SwitchMyAnim &&
       RefreshRandomizeAnime
     ) {
+      const MyAnimListTemplate = Object.keys(serieFirebase)
+        .map((key) => (
+          <Poster
+            key={key}
+            id={key}
+            Pseudo={Pseudo}
+            Paused={
+              serieFirebase[key].Paused ? serieFirebase[key].Paused : false
+            }
+            isFav={serieFirebase[key].Fav ? serieFirebase[key].Fav : false}
+            fnFav={(id, FavVal) => {
+              this.updateValue(`${Pseudo}/serie/${id}`, {
+                Fav: FavVal,
+              });
+            }}
+            UnPaused={(id) => {
+              this.updateValue(`${Pseudo}/serie/${id}`, {
+                Paused: false,
+              });
+              this.setState({ RedirectPage: `/Watch/${Pseudo}/${id}` });
+            }}
+            AnimeSeason={
+              serieFirebase[key].AnimeSeason
+                ? serieFirebase[key].AnimeSeason
+                : false
+            }
+            ModeFilter={ModeFilter}
+            url={serieFirebase[key].imageUrl}
+            title={serieFirebase[key].name}
+            isFinished={serieFirebase[key].finishedAnim}
+            Rate={serieFirebase[key].Rate}
+            deleteAnim={this.DeleteAnimVerification}
+            isAlleged={!serieFirebase[key].AnimEP ? true : false}
+            inMyAnim={true}
+          />
+        ))
+        .concat(
+          Object.keys(filmFireBase).map((key) => (
+            <Poster
+              key={key}
+              id={key}
+              Pseudo={Pseudo}
+              Paused={false}
+              fnFav={(id, FavVal) => {
+                this.updateValue(`${Pseudo}/film/${id}`, {
+                  Fav: FavVal,
+                });
+              }}
+              AnimeSeason={false}
+              ModeFilter={ModeFilter}
+              url={filmFireBase[key].imageUrl}
+              title={filmFireBase[key].name}
+              isFav={filmFireBase[key].Fav ? filmFireBase[key].Fav : false}
+              isFinished={filmFireBase[key].finished}
+              Rate={filmFireBase[key].Rate}
+              deleteAnim={this.DeleteAnimVerification}
+              isAlleged={false}
+              inMyAnim={true}
+            />
+          ))
+        );
       this.setState({
         RefreshRandomizeAnime: false,
-        MyAnimListSaved: this.shuffleArray(
-          Object.keys(serieFirebase)
-            .map((key) => (
-              <Poster
-                key={key}
-                id={key}
-                Pseudo={Pseudo}
-                Paused={
-                  serieFirebase[key].Paused ? serieFirebase[key].Paused : false
-                }
-                isFav={serieFirebase[key].Fav ? serieFirebase[key].Fav : false}
-                fnFav={(id, FavVal) => {
-                  this.updateValue(`${Pseudo}/serie/${id}`, {
-                    Fav: FavVal,
-                  });
-                }}
-                UnPaused={(id) => {
-                  this.updateValue(`${Pseudo}/serie/${id}`, {
-                    Paused: false,
-                  });
-                  this.setState({ RedirectPage: `/Watch/${Pseudo}/${id}` });
-                }}
-                AnimeSeason={
-                  serieFirebase[key].AnimeSeason
-                    ? serieFirebase[key].AnimeSeason
-                    : false
-                }
-                ModeFilter={ModeFilter}
-                url={serieFirebase[key].imageUrl}
-                title={serieFirebase[key].name}
-                isFinished={serieFirebase[key].finishedAnim}
-                Rate={serieFirebase[key].Rate}
-                deleteAnim={this.DeleteAnimVerification}
-                isAlleged={!serieFirebase[key].AnimEP ? true : false}
-                inMyAnim={true}
-              />
-            ))
-            .concat(
-              Object.keys(filmFireBase).map((key) => (
-                <Poster
-                  key={key}
-                  id={key}
-                  Pseudo={Pseudo}
-                  Paused={false}
-                  fnFav={(id, FavVal) => {
-                    this.updateValue(`${Pseudo}/film/${id}`, {
-                      Fav: FavVal,
-                    });
-                  }}
-                  AnimeSeason={false}
-                  ModeFilter={ModeFilter}
-                  url={filmFireBase[key].imageUrl}
-                  title={filmFireBase[key].name}
-                  isFav={filmFireBase[key].Fav ? filmFireBase[key].Fav : false}
-                  isFinished={filmFireBase[key].finished}
-                  Rate={filmFireBase[key].Rate}
-                  deleteAnim={this.DeleteAnimVerification}
-                  isAlleged={false}
-                  inMyAnim={true}
-                />
-              ))
-            )
-        ),
+        MyAnimListSaved:
+          ParamsOptn === null
+            ? this.shuffleArray(MyAnimListTemplate)
+            : ParamsOptn.MyAnimRandom === false
+            ? MyAnimListTemplate
+            : this.shuffleArray(MyAnimListTemplate),
       });
     } else if (
       !SwitchMyAnim &&
@@ -1259,23 +1283,29 @@ export default class Home extends Component {
       NextAnimFireBase !== undefined &&
       RefreshRandomizeAnime2
     ) {
+      const MyNextAnimListTemplate = Object.keys(NextAnimFireBase).map(
+        (key) => (
+          <NextAnimCO
+            key={key}
+            name={NextAnimFireBase[key].name}
+            handleClick={() => {
+              this.setState({
+                ShowModalType: true,
+                title: NextAnimFireBase[key].name,
+                NextAnimToDelete: key,
+              });
+            }}
+          />
+        )
+      );
       this.setState({
         RefreshRandomizeAnime2: false,
-        MyNextAnimListSaved: this.shuffleArray(
-          Object.keys(NextAnimFireBase).map((key) => (
-            <NextAnimCO
-              key={key}
-              name={NextAnimFireBase[key].name}
-              handleClick={() => {
-                this.setState({
-                  ShowModalType: true,
-                  title: NextAnimFireBase[key].name,
-                  NextAnimToDelete: key,
-                });
-              }}
-            />
-          ))
-        ),
+        MyNextAnimListSaved:
+          ParamsOptn === null
+            ? this.shuffleArray(MyNextAnimListTemplate)
+            : ParamsOptn.MyAnimRandom === false
+            ? MyNextAnimListTemplate
+            : this.shuffleArray(MyNextAnimListTemplate),
       });
     } else if (
       Object.keys(filmFireBase).length === 0 &&
