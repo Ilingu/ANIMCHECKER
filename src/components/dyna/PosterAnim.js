@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 
 const WhitchSeason = () => {
@@ -50,13 +50,16 @@ const PosterAnim = ({
   AnimeSeason,
   ModeFilter,
   isAlleged,
+  Skeleton,
 }) => {
   let Fav = isFav;
 
   const templatePoster = (
     <div
       className={
-        AnimeSeason && !isFinished
+        Skeleton
+          ? "MyAnimPoster Skeleton"
+          : AnimeSeason && !isFinished
           ? `MyAnimPoster Season ${WhitchSeason()}`
           : Paused
           ? "MyAnimPoster Paused"
@@ -70,87 +73,103 @@ const PosterAnim = ({
       }
       title={title}
     >
-      {isFinished || Paused ? <h4>{title}</h4> : null}
-      <div
-        id="FavBtns"
-        title={isFav ? "Retirer des Fav" : "Ajouter au Fav"}
-        onClick={() => fnFav(id, !isFav)}
-      >
-        <span
-          className={`FvBtn fas fa-heart ${Fav ? "show" : "hide"}${
-            isFinished || Paused ? " bottom" : ""
-          }`}
-        ></span>
-        <span
-          className={`FvBtn far fa-heart ${!Fav ? "show" : "hide"}${
-            isFinished || Paused ? " bottom" : ""
-          }`}
-        ></span>
-      </div>
-      {Rate ? (
-        <span style={{ color: "gold" }} className="RatingStar fas fa-star">
-          {Rate}
-        </span>
-      ) : null}
-
-      <div className="ImgInterract">
-        <img src={url} alt="Img of Anim" />
-      </div>
-      <div className="action">
-        {Paused ? (
-          <div
-            className="watch paused"
-            onClick={() => UnPaused(id)}
-            title={`Reprendre ${title}`}
-          >
-            <span className="fas fa-play-circle"></span>
-          </div>
-        ) : isAlleged ? null : (
-          <Link push="false" to={`/Watch/${Pseudo}/${id}`}>
-            <div className="watch">
-              <span className="fas fa-eye"></span>
-            </div>
-          </Link>
-        )}
-
-        <div
-          className="delete"
-          onClick={() => deleteAnim(`${Pseudo}/${id.split("-")[0]}/${id}`)}
-        >
-          <span className="fas fa-trash-alt"></span>
-        </div>
-      </div>
-      {Paused ? (
-        <h5>
-          <span className="fas fa-pause"></span> En Pause
-        </h5>
-      ) : isFinished && isAlleged ? (
-        <h5>
-          <span className="fas fa-check"></span> + Allégé
-        </h5>
-      ) : isAlleged ? (
-        <h5>{title}: Allégé</h5>
-      ) : isFinished ? (
-        <h5>
-          <span className="fas fa-check"></span>
-        </h5>
+      {Skeleton ? (
+        <div className="MiniPoster"></div>
       ) : (
-        <h4 className="name">{title}</h4>
+        <Fragment>
+          {isFinished || Paused ? <h4>{title}</h4> : null}
+          <div
+            id="FavBtns"
+            title={isFav ? "Retirer des Fav" : "Ajouter au Fav"}
+            onClick={() => fnFav(id, !isFav)}
+          >
+            <span
+              className={`FvBtn fas fa-heart ${Fav ? "show" : "hide"}${
+                isFinished || Paused ? " bottom" : ""
+              }`}
+            ></span>
+            <span
+              className={`FvBtn far fa-heart ${!Fav ? "show" : "hide"}${
+                isFinished || Paused ? " bottom" : ""
+              }`}
+            ></span>
+          </div>
+          {Rate ? (
+            <span style={{ color: "gold" }} className="RatingStar fas fa-star">
+              {Rate}
+            </span>
+          ) : null}
+          <div className="ImgInterract">
+            <img src={url} alt="Img of Anim" />
+          </div>
+          <div className="action">
+            {Paused ? (
+              <div
+                className="watch paused"
+                onClick={() => UnPaused(id)}
+                title={`Reprendre ${title}`}
+              >
+                <span className="fas fa-play-circle"></span>
+              </div>
+            ) : isAlleged ? null : (
+              <Link push="false" to={`/Watch/${Pseudo}/${id}`}>
+                <div className="watch">
+                  <span className="fas fa-eye"></span>
+                </div>
+              </Link>
+            )}
+
+            <div
+              className="delete"
+              onClick={() => deleteAnim(`${Pseudo}/${id.split("-")[0]}/${id}`)}
+            >
+              <span className="fas fa-trash-alt"></span>
+            </div>
+          </div>
+          {Paused ? (
+            <h5>
+              <span className="fas fa-pause"></span> En Pause
+            </h5>
+          ) : isFinished && isAlleged ? (
+            <h5>
+              <span className="fas fa-check"></span> + Allégé
+            </h5>
+          ) : isAlleged ? (
+            <h5>{title}: Allégé</h5>
+          ) : isFinished ? (
+            <h5>
+              <span className="fas fa-check"></span>
+            </h5>
+          ) : (
+            <h4 className="name">{title}</h4>
+          )}
+        </Fragment>
       )}
     </div>
   );
 
   if (!inMyAnim) {
     return (
-      <div className="poster" onClick={() => SeeInDetails(id)}>
-        <img src={url} alt="Img of Anim" />
-        <h4>
-          <span className="title">{title}</span>,<br />
-          <span className="score">{score}/10</span>,{" "}
-          <span className="type">{type === "Movie" ? "Movie" : "Anime"}</span>
-        </h4>
+      <div
+        className={`poster${Skeleton ? " Skeleton" : ""}`}
+        onClick={() => SeeInDetails(id)}
+      >
+        {Skeleton ? null : (
+          <Fragment>
+            <img src={url} alt="Img of Anim" />
+            <h4>
+              <span className="title">{title}</span>,<br />
+              <span className="score">{score}/10</span>,{" "}
+              <span className="type">
+                {type === "Movie" ? "Movie" : "Anime"}
+              </span>
+            </h4>
+          </Fragment>
+        )}
       </div>
     );
+  } else if (Skeleton) {
+    return templatePoster;
   } else if (ModeFilter === "All") {
     return templatePoster;
   } else if (ModeFilter === "NotFinished") {

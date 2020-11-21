@@ -11,7 +11,7 @@ import NekoSamaLogo from "../Assets/Img/NekoSamaLogo.svg";
 import NetflixLogo from "../Assets/Img/NetflixLogo.png";
 import WakanimLogo from "../Assets/Img/WakanimLogo.png";
 // CSS
-import { Spinner, Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
+import { Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
@@ -30,6 +30,7 @@ class Watch extends Component {
     // Bon fonctionnement de l'app
     modeStart: false,
     type: "",
+    LoadingMode: true,
     isFirstTime: true,
     RedirectHome: false,
     ToOpen: "",
@@ -142,6 +143,7 @@ class Watch extends Component {
       this.setState({
         AnimToWatch,
         Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
+        LoadingMode: false,
       });
     } catch (err) {
       console.error(err);
@@ -467,6 +469,7 @@ class Watch extends Component {
       repereEpisode,
       repereSaison,
       ToOpen,
+      LoadingMode,
       ShowModalAddEp,
       nbEpToAdd,
       SeasonToAddEp,
@@ -478,17 +481,28 @@ class Watch extends Component {
     if (AnimToWatch.Paused) return <Redirect to="/notifuser/1" />;
     if (RedirectHome) return <Redirect to="/notifuser/5" />;
 
-    if (!uid) {
+    if (LoadingMode) {
       return (
-        <Spinner
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-          }}
-          animation="border"
-          variant="warning"
-        />
+        <section id="WatchSkeleton">
+          <header>
+            <div id="STitle"></div>
+            <div id="SImg"></div>
+          </header>
+          <section id="SToWatch">
+            <div id="SBtnAction"></div>
+            <div id="SBadges"></div>
+            <div id="SText"></div>
+            <div id="Scontent">
+              {type === "film" ? (
+                <div id="Sfilm">
+                  <span className="fas fa-play"></span>
+                </div>
+              ) : (
+                <div id="Saccordeon"></div>
+              )}
+            </div>
+          </section>
+        </section>
       );
     }
 

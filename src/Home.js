@@ -56,6 +56,7 @@ export default class Home extends Component {
     MyNextAnimListSaved: null,
     ModeFilter: "NotFinished",
     ModeFindAnime: [false, null],
+    LoadingMode: [true, true],
     palmares: null,
     MicOn: false,
     ShowMessage: false,
@@ -215,6 +216,12 @@ export default class Home extends Component {
           ModeFindAnime: [false, null],
           RefreshRandomizeAnime: true,
           RefreshRandomizeAnime2: true,
+          LoadingMode: [
+            Object.keys(serie).length !== 0 || Object.keys(film).length !== 0
+              ? false
+              : true,
+            Object.keys(NextAnim).length !== 0 ? false : true,
+          ],
           ModeFilter: ParamsOptn.TypeAnimeHomePage
             ? ParamsOptn.TypeAnimeHomePage
             : "NotFinished",
@@ -1085,6 +1092,7 @@ export default class Home extends Component {
       SwitchMyAnim,
       ParamsOptn,
       NextAnim,
+      LoadingMode,
       CodeNumber,
       JustDefined,
       nbEP,
@@ -1190,6 +1198,7 @@ export default class Home extends Component {
         <Poster
           key={anim.mal_id}
           url={anim.image_url}
+          Skeleton={false}
           score={anim.score}
           title={anim.title}
           SeeInDetails={this.handleClick}
@@ -1205,6 +1214,7 @@ export default class Home extends Component {
       (Object.keys(filmFireBase).length !== 0 ||
         Object.keys(serieFirebase).length !== 0) &&
       SwitchMyAnim &&
+      !LoadingMode[0] &&
       RefreshRandomizeAnime
     ) {
       const MyAnimListTemplate = Object.keys(serieFirebase)
@@ -1212,6 +1222,7 @@ export default class Home extends Component {
           <Poster
             key={key}
             id={key}
+            Skeleton={false}
             Pseudo={Pseudo}
             Paused={
               serieFirebase[key].Paused ? serieFirebase[key].Paused : false
@@ -1249,6 +1260,7 @@ export default class Home extends Component {
               key={key}
               id={key}
               Pseudo={Pseudo}
+              Skeleton={false}
               Paused={false}
               fnFav={(id, FavVal) => {
                 this.updateValue(`${Pseudo}/film/${id}`, {
@@ -1281,6 +1293,7 @@ export default class Home extends Component {
       !SwitchMyAnim &&
       Object.keys(NextAnimFireBase).length !== 0 &&
       NextAnimFireBase !== undefined &&
+      !LoadingMode[1] &&
       RefreshRandomizeAnime2
     ) {
       const MyNextAnimListTemplate = Object.keys(NextAnimFireBase).map(
@@ -1288,6 +1301,7 @@ export default class Home extends Component {
           <NextAnimCO
             key={key}
             name={NextAnimFireBase[key].name}
+            Skeleton={[false, null]}
             handleClick={() => {
               this.setState({
                 ShowModalType: true,
@@ -1317,7 +1331,7 @@ export default class Home extends Component {
       this.refreshValueFirebase();
     }
 
-    if (animToDetails !== null && animToDetails.length >= 2)
+    if (animToDetails !== null && animToDetails.length >= 2) {
       return (
         <OneAnim
           details={animToDetails}
@@ -1340,7 +1354,27 @@ export default class Home extends Component {
           }}
         />
       );
-    else
+    } else {
+      let SkeletonListAnime = [],
+        SkeletonListNextAnime = [];
+
+      if (LoadingMode[0]) {
+        for (let i = 0; i < 10; i++) {
+          SkeletonListAnime = [
+            ...SkeletonListAnime,
+            <Poster key={i} Skeleton={true} inMyAnim={true} />,
+          ];
+        }
+      }
+      if (LoadingMode[1]) {
+        for (let i = 0; i < 6; i++) {
+          SkeletonListNextAnime = [
+            ...SkeletonListNextAnime,
+            <NextAnimCO key={i} Skeleton={[true, i]} />,
+          ];
+        }
+      }
+
       return (
         <Fragment>
           <ContextForMyAnim.Provider
@@ -1365,6 +1399,7 @@ export default class Home extends Component {
                 this.setState({ NextAnim: event.target.value })
               }
               NextAnim={NextAnim}
+              LoadingMode={LoadingMode[0]}
               ResText={ResText}
               typeAlert={typeAlert}
               ModeFindAnime={ModeFindAnime[0]}
@@ -1383,6 +1418,7 @@ export default class Home extends Component {
                         key={key}
                         id={key}
                         Pseudo={Pseudo}
+                        Skeleton={false}
                         url={
                           { ...serieFirebase, ...filmFireBase }[key].imageUrl
                         }
@@ -1445,6 +1481,8 @@ export default class Home extends Component {
                         inMyAnim={true}
                       />
                     ))
+                  : LoadingMode[0]
+                  ? SkeletonListAnime
                   : MyAnimListSaved || "Vous avez aucun anime :/\nRajoutez-en !"
               }
               MyNextAnimList={
@@ -1462,6 +1500,8 @@ export default class Home extends Component {
                         }}
                       />
                     ))
+                  : LoadingMode[1]
+                  ? SkeletonListNextAnime
                   : MyNextAnimListSaved ||
                     "Vous avez mis aucun anime comme souhait dans cette section\nRajoutez-en"
               }
@@ -1489,7 +1529,15 @@ export default class Home extends Component {
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Animé(s) trouvé(s)</Modal.Title>
             </Modal.Header>
-            <Modal.Body id="ModalBody">{animList}</Modal.Body>
+            <Modal.Body id="ModalBody">
+              {animList === null
+                ? () => {
+                    for (let i = 0; i < 10; i++) {
+                      <Poster key={i} Skeleton={true} inMyAnim={false} />;
+                    }
+                  }
+                : animList}
+            </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
@@ -1798,5 +1846,6 @@ export default class Home extends Component {
           ) : null}
         </Fragment>
       );
+    }
   }
 }

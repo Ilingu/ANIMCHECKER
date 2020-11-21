@@ -816,6 +816,46 @@ a:hover {
   opacity: 1;
 }
 
+#MyAnime .content .MyAnimPoster.Skeleton {
+  position: relative;
+  overflow: hidden;
+  width: 200px;
+  height: 321px;
+  border-radius: 7px;
+}
+
+#MyAnime .content .MyAnimPoster.Skeleton .MiniPoster {
+  position: relative;
+  background-color: #32373b;
+  border-radius: 7px;
+  width: 200px;
+  height: 290px;
+}
+
+#MyAnime .content .MyAnimPoster.Skeleton .MiniPoster::after {
+  content: "";
+  position: absolute;
+  left: -200px;
+  width: 200px;
+  height: 290px;
+  background-image: -webkit-gradient(linear, left top, right top, from(#34393d), color-stop(#32373b), to(#34393d));
+  background-image: linear-gradient(90deg, #34393d, #32373b, #34393d);
+  border-radius: 7px;
+  -webkit-animation: Skeleton 1.2s ease-in 0.5s infinite;
+          animation: Skeleton 1.2s ease-in 0.5s infinite;
+}
+
+#MyAnime .content .MyAnimPoster.Skeleton::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  bottom: 5px;
+  width: 180px;
+  height: 17px;
+  background-color: #495057;
+  border-radius: 25px;
+}
+
 #MyAnime .content .MyAnimPoster.Season {
   border-radius: 7px;
   position: relative;
@@ -1019,13 +1059,60 @@ a:hover {
   left: 50px;
   opacity: 0;
   font-size: 1.6rem;
+  color: #f7f7f7 !important;
   -webkit-transition: 1.5s;
   transition: 1.5s;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim button .animation:hover {
-  -webkit-animation: LToR 0.5s ease-out 0.1s 1 forwards;
-          animation: LToR 0.5s ease-out 0.1s 1 forwards;
+#MyAnime .content.none .NextAnimContainer #NextAnim button:hover .animation {
+  -webkit-animation: LToR 0.5s ease-in 0.1s 1 forwards;
+          animation: LToR 0.5s ease-in 0.1s 1 forwards;
+}
+
+#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #nameSkeleton {
+  position: relative;
+  overflow: hidden;
+  margin-left: calc(50% - 150px / 2);
+  width: 150px;
+  height: 15px;
+  border-radius: 25px;
+  background-color: #3e4449;
+}
+
+#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #BtnSkeleton {
+  position: relative;
+  overflow: hidden;
+  margin-top: 15px;
+  width: 100%;
+  height: 25px;
+  border-radius: 7px;
+  background-color: #3e4449;
+}
+
+#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #nameSkeleton::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 135px;
+  height: 15px;
+  border-radius: 25px;
+  background-image: -webkit-gradient(linear, left top, right top, from(#485058), color-stop(#3e4449), to(#485058));
+  background-image: linear-gradient(90deg, #485058, #3e4449, #485058);
+  -webkit-animation: SkeletonName 2s ease-in 1s infinite;
+          animation: SkeletonName 2s ease-in 1s infinite;
+}
+
+#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #BtnSkeleton::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 85%;
+  height: 25px;
+  border-radius: 7px;
+  background-image: -webkit-gradient(linear, left top, right top, from(#485058), color-stop(#3e4449), to(#485058));
+  background-image: linear-gradient(90deg, #485058, #3e4449, #485058);
+  -webkit-animation: SkeletonBtn 2s ease-in 1s infinite;
+          animation: SkeletonBtn 2s ease-in 1s infinite;
 }
 
 @media screen and (max-width: 1200px) {
@@ -1058,6 +1145,10 @@ a:hover {
     height: 222px !important;
     border-radius: 7px;
   }
+  #MyAnime .content .MyAnimPoster.Skeleton::before {
+    width: 100px;
+    left: calc(50% - 50px);
+  }
   #MyAnime .content .MyAnimPoster.Season {
     background-size: 150px 222px !important;
   }
@@ -1086,6 +1177,13 @@ a:hover {
     height: 148px !important;
     border-radius: 7px;
   }
+  #MyAnime .content .MyAnimPoster.Skeleton::before {
+    width: 75px;
+    left: calc(50% - 75px / 2);
+  }
+  #MyAnime .content .MyAnimPoster.Season {
+    background-size: 100px 148px !important;
+  }
 }
 
 @media screen and (max-width: 240px) {
@@ -1094,6 +1192,148 @@ a:hover {
         grid-template-columns: repeat(1, 1fr);
     justify-items: center;
     gap: 5px;
+  }
+}
+
+#WatchSkeleton {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+#WatchSkeleton > header {
+  position: relative;
+  width: 100%;
+  height: 470px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 40px 0;
+  background-color: rgba(255, 255, 255, 0.096);
+}
+
+#WatchSkeleton > header #STitle {
+  margin-bottom: 15px;
+  width: 200px;
+  height: 30px;
+  border-radius: 25px;
+  background-color: #212121;
+}
+
+#WatchSkeleton > header #SImg {
+  width: 250px;
+  height: 343px;
+  border-radius: 5px;
+  background-color: #212121;
+}
+
+#WatchSkeleton > header::after {
+  content: "";
+  position: absolute;
+  width: 91.27px;
+  height: 38px;
+  left: 10px;
+  top: 5px;
+  background-color: #212121;
+  border-radius: 50px;
+}
+
+#WatchSkeleton #SToWatch #SBtnAction {
+  position: absolute;
+  width: 40px;
+  height: 38px;
+  right: 30px;
+  border-radius: 4px;
+  margin-top: 5px;
+  background-color: rgba(255, 255, 255, 0.096);
+}
+
+#WatchSkeleton #SToWatch #SBadges {
+  width: 26.38px;
+  height: 25px;
+  margin-left: 243px;
+  margin-top: 5px;
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.096);
+}
+
+#WatchSkeleton #SToWatch #SBadges::after {
+  content: "";
+  position: absolute;
+  width: 114px;
+  left: 5px;
+  height: 25px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.096);
+}
+
+#WatchSkeleton #SToWatch #SBadges::before {
+  content: "";
+  position: absolute;
+  left: 124px;
+  width: 114px;
+  height: 25px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.096);
+}
+
+#WatchSkeleton #SToWatch #SText {
+  margin-left: calc(50% - 100px);
+  margin-top: 5px;
+  width: 200px;
+  height: 28px;
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 0.096);
+  margin-bottom: 8px;
+}
+
+#WatchSkeleton #SToWatch #Scontent {
+  position: relative;
+  margin-left: 10px;
+}
+
+#WatchSkeleton #SToWatch #Scontent #Sfilm {
+  width: 220px;
+  height: 26px;
+  background-color: rgba(255, 255, 255, 0.096);
+  color: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+#WatchSkeleton #SToWatch #Scontent #Sfilm span {
+  margin-left: 5px;
+}
+
+#WatchSkeleton #SToWatch #Scontent #Saccordeon {
+  position: relative;
+  margin-left: calc(50% - 25%);
+  width: 50%;
+  min-width: 300px;
+  height: 54px;
+  border: 2px solid rgba(255, 255, 255, 0.096);
+  border-radius: 12px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+
+@media screen and (max-width: 360px) {
+  #WatchSkeleton #SToWatch #SBadges {
+    margin-left: 124px;
+  }
+  #WatchSkeleton #SToWatch #SBadges::before {
+    display: none;
+  }
+  #WatchSkeleton #SToWatch #SText {
+    width: 175px;
   }
 }
 
@@ -1283,37 +1523,37 @@ a:hover {
   font-weight: bold;
 }
 
-#Watch .nonStartMod button {
+#Watch .nonStartMod #ToWatch button {
   margin-left: 10px;
   margin-top: 5px;
 }
 
-#Watch .nonStartMod #DropdownAction {
+#Watch .nonStartMod #ToWatch #DropdownAction {
   position: absolute;
   right: 30px;
 }
 
-#Watch .nonStartMod #DropdownAction::after {
+#Watch .nonStartMod #ToWatch #DropdownAction::after {
   display: none;
 }
 
-#Watch .nonStartMod .content {
+#Watch .nonStartMod #ToWatch .content {
   position: relative;
   margin-left: 10px;
 }
 
-#Watch .nonStartMod .content .film {
+#Watch .nonStartMod #ToWatch .content .film {
   cursor: pointer;
   text-decoration: underline;
   font-size: 1.1rem;
 }
 
-#Watch .nonStartMod .content .film span {
+#Watch .nonStartMod #ToWatch .content .film span {
   color: greenyellow;
   text-decoration: none;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1326,7 +1566,7 @@ a:hover {
           align-items: center;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .accordion-child {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child {
   position: relative;
   width: 50%;
   min-width: 300px;
@@ -1337,30 +1577,30 @@ a:hover {
   margin-bottom: 5px;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .accordion-child .name {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name {
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.7rem;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .accordion-child .name span {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name span {
   color: greenyellow;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .accordion-child .name #AddEpBtn {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name #AddEpBtn {
   position: absolute;
   right: 20px;
   top: 0;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .accordion-child .episodes {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes {
   display: none;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .accordion-child .episodes span {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes span {
   color: greenyellow;
 }
 
-#Watch .nonStartMod .content .accordionAnimEP .accordion-child.active .episodes {
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child.active .episodes {
   display: block;
 }
 
@@ -1611,56 +1851,78 @@ a:hover {
 }
 
 @-webkit-keyframes LToR {
-  0% {
+  from {
     opacity: 0;
     left: 50px;
   }
-  20% {
-    opacity: 1;
-    left: 100px;
-  }
-  40% {
-    opacity: 1;
-    left: 150px;
-  }
-  50% {
-    opacity: 1;
-    left: 200px;
-  }
-  60% {
-    opacity: 1;
-    left: 250px;
-  }
-  100% {
+  to {
     opacity: 1;
     left: 300px;
   }
 }
 
 @keyframes LToR {
-  0% {
+  from {
     opacity: 0;
     left: 50px;
   }
-  20% {
-    opacity: 1;
-    left: 100px;
-  }
-  40% {
-    opacity: 1;
-    left: 150px;
-  }
-  50% {
-    opacity: 1;
-    left: 200px;
-  }
-  60% {
-    opacity: 1;
-    left: 250px;
-  }
-  100% {
+  to {
     opacity: 1;
     left: 300px;
+  }
+}
+
+@-webkit-keyframes Skeleton {
+  from {
+    left: -220px;
+  }
+  to {
+    left: 220px;
+  }
+}
+
+@keyframes Skeleton {
+  from {
+    left: -220px;
+  }
+  to {
+    left: 220px;
+  }
+}
+
+@-webkit-keyframes SkeletonName {
+  from {
+    left: -200px;
+  }
+  to {
+    left: 200px;
+  }
+}
+
+@keyframes SkeletonName {
+  from {
+    left: -200px;
+  }
+  to {
+    left: 200px;
+  }
+}
+
+@-webkit-keyframes SkeletonBtn {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes SkeletonBtn {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
   }
 }
 /*# sourceMappingURL=App.css.map */

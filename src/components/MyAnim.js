@@ -10,6 +10,7 @@ const MyAnim = ({
   SwitchMyNextAnim,
   NextAnimChange,
   ResText,
+  LoadingMode,
   typeAlert,
   MyAnimList,
   NextAnim,
@@ -52,7 +53,7 @@ const MyAnim = ({
               onClick={ModeFindAnime ? null : SwitchMyAnim}
             >
               My Anim{" "}
-              {SwitchMyAnimVar ? (
+              {SwitchMyAnimVar && !LoadingMode ? (
                 <Fragment>
                   <Button
                     variant="link"
@@ -147,7 +148,7 @@ const MyAnim = ({
               onClick={ModeFindAnime ? null : SwitchMyNextAnim}
             >
               My next anim{" "}
-              {!SwitchMyAnimVar ? (
+              {!SwitchMyAnimVar && !LoadingMode ? (
                 <Button
                   variant="link"
                   onClick={() => SearchInAnimeListFn(false)}
