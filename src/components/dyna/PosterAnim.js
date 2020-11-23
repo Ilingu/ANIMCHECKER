@@ -152,7 +152,9 @@ const PosterAnim = ({
     return (
       <div
         className={`poster${Skeleton ? " Skeleton" : ""}`}
-        onClick={() => SeeInDetails(id)}
+        onClick={() => {
+          if (!Skeleton) SeeInDetails(id);
+        }}
       >
         {Skeleton ? null : (
           <Fragment>

@@ -4,7 +4,14 @@ import Episode from "./dyna/Episode";
 // CSS
 import { Button, ResponsiveEmbed } from "react-bootstrap";
 
-const OneAnim = ({ details, back, handleAdd }) => {
+const OneAnim = ({
+  details,
+  back,
+  handleAdd,
+  ShowMessageHtml,
+  ShowMessage,
+  ResText,
+}) => {
   let Episodes = details[0].episodes.map((EP) => (
     <Episode
       key={EP.episode_id}
@@ -106,6 +113,11 @@ const OneAnim = ({ details, back, handleAdd }) => {
       >
         <span className="fas fa-plus"></span> Ajouter {details[1].title}
       </Button>
+      {ShowMessageHtml ? (
+        <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
+          <span className="fas fa-info"></span> {ResText}
+        </div>
+      ) : null}
     </Fragment>
   );
 };

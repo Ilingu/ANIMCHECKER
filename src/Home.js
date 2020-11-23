@@ -1034,6 +1034,7 @@ export default class Home extends Component {
       PalmaresModal: false,
       ShowModalVerification: false,
       palmares: null,
+      findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
       NextAnimToDelete: null,
       titleSearchAnime: "",
@@ -1201,13 +1202,37 @@ export default class Home extends Component {
           Skeleton={false}
           score={anim.score}
           title={anim.title}
-          SeeInDetails={this.handleClick}
+          SeeInDetails={(id) => {
+            this.handleClick(id);
+            this.setState({
+              ShowMessage: true,
+              ShowMessageHtml: true,
+              ResText: "Chargement de la page... Vueillez patienté...",
+            });
+            setTimeout(() => {
+              this.setState({ ShowMessage: false });
+
+              setTimeout(() => {
+                this.setState({ ShowMessageHtml: false, ResText: null });
+              }, 900);
+            }, 5000);
+          }}
           type={anim.type}
           id={anim.mal_id}
           inMyAnim={false}
-          clicked={this.handleClick}
         />
       ));
+    } else if (ShowModalSearch) {
+      for (let i = 0; i < 2; i++) {
+        if (animList) {
+          animList = [
+            ...animList,
+            <Poster key={i} Skeleton={true} inMyAnim={false} />,
+          ];
+        } else {
+          animList = [<Poster key={i} Skeleton={true} inMyAnim={false} />];
+        }
+      }
     }
 
     if (
@@ -1336,6 +1361,9 @@ export default class Home extends Component {
         <OneAnim
           details={animToDetails}
           back={() => this.setState({ animToDetails: null })}
+          ShowMessage={ShowMessage}
+          ShowMessageHtml={ShowMessageHtml}
+          ResText={ResText}
           handleAdd={() => {
             this.setState({
               title: animToDetails[1].title,
@@ -1490,6 +1518,7 @@ export default class Home extends Component {
                   ? ModeFindAnime[1].map((key) => (
                       <NextAnimCO
                         key={key}
+                        Skeleton={[false, null]}
                         name={NextAnimFireBase[key].name}
                         handleClick={() => {
                           this.setState({
@@ -1529,15 +1558,7 @@ export default class Home extends Component {
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Animé(s) trouvé(s)</Modal.Title>
             </Modal.Header>
-            <Modal.Body id="ModalBody">
-              {animList === null
-                ? () => {
-                    for (let i = 0; i < 10; i++) {
-                      <Poster key={i} Skeleton={true} inMyAnim={false} />;
-                    }
-                  }
-                : animList}
-            </Modal.Body>
+            <Modal.Body id="ModalBody">{animList}</Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
