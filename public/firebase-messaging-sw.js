@@ -1,5 +1,5 @@
-importScripts("https://www.gstatic.com/firebasejs/5.9.4/firebase-app.js");
-importScripts("https://www.gstatic.com/firebasejs/5.9.4/firebase-messaging.js");
+importScripts("https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js");
+importScripts("https://www.gstatic.com/firebasejs/8.1.1/firebase-messaging.js");
 const firebaseConfig = {
   apiKey: "AIzaSyDclxea6ZTVkBX4PJlUJEJhSVbhpsM4PiI",
   authDomain: "anim-checker-be237.firebaseapp.com",

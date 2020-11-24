@@ -1,3 +1,10 @@
-# https://www.robotstxt.org/robotstxt.html
+# Groupe 1
+User-agent: Googlebot
+Disallow: /static/
+Disallow: /Icon.png/
+Disallow: /favicon.ico/
+Disallow: /index.html
+
+# Groupe 2
 User-agent: *
-Disallow:
+Allow: /

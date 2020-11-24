@@ -107,9 +107,9 @@ export default class Home extends Component {
         .getRegistration()
         .then((reg) => {
           reg.showNotification(
-            `Sortie Anime: ${message.data.notification.title} !`,
+            `Sortie Anime: ${message.data["firebase-messaging-msg-data"].notification.title} !`,
             {
-              body: `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`,
+              body: `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
               icon: "https://myanimchecker.netlify.app/Icon.png",
               vibrate: [100, 50, 100],
             }
@@ -117,9 +117,9 @@ export default class Home extends Component {
         })
         .catch(() => {
           new Notification(
-            `Sortie Anime: ${message.data.notification.title} !`,
+            `Sortie Anime: ${message.data["firebase-messaging-msg-data"].notification.title} !`,
             {
-              body: `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`,
+              body: `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
               icon: "https://myanimchecker.netlify.app/Icon.png",
             }
           );
