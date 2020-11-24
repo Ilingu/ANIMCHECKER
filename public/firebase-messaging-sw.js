@@ -12,7 +12,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
-messaging.onMessage(function (payload) {
+messaging.setBackgroundMessageHandler(function (payload) {
   const promiseChain = clients
     .matchAll({
       type: "window",
@@ -30,6 +30,19 @@ messaging.onMessage(function (payload) {
   return promiseChain;
 });
 self.addEventListener("notificationclick", function (event) {
-  console.log("On notification click: ", event.notification.tag);
+  let url = "https://myanimchecker.netlify.app/";
   event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: "window" }).then((windowClients) => {
+      for (var i = 0; i < windowClients.length; i++) {
+        var client = windowClients[i];
+        if (client.url === url && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })
+  );
 });
