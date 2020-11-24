@@ -14,7 +14,7 @@ import ContextForMyAnim from "./ContextSchema";
 // CSS
 import { Modal, Button, Form } from "react-bootstrap";
 // DB
-import base, { firebaseApp } from "./db/base";
+import base, { firebaseApp, messaging } from "./db/base";
 import firebase from "firebase/app";
 import "firebase/auth";
 
@@ -83,6 +83,49 @@ export default class Home extends Component {
 
   componentDidMount() {
     const self = this;
+    // Push Message
+    messaging
+      .getToken()
+      .then((currentToken) => {
+        if (currentToken) {
+          window.localStorage.setItem(
+            "PushNotifSub",
+            JSON.stringify(currentToken)
+          );
+        } else {
+          console.log(
+            "No registration token available. Request permission to generate one."
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("An error occurred while retrieving token. ", err);
+      });
+
+    navigator.serviceWorker.addEventListener("message", (message) => {
+      navigator.serviceWorker
+        .getRegistration()
+        .then((reg) => {
+          reg.showNotification(
+            `Sortie Anime: ${message.data.notification.title} !`,
+            {
+              body: `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`,
+              icon: "https://myanimchecker.netlify.app/Icon.png",
+              vibrate: [100, 50, 100],
+            }
+          );
+        })
+        .catch(() => {
+          new Notification(
+            `Sortie Anime: ${message.data.notification.title} !`,
+            {
+              body: `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`,
+              icon: "https://myanimchecker.netlify.app/Icon.png",
+            }
+          );
+        });
+    });
+
     // Recup Message Inter-page
     if (this.props.match.params.codemsg !== undefined) {
       let ResText = null;
@@ -747,37 +790,32 @@ export default class Home extends Component {
           !NotifFirebase[notifKey].called &&
           !NotifFirebase[notifKey].paused
         ) {
-          navigator.serviceWorker
-            .getRegistration()
-            .then((reg) => {
-              reg.showNotification(
-                `Sortie Anime: ${NotifFirebase[notifKey].name} !`,
-                {
-                  body: `Nouvel Episode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
-                  icon: "https://myanimchecker.netlify.app/favicon.ico",
-                  vibrate: [100, 50, 100],
-                  data: {
-                    // eslint-disable-next-line no-restricted-globals
-                    url: self.location.origin,
-                    dateOfArrival: Date.now(),
-                    primaryKey: 1,
-                  },
-                }
-              );
+          fetch("https://fcm.googleapis.com/fcm/send", {
+            mode: "cors",
+            method: "POST",
+            headers: {
+              authorization:
+                "key=AAAAq3ZYpFM:APA91bFtsu-1NQ-_Sgexr7n5PuNCK7NfxwXHCkRt61PArKCDZhmKLeqkkQf8XVhlviPWSnxH58Z0SwLs48YxXhQkBKaCEtiNzVWu7DthTff1rUOIjlxc92JDyoBe5wagS_OLMD6_nKKQ",
+              "content-type": "application/json",
+            },
+            body: {
+              collapse_key: "type_a",
+              notification: {
+                body: `Nouvel Épisode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
+                title: `Sortie Anime: ${NotifFirebase[notifKey].name} !`,
+                icon: "https://myanimchecker.netlify.app/Icon.png",
+              },
+              to: JSON.parse(window.localStorage.getItem("PushNotifSub")),
+            },
+          })
+            .then((response) => {
+              base.update(`${this.state.Pseudo}/Notif/${notifKey}`, {
+                data: { called: true },
+              });
+              return response.json();
             })
-            .catch(() => {
-              new Notification(
-                `Sortie Anime: ${NotifFirebase[notifKey].name} !`,
-                {
-                  body: `Nouvel Episode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
-                  icon: "https://myanimchecker.netlify.app/favicon.ico",
-                }
-              );
-            });
-
-          base.update(`${this.state.Pseudo}/Notif/${notifKey}`, {
-            data: { called: true },
-          });
+            .then((data) => console.log(data))
+            .catch((err) => console.error(err));
         } else if (
           new Date().getDay().toString() !== NotifFirebase[notifKey].day &&
           NotifFirebase[notifKey].called
