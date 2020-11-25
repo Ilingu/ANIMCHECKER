@@ -31,8 +31,15 @@ const MyAnim = ({
       ContentAnimeList.innerHTML === "Vous avez aucun anime :/\nRajoutez-en !"
     ) {
       const Text = document.createElement("h4");
-      Text.innerHTML = `<h4>Vous avez aucun anime dans cette section !</h4>`;
+      Text.innerHTML = `Vous avez aucun anime dans cette section !`;
       ContentAnimeList.parentElement.appendChild(Text);
+    } else if (
+      document.querySelector("#ContentAnimeList").parentElement.children[2] !==
+      undefined
+    ) {
+      document
+        .querySelector("#ContentAnimeList")
+        .parentElement.children[2].remove();
     }
   }
 
