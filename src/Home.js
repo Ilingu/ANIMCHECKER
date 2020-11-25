@@ -106,7 +106,6 @@ export default class Home extends Component {
       navigator.serviceWorker
         .getRegistration()
         .then((reg) => {
-          console.log(message);
           reg.showNotification(
             `Sortie Anime: ${
               message.data["firebase-messaging-msg-data"] === undefined
