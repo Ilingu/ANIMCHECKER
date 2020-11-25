@@ -34,8 +34,9 @@ const MyAnim = ({
       Text.innerHTML = `Vous avez aucun anime dans cette section !`;
       ContentAnimeList.parentElement.appendChild(Text);
     } else if (
+      ContentAnimeList !== null &&
       document.querySelector("#ContentAnimeList").parentElement.children[2] !==
-      undefined
+        undefined
     ) {
       document
         .querySelector("#ContentAnimeList")
