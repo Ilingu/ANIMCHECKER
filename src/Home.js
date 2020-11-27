@@ -107,18 +107,27 @@ export default class Home extends Component {
         .getRegistration()
         .then((reg) => {
           reg.showNotification(
-            `Sortie Anime: ${
-              message.data["firebase-messaging-msg-data"] === undefined
+            message.data["firebase-messaging-msg-data"] === undefined
+              ? message.data.notification.title.split(" ")[0] === "Sortie"
                 ? message.data.notification.title
-                : message.data["firebase-messaging-msg-data"].notification.title
-            } !`,
+                : `Sortie Anime: ${message.data.notification.title} !`
+              : message.data[
+                  "firebase-messaging-msg-data"
+                ].notification.title.split(" ")[0] === "Sortie"
+              ? message.data["firebase-messaging-msg-data"].notification.title
+              : `Sortie Anime: ${message.data["firebase-messaging-msg-data"].notification.title} !`,
             {
-              body: `Nouvel Épisode de ${
+              body:
                 message.data["firebase-messaging-msg-data"] === undefined
-                  ? message.data.notification.body
-                  : message.data["firebase-messaging-msg-data"].notification
+                  ? message.data.notification.body.split(" ")[0] === "Nouvel"
+                    ? message.data.notification.body
+                    : `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`
+                  : message.data[
+                      "firebase-messaging-msg-data"
+                    ].notification.body.split(" ")[0] === "Nouvel"
+                  ? message.data["firebase-messaging-msg-data"].notification
                       .body
-              }, ne le rate pas !`,
+                  : `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
               icon: "https://myanimchecker.netlify.app/Icon.png",
               vibrate: [100, 50, 100],
             }
@@ -126,18 +135,27 @@ export default class Home extends Component {
         })
         .catch(() => {
           new Notification(
-            `Sortie Anime: ${
-              message.data["firebase-messaging-msg-data"] === undefined
+            message.data["firebase-messaging-msg-data"] === undefined
+              ? message.data.notification.title.split(" ")[0] === "Sortie"
                 ? message.data.notification.title
-                : message.data["firebase-messaging-msg-data"].notification.title
-            } !`,
+                : `Sortie Anime: ${message.data.notification.title} !`
+              : message.data[
+                  "firebase-messaging-msg-data"
+                ].notification.title.split(" ")[0] === "Sortie"
+              ? message.data["firebase-messaging-msg-data"].notification.title
+              : `Sortie Anime: ${message.data["firebase-messaging-msg-data"].notification.title} !`,
             {
-              body: `Nouvel Épisode de ${
+              body:
                 message.data["firebase-messaging-msg-data"] === undefined
-                  ? message.data.notification.body
-                  : message.data["firebase-messaging-msg-data"].notification
+                  ? message.data.notification.body.split(" ")[0] === "Nouvel"
+                    ? message.data.notification.body
+                    : `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`
+                  : message.data[
+                      "firebase-messaging-msg-data"
+                    ].notification.body.split(" ")[0] === "Nouvel"
+                  ? message.data["firebase-messaging-msg-data"].notification
                       .body
-              }, ne le rate pas !`,
+                  : `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
               icon: "https://myanimchecker.netlify.app/Icon.png",
             }
           );
