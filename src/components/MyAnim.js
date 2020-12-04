@@ -19,6 +19,7 @@ const MyAnim = ({
   onClose,
   SearchInAnimeListFn,
   ModeFindAnime,
+  RdaAnime,
   ModeFilter,
   NewFilter,
   CloseModeFindAnime,
@@ -106,6 +107,15 @@ const MyAnim = ({
                       >
                         Pause
                       </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "Drop" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "Drop") return;
+                          NewFilter("Drop");
+                        }}
+                      >
+                        Drop
+                      </Dropdown.Item>
                       <Dropdown.Divider />
                       <Dropdown.Item
                         active={ModeFilter === "Rate" ? true : false}
@@ -176,6 +186,15 @@ const MyAnim = ({
         ) : (
           <Fragment>
             <header>
+              <Button
+                id="RdaBtn"
+                onClick={RdaAnime}
+                variant="outline-info"
+                type="submit"
+                block
+              >
+                <span className="fas fa-random"></span> Random Anime {}
+              </Button>
               <h4>Ici tu met les anime que tu veux regarder plus tard: </h4>
               <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="type">

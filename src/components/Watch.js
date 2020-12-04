@@ -479,6 +479,7 @@ class Watch extends Component {
     if (!Pseudo || typeof Pseudo !== "string")
       return <Redirect to="/notifuser/2" />;
     if (AnimToWatch.Paused) return <Redirect to="/notifuser/1" />;
+    if (AnimToWatch.Drop) return <Redirect to="/notifuser/7" />;
     if (RedirectHome) return <Redirect to="/notifuser/5" />;
 
     if (LoadingMode) {
@@ -813,6 +814,23 @@ class Watch extends Component {
                     </Dropdown.Item>
                     <Dropdown.Item>
                       <Button
+                        variant="primary"
+                        block
+                        onClick={() => {
+                          this.updateValue(
+                            `${this.state.Pseudo}/${type}/${id}`,
+                            {
+                              Drop: true,
+                            }
+                          );
+                          this.setState({ uid: null, RedirectHome: true });
+                        }}
+                      >
+                        <span className="fas fa-stop"></span> Drop L'anime
+                      </Button>
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      <Button
                         variant="warning"
                         block
                         onClick={() =>
@@ -826,7 +844,22 @@ class Watch extends Component {
                       </Button>
                     </Dropdown.Item>
                   </Fragment>
-                ) : null}
+                ) : (
+                  <Dropdown.Item>
+                    <Button
+                      variant="primary"
+                      block
+                      onClick={() => {
+                        this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+                          Drop: true,
+                        });
+                        this.setState({ uid: null, RedirectHome: true });
+                      }}
+                    >
+                      <span className="fas fa-stop"></span> Drop L'anime
+                    </Button>
+                  </Dropdown.Item>
+                )}
                 {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
                   <Dropdown.Item>
                     <Button
@@ -846,7 +879,7 @@ class Watch extends Component {
                     </Button>
                   </Dropdown.Item>
                 ) : null}
-
+                <Dropdown.Divider />
                 <Dropdown.Item>
                   <Button
                     variant="danger"

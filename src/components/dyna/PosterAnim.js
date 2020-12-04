@@ -47,6 +47,7 @@ const PosterAnim = ({
   deleteAnim,
   isFav,
   Paused,
+  Drop,
   AnimeSeason,
   ModeFilter,
   isAlleged,
@@ -63,6 +64,8 @@ const PosterAnim = ({
           ? `MyAnimPoster Season ${WhitchSeason()}`
           : Paused
           ? "MyAnimPoster Paused"
+          : Drop
+          ? "MyAnimPoster Drop"
           : isFinished && isAlleged
           ? "MyAnimPoster finished alleged"
           : !isFinished && isAlleged
@@ -77,23 +80,26 @@ const PosterAnim = ({
         <div className="MiniPoster"></div>
       ) : (
         <Fragment>
-          {isFinished || Paused ? <h4>{title}</h4> : null}
-          <div
-            id="FavBtns"
-            title={isFav ? "Retirer des Fav" : "Ajouter au Fav"}
-            onClick={() => fnFav(id, !isFav)}
-          >
-            <span
-              className={`FvBtn fas fa-heart ${Fav ? "show" : "hide"}${
-                isFinished || Paused ? " bottom" : ""
-              }`}
-            ></span>
-            <span
-              className={`FvBtn far fa-heart ${!Fav ? "show" : "hide"}${
-                isFinished || Paused ? " bottom" : ""
-              }`}
-            ></span>
-          </div>
+          {isFinished || Paused || Drop ? <h4>{title}</h4> : null}
+          {Drop ? null : (
+            <div
+              id="FavBtns"
+              title={isFav ? "Retirer des Fav" : "Ajouter au Fav"}
+              onClick={() => fnFav(id, !isFav)}
+            >
+              <span
+                className={`FvBtn fas fa-heart ${Fav ? "show" : "hide"}${
+                  isFinished || Paused || Drop ? " bottom" : ""
+                }`}
+              ></span>
+              <span
+                className={`FvBtn far fa-heart ${!Fav ? "show" : "hide"}${
+                  isFinished || Paused || Drop ? " bottom" : ""
+                }`}
+              ></span>
+            </div>
+          )}
+
           {Rate ? (
             <span style={{ color: "gold" }} className="RatingStar fas fa-star">
               {Rate}
@@ -103,7 +109,7 @@ const PosterAnim = ({
             <img src={url} alt="Img of Anim" />
           </div>
           <div className="action">
-            {Paused ? (
+            {Paused || Drop ? (
               <div
                 className="watch paused"
                 onClick={() => UnPaused(id)}
@@ -126,9 +132,17 @@ const PosterAnim = ({
               <span className="fas fa-trash-alt"></span>
             </div>
           </div>
-          {Paused ? (
+          {Paused || Drop ? (
             <h5>
-              <span className="fas fa-pause"></span> En Pause
+              {Drop ? (
+                <Fragment>
+                  <span className="fas fa-stop"></span> Arrêté
+                </Fragment>
+              ) : (
+                <Fragment>
+                  <span className="fas fa-pause"></span> En Pause
+                </Fragment>
+              )}
             </h5>
           ) : isFinished && isAlleged ? (
             <h5>
@@ -175,7 +189,7 @@ const PosterAnim = ({
   } else if (ModeFilter === "All") {
     return templatePoster;
   } else if (ModeFilter === "NotFinished") {
-    return isFinished ? null : Paused ? null : templatePoster;
+    return isFinished ? null : Paused ? null : Drop ? null : templatePoster;
   } else if (ModeFilter === "Finished") {
     return isFinished ? templatePoster : null;
   } else if (ModeFilter === "Paused") {
@@ -184,8 +198,10 @@ const PosterAnim = ({
     return Rate ? templatePoster : null;
   } else if (ModeFilter === "fav") {
     return isFav ? templatePoster : null;
-  } else {
+  } else if (ModeFilter === "seasonAnim") {
     return AnimeSeason ? templatePoster : null;
+  } else {
+    return Drop ? templatePoster : null;
   }
 };
 

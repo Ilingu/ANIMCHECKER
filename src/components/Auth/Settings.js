@@ -341,6 +341,9 @@ class Settings extends Component {
                       <option value="Paused">
                         Page d'accueil sur tes animes En Pauses
                       </option>
+                      <option value="Drop">
+                        Page d'accueil sur tes animes que ta arrêter en cours
+                      </option>
                       <option value="Rate">
                         Page d'accueil sur tes animes Notés
                       </option>

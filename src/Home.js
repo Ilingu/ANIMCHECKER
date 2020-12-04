@@ -191,6 +191,11 @@ export default class Home extends Component {
         case "6":
           this.logOut();
           break;
+        case "7":
+          ResText =
+            "Impossible d'accéder à cette page car vous avez drop (laisser tombé) cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+          typeAlert = "danger";
+          break;
         default:
           break;
       }
@@ -1325,6 +1330,7 @@ export default class Home extends Component {
             Paused={
               serieFirebase[key].Paused ? serieFirebase[key].Paused : false
             }
+            Drop={serieFirebase[key].Drop ? serieFirebase[key].Drop : false}
             isFav={serieFirebase[key].Fav ? serieFirebase[key].Fav : false}
             fnFav={(id, FavVal) => {
               this.updateValue(`${Pseudo}/serie/${id}`, {
@@ -1332,9 +1338,17 @@ export default class Home extends Component {
               });
             }}
             UnPaused={(id) => {
-              this.updateValue(`${Pseudo}/serie/${id}`, {
-                Paused: false,
-              });
+              if (id.split("-")[0] === "film") {
+                this.updateValue(`${Pseudo}/film/${id}`, {
+                  Drop: false,
+                });
+              } else {
+                this.updateValue(`${Pseudo}/serie/${id}`, {
+                  Paused: false,
+                  Drop: false,
+                });
+              }
+
               this.setState({ RedirectPage: `/Watch/${Pseudo}/${id}` });
             }}
             AnimeSeason={
@@ -1503,6 +1517,18 @@ export default class Home extends Component {
               LoadingMode={LoadingMode[0]}
               ResText={ResText}
               typeAlert={typeAlert}
+              RdaAnime={() => {
+                const KeyRda = Object.keys(NextAnimFireBase)[
+                  Math.round(
+                    Math.random() * (Object.keys(NextAnimFireBase).length - 1)
+                  )
+                ];
+                this.setState({
+                  ShowModalType: true,
+                  title: NextAnimFireBase[KeyRda].name,
+                  NextAnimToDelete: KeyRda,
+                });
+              }}
               ModeFindAnime={ModeFindAnime[0]}
               ModeFilter={ModeFilter}
               NewFilter={(filter) => {
@@ -1542,6 +1568,11 @@ export default class Home extends Component {
                             ? serieFirebase[key].Paused !== undefined
                               ? serieFirebase[key].Paused
                               : false
+                            : false
+                        }
+                        Drop={
+                          { ...serieFirebase, ...filmFireBase }[key].Drop
+                            ? { ...serieFirebase, ...filmFireBase }[key].Drop
                             : false
                         }
                         isFav={
@@ -1796,7 +1827,11 @@ export default class Home extends Component {
 
           <Modal show={ShowModalType} onHide={this.cancelModal}>
             <Modal.Header id="ModalTitle" closeButton>
-              <Modal.Title>Type d'anime</Modal.Title>
+              <Modal.Title>
+                {title.trim().length !== 0
+                  ? `Le type d'anime de ${title}`
+                  : "Type d'anime"}
+              </Modal.Title>
             </Modal.Header>
             <Modal.Body id="ModalBody">
               <Form
