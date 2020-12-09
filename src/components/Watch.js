@@ -127,7 +127,7 @@ class Watch extends Component {
     });
   };
 
-  refreshAnimToWatch = async (ForFirstTime = null) => {
+  refreshAnimToWatch = async (ForFirstTime = null, next = null) => {
     const { id } = this.state;
 
     try {
@@ -145,6 +145,7 @@ class Watch extends Component {
         Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
         LoadingMode: false,
       });
+      if (next !== null) next();
     } catch (err) {
       console.error(err);
     }
@@ -166,14 +167,14 @@ class Watch extends Component {
       .catch((err) => console.error(err));
   };
 
-  updateValue = (path, value, next = null) => {
+  updateValue = (path, value, next = null, nextAfterRefresh = false) => {
     base
       .update(path, {
         data: value,
       })
       .then(() => {
-        this.refreshAnimToWatch();
-        if (next !== null) next();
+        this.refreshAnimToWatch(null, nextAfterRefresh ? next : null);
+        if (next !== null && !nextAfterRefresh) next();
       })
       .catch((err) => console.error(err));
   };
@@ -253,27 +254,58 @@ class Watch extends Component {
     this.setState({ modeStart: true });
   };
 
-  setRepere = (Saison, idEp) => {
-    let previousEp = idEp - 1,
-      nextEp = idEp + 1,
-      thisEp = idEp,
-      Ep;
+  setRepere = (Saison, idEp, smart = false) => {
+    let previousEp, nextEp, thisEp, Ep;
 
-    for (Ep of Saison.Episodes) {
-      if (Ep.id === previousEp) {
-        previousEp = Ep;
-      } else if (Ep.id === thisEp) {
-        thisEp = Ep;
-      } else if (Ep.id === nextEp) {
-        nextEp = Ep;
+    if (smart) {
+      const { AnimToWatch } = { ...this.state };
+      const saisonIndex = parseInt(Saison.name.split(" ")[1]) - 1;
+
+      let lastOne = null;
+      AnimToWatch.AnimEP[saisonIndex].Episodes[idEp - 2].finished = true;
+
+      AnimToWatch.AnimEP[saisonIndex].Episodes.forEach((Ep) => {
+        if (!Ep.finished && lastOne === null) {
+          lastOne = Ep.id;
+        }
+      });
+
+      if (lastOne === null) {
+        previousEp = idEp - 1;
+        nextEp = idEp + 1;
+        thisEp = idEp;
+      } else {
+        previousEp = lastOne - 1;
+        nextEp = lastOne + 1;
+        thisEp = lastOne;
+      }
+
+      for (Ep of Saison.Episodes) {
+        if (Ep.id === previousEp) {
+          previousEp = Ep;
+        } else if (Ep.id === thisEp) {
+          thisEp = Ep;
+        } else if (Ep.id === nextEp) {
+          nextEp = Ep;
+        }
+      }
+    } else {
+      previousEp = idEp - 1;
+      nextEp = idEp + 1;
+      thisEp = idEp;
+
+      for (Ep of Saison.Episodes) {
+        if (Ep.id === previousEp) {
+          previousEp = Ep;
+        } else if (Ep.id === thisEp) {
+          thisEp = Ep;
+        } else if (Ep.id === nextEp) {
+          nextEp = Ep;
+        }
       }
     }
-
-    if (typeof previousEp === "number") {
-      previousEp = null;
-    } else if (typeof nextEp === "number") {
-      nextEp = null;
-    }
+    if (typeof previousEp === "number") previousEp = null;
+    if (typeof nextEp === "number") nextEp = null;
 
     this.setState({
       repereEpisode: [previousEp, thisEp, nextEp],
@@ -286,9 +318,72 @@ class Watch extends Component {
     this.setState({ modeStart: false });
   };
 
-  finishedEp = (Saison, EpFinishedID) => {
+  endAnime = () => {
+    const { id } = this.state;
+
+    this.updateValue(
+      `${this.state.Pseudo}/serie/${id}`,
+      {
+        finishedAnim: true,
+        AnimeSeason: null,
+      },
+      () => this.setState({ ShowModalRateAnime: true })
+    );
+    this.StopModeWatch();
+  };
+
+  endOfSaison = (idSaison) => {
+    const { id, repereEpisode } = this.state;
+
+    this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}`, {
+      finished: true,
+    });
+
+    if (repereEpisode[2] === null) this.StopModeWatch();
+  };
+
+  verifiedEPRepere = (Season, modeEnd) => {
+    let { AnimToWatch } = this.state;
+    const idSeason = parseInt(Season.name.split(" ")[1]) - 1;
+
+    // Last Season
+    let SeasonFinished = true,
+      AnimeFinished = true;
+
+    const Verified = (forcedStopMode) => {
+      AnimToWatch.AnimEP[idSeason].Episodes.forEach((EP) => {
+        if (!EP.finished) SeasonFinished = false;
+      });
+      AnimToWatch.AnimEP.forEach((Saison) => {
+        Saison.Episodes.forEach((EP) => {
+          if (!EP.finished) AnimeFinished = false;
+        });
+      });
+
+      if (forcedStopMode) this.StopModeWatch();
+      if (SeasonFinished) this.endOfSaison(idSeason);
+      if (AnimeFinished) this.endAnime();
+    };
+
+    if (modeEnd) {
+      this.finishedEp(
+        Season,
+        Season.Episodes[Season.Episodes.length - 1].id + 1,
+        false,
+        () => {
+          AnimToWatch = this.state.AnimToWatch;
+          Verified(true);
+        }
+      );
+    } else {
+      Verified(false);
+    }
+  };
+
+  finishedEp = (Saison, EpFinishedID, verified = true, next = null) => {
     const {
       id,
+      AnimToWatch,
       repereEpisode,
       repereSaison,
       SecondMessage,
@@ -296,44 +391,75 @@ class Watch extends Component {
     } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
-    this.updateValue(
-      `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
-        EpFinishedID - 2
-      }`,
-      { finished: true },
-      () => {
-        this.setState({
-          SecondMessage: AlreadyClicked ? true : false,
-          AlreadyClicked: true,
-          ShowMessage: true,
-          ShowMessageHtml: true,
-          ResText: `Episode ${repereEpisode[1].id}(S${
-            Object.keys(repereSaison).length === 0
-              ? null
-              : repereSaison.name.split(" ")[1]
-          }) fini !`,
-        });
+    if (!AnimToWatch.AnimEP[idSaison].Episodes[EpFinishedID - 2].finished) {
+      this.updateValue(
+        `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
+          EpFinishedID - 2
+        }`,
+        { finished: true },
+        () => {
+          if (verified) this.verifiedEPRepere(Saison, false);
+          if (next !== null) next();
 
-        setTimeout(() => {
-          if (SecondMessage) {
-            this.setState({ SecondMessage: false });
-            return;
-          }
-
-          this.setState({ ShowMessage: false, AlreadyClicked: false });
+          this.setState({
+            SecondMessage: AlreadyClicked ? true : false,
+            AlreadyClicked: true,
+            ShowMessage: true,
+            ShowMessageHtml: true,
+            ResText: `Episode ${repereEpisode[1].id}(S${
+              Object.keys(repereSaison).length === 0
+                ? null
+                : repereSaison.name.split(" ")[1]
+            }) fini !`,
+          });
 
           setTimeout(() => {
-            this.setState({ ShowMessageHtml: false, ResText: null });
-          }, 900);
-        }, 3000);
-      }
-    );
+            if (SecondMessage) {
+              this.setState({ SecondMessage: false });
+              return;
+            }
+
+            this.setState({ ShowMessage: false, AlreadyClicked: false });
+
+            setTimeout(() => {
+              this.setState({ ShowMessageHtml: false, ResText: null });
+            }, 900);
+          }, 3000);
+        },
+        true
+      );
+    } else {
+      this.setState({
+        SecondMessage: AlreadyClicked ? true : false,
+        AlreadyClicked: true,
+        ShowMessage: true,
+        ShowMessageHtml: true,
+        ResText: `Episode ${repereEpisode[1].id}(S${
+          Object.keys(repereSaison).length === 0
+            ? null
+            : repereSaison.name.split(" ")[1]
+        }) déjà fini`,
+      });
+
+      setTimeout(() => {
+        if (SecondMessage) {
+          this.setState({ SecondMessage: false });
+          return;
+        }
+
+        this.setState({ ShowMessage: false, AlreadyClicked: false });
+
+        setTimeout(() => {
+          this.setState({ ShowMessageHtml: false, ResText: null });
+        }, 900);
+      }, 3000);
+    }
   };
 
   StartNextEP = (Saison = null, EpFinishedID = null) => {
     if (Saison !== null && EpFinishedID !== null) {
       this.finishedEp(Saison, EpFinishedID);
-      this.setRepere(Saison, EpFinishedID);
+      this.setRepere(Saison, EpFinishedID, true);
     } else {
       const { AnimToWatch } = this.state;
       let lastOne = null;
@@ -349,28 +475,6 @@ class Watch extends Component {
       this.setRepere(lastOne[0], lastOne[1]);
     }
     this.StartModeWatch();
-  };
-
-  endOfSaison = (Saison, EpFinishedID) => {
-    const { id, AnimToWatch } = this.state;
-    const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
-
-    this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}`, {
-      finished: true,
-    });
-
-    if (AnimToWatch.AnimEP.length === idSaison + 1)
-      this.updateValue(
-        `${this.state.Pseudo}/serie/${id}`,
-        {
-          finishedAnim: true,
-          AnimeSeason: null,
-        },
-        () => this.setState({ ShowModalRateAnime: true })
-      );
-
-    this.finishedEp(Saison, EpFinishedID + 1);
-    this.StopModeWatch();
   };
 
   playEp = (Saison, idEp) => {
@@ -968,7 +1072,7 @@ class Watch extends Component {
                 onClick={() => {
                   repereEpisode[2] !== null
                     ? this.StartNextEP(repereSaison, repereEpisode[2].id)
-                    : this.endOfSaison(repereSaison, repereEpisode[1].id);
+                    : this.verifiedEPRepere(repereSaison, true);
                 }}
               >
                 {repereEpisode[2] !== null ? (
