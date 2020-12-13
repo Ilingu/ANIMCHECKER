@@ -824,6 +824,11 @@ a:hover {
   border: 3px solid #17a2b8;
 }
 
+#MyAnime .content .MyAnimPoster .action .watch.addEP:hover {
+  color: #28a745;
+  border: 3px solid #28a745;
+}
+
 #MyAnime .content .MyAnimPoster h4 {
   font-size: 1.2rem;
   text-align: center;
@@ -1014,11 +1019,6 @@ a:hover {
           transform: scale(1);
 }
 
-#MyAnime .content .MyAnimPoster.alleged .action .delete {
-  top: calc(50% - 66px / 2);
-  left: calc(50% - 35px);
-}
-
 #MyAnime .content .MyAnimPoster.Paused,
 #MyAnime .content .MyAnimPoster.Drop {
   position: relative;
@@ -1090,10 +1090,6 @@ a:hover {
 #MyAnime .content.none header {
   text-align: center;
   margin-top: -25px;
-}
-
-#MyAnime .content.none header #RdaBtn {
-  margin-bottom: 20px;
 }
 
 #MyAnime .content.none .NextAnimContainer {
@@ -1656,12 +1652,23 @@ a:hover {
   top: 0;
 }
 
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name .fa-trash {
+  position: absolute;
+  right: 130px;
+  top: calc(50px / 2 - 27px / 2);
+  color: #dc3545;
+}
+
 #Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes {
   display: none;
 }
 
 #Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes span {
   color: greenyellow;
+}
+
+#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes .fa-trash {
+  color: #dc3545;
 }
 
 #Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child.active .episodes {

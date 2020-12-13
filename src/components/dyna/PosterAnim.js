@@ -43,6 +43,7 @@ const PosterAnim = ({
   SeeInDetails,
   inMyAnim,
   fnFav,
+  AddEpSeasonToAlleged,
   isFinished,
   deleteAnim,
   isFav,
@@ -117,7 +118,15 @@ const PosterAnim = ({
               >
                 <span className="fas fa-play-circle"></span>
               </div>
-            ) : isAlleged ? null : (
+            ) : isAlleged ? (
+              <div
+                onClick={AddEpSeasonToAlleged}
+                title="Rajouter des Episodes"
+                className="watch addEP"
+              >
+                <span className="fas fa-plus"></span>
+              </div>
+            ) : (
               <Link push="false" to={`/Watch/${Pseudo}/${id}`}>
                 <div className="watch">
                   <span className="fas fa-eye"></span>

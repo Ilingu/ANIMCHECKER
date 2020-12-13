@@ -114,13 +114,23 @@ const Header = () => {
             </Nav.Item>
             <Nav.Item>
               <Button
-                variant="outline-secondary"
+                id="RdaBtn"
+                title="Choisir un anime aléatoirement parmi toutes taliste de prochain anime"
                 style={{ marginLeft: "10px" }}
-                title="Ajouter à l'écran d'accueil"
-                id="AdueHSbtn"
+                onClick={Context.RdaAnime}
+                variant="outline-primary"
+              >
+                <span className="fas fa-random"></span>
+              </Button>
+            </Nav.Item>
+            <Nav.Item>
+              <Button
+                variant="outline-secondary"
+                title="Ajoute cette application à ton écran d'accueil ou Bureau !"
+                style={{ marginLeft: "10px" }}
                 onClick={Context.addToHome}
               >
-                <span className="fas fa-plus-circle"></span> Install
+                <span className="fas fa-plus-circle"></span>
               </Button>
             </Nav.Item>
             <Nav.Item>
@@ -162,13 +172,16 @@ const Header = () => {
 
               <Dropdown.Menu>
                 <h5>Bonjour, {Context.Pseudo}</h5>
-                <Dropdown.Item onClick={Context.openPalmares}>
+                <Dropdown.Item
+                  disabled={Context.LoadingMode}
+                  onClick={Context.openPalmares}
+                >
                   <span
                     className="fas fa-trophy"
                     style={{ color: "gold" }}
                   ></span>{" "}
                   Palmarès
-                </Dropdown.Item>
+                </Dropdown.Item>{" "}
                 <div id="FakeDropdownItem">
                   <Link push="true" to={`/Settings/${Context.Pseudo}`}>
                     <span

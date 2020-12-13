@@ -295,6 +295,24 @@ class Settings extends Component {
                   <span className="fas fa-dice"></span> Mélange de la liste
                   d'anime: {ParamsOptn.MyAnimRandom === false ? "Off" : "On"}
                 </Button>
+                <Button
+                  variant="outline-info"
+                  className="BtnActionAccount"
+                  onClick={() =>
+                    this.updateValue(
+                      `${Pseudo}/ParamsOptn`,
+                      {
+                        SmartRepere:
+                          ParamsOptn.SmartRepere === false ? true : false,
+                      },
+                      this.refreshParamsOptn
+                    )
+                  }
+                >
+                  <span className="fas fa-eye"></span> Repere de votre
+                  progression intelligente:{" "}
+                  {ParamsOptn.SmartRepere === false ? "Off" : "On"}
+                </Button>
                 <Form>
                   <Form.Group controlId="animeAcueill">
                     <Form.Control

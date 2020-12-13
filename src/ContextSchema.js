@@ -5,6 +5,8 @@ export default createContext({
   Pseudo: String,
   search: Function,
   logOut: Function,
+  RdaAnime: Function,
+  LoadingMode: Boolean,
   addToHome: Function,
   openPalmares: Function,
 });

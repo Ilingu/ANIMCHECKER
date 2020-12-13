@@ -38,6 +38,7 @@ class Watch extends Component {
     ShowModalRateAnime: false,
     ShowMessage: false,
     ShowMessageHtml: false,
+    SmartRepere: true,
     SecondMessage: false,
     AlreadyClicked: false,
     ResText: null,
@@ -47,6 +48,7 @@ class Watch extends Component {
     // Form
     SeasonToAddEp: null,
     Rate: 0,
+    ActionEndAnime: [false, false, false],
     RateHover: 0,
     nbEpToAdd: 1,
     // Modal
@@ -131,17 +133,23 @@ class Watch extends Component {
     const { id } = this.state;
 
     try {
-      const AnimToWatch = await base.fetch(
+      const AllDataPseudo = await base.fetch(this.state.Pseudo, {
+        context: this,
+      });
+
+      const AnimToWatch =
         ForFirstTime !== null
-          ? `${this.state.Pseudo}/${ForFirstTime.split("-")[0]}/${ForFirstTime}`
-          : `${this.state.Pseudo}/${id.split("-")[0]}/${id}`,
-        {
-          context: this,
-        }
-      );
+          ? AllDataPseudo[ForFirstTime.split("-")[0]][ForFirstTime]
+          : AllDataPseudo[id.split("-")[0]][id];
 
       this.setState({
         AnimToWatch,
+        SmartRepere:
+          AllDataPseudo.ParamsOptn === undefined
+            ? true
+            : AllDataPseudo.ParamsOptn.SmartRepere === undefined
+            ? true
+            : AllDataPseudo.ParamsOptn.SmartRepere,
         Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
         LoadingMode: false,
       });
@@ -257,10 +265,9 @@ class Watch extends Component {
   setRepere = (Saison, idEp, smart = false) => {
     let previousEp, nextEp, thisEp, Ep;
 
-    if (smart) {
+    if (smart && this.state.SmartRepere) {
       const { AnimToWatch } = { ...this.state };
       const saisonIndex = parseInt(Saison.name.split(" ")[1]) - 1;
-
       let lastOne = null;
       AnimToWatch.AnimEP[saisonIndex].Episodes[idEp - 2].finished = true;
 
@@ -519,6 +526,42 @@ class Watch extends Component {
     }
   };
 
+  RemoveAnimVal = (typeRemove, idSeason, idEP) => {
+    const { id, AnimToWatch } = this.state;
+
+    if (typeRemove === "EP") {
+      if (idEP === 1) {
+        if (AnimToWatch.AnimEP.length === 1) {
+          this.setState({ ShowModalVerification: [true, "supprimer"] });
+          return;
+        }
+        if (idSeason === AnimToWatch.AnimEP.length - 1)
+          this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP`, {
+            [idSeason]: null,
+          });
+        return;
+      }
+
+      if (idEP === AnimToWatch.AnimEP[idSeason].Episodes.length)
+        this.updateValue(
+          `${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}/Episodes`,
+          {
+            [idEP - 1]: null,
+          }
+        );
+    } else {
+      if (AnimToWatch.AnimEP.length === 1) {
+        this.setState({ ShowModalVerification: [true, "supprimer"] });
+        return;
+      }
+
+      if (idSeason === AnimToWatch.AnimEP.length - 1)
+        this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP`, {
+          [idSeason]: null,
+        });
+    }
+  };
+
   WhitchSeason = () => {
     const Month = new Date().getMonth() + 1;
     let season = null;
@@ -570,6 +613,7 @@ class Watch extends Component {
       ShowMessage,
       ShowMessageHtml,
       ResText,
+      ActionEndAnime,
       repereEpisode,
       repereSaison,
       ToOpen,
@@ -628,8 +672,10 @@ class Watch extends Component {
         <AnimEpCo
           key={Date.now() + Math.random() * 100000 - Math.random() * -100000}
           ObjInfo={EpSaison}
+          nbTotalSeason={AnimToWatch.AnimEP.length}
           play={this.playEp}
           ToOpen={ToOpen}
+          RemoveVal={this.RemoveAnimVal}
           AddEp={() =>
             this.setState({ ShowModalAddEp: true, SeasonToAddEp: EpSaison })
           }
@@ -864,7 +910,8 @@ class Watch extends Component {
                           this.setState({ uid: null, RedirectHome: true });
                         }}
                       >
-                        <span className="fas fa-pause"></span> Mettre en Pause
+                        <span className="fas fa-pause"></span> Mettre en Pause{" "}
+                        {AnimToWatch.name}
                       </Button>
                     </Dropdown.Item>
                     <Dropdown.Item>
@@ -930,7 +977,8 @@ class Watch extends Component {
                           this.setState({ uid: null, RedirectHome: true });
                         }}
                       >
-                        <span className="fas fa-stop"></span> Drop L'anime
+                        <span className="fas fa-stop"></span> Drop{" "}
+                        {AnimToWatch.name}
                       </Button>
                     </Dropdown.Item>
                     <Dropdown.Item>
@@ -943,8 +991,8 @@ class Watch extends Component {
                           })
                         }
                       >
-                        <span className="fas fa-window-close"></span> Alléger
-                        cet anime
+                        <span className="fas fa-window-close"></span> Alléger{" "}
+                        {AnimToWatch.name}
                       </Button>
                     </Dropdown.Item>
                   </Fragment>
@@ -1188,14 +1236,78 @@ class Watch extends Component {
             <Modal.Title>Noté {AnimToWatch.name} / 10</Modal.Title>
           </Modal.Header>
           <Modal.Body id="ModalBody">
-            <Rating
-              value={Rate}
-              onChange={(Rate) => this.setState({ Rate })}
-              onHover={(Rate) => this.setState({ RateHover: Rate })}
-              step={0.5}
-              stop={10}
-            />
-            <p>{RateHover || Rate} étoiles</p>
+            <section id="RatingSection">
+              <Rating
+                value={Rate}
+                onChange={(Rate) => this.setState({ Rate })}
+                onHover={(Rate) => this.setState({ RateHover: Rate })}
+                step={0.5}
+                stop={10}
+              />
+              <p>{RateHover || Rate} étoiles</p>
+            </section>
+            <hr />
+            <section id="ActionEndAnime">
+              <Form>
+                <Form.Check
+                  type="checkbox"
+                  disabled={ActionEndAnime[2]}
+                  checked={ActionEndAnime[0]}
+                  onChange={() => {
+                    const ActionEndAnimeCopy = { ...this.state.ActionEndAnime };
+                    ActionEndAnimeCopy[0] = !ActionEndAnimeCopy[0];
+                    this.setState({
+                      ActionEndAnime: ActionEndAnimeCopy,
+                    });
+                  }}
+                  label={
+                    <div style={{ color: "#17a2b8" }}>
+                      <span className="fas fa-pause"></span> Mettre En Pause{" "}
+                      {AnimToWatch.name}
+                    </div>
+                  }
+                />
+                <Form.Check
+                  type="checkbox"
+                  disabled={ActionEndAnime[2]}
+                  checked={ActionEndAnime[1]}
+                  onChange={() => {
+                    const ActionEndAnimeCopy = { ...this.state.ActionEndAnime };
+                    ActionEndAnimeCopy[1] = !ActionEndAnimeCopy[1];
+                    ActionEndAnimeCopy[2] = false;
+                    this.setState({
+                      ActionEndAnime: ActionEndAnimeCopy,
+                    });
+                  }}
+                  label={
+                    <div style={{ color: "#ffc107" }}>
+                      <span className="fas fa-window-close"></span> Alléger{" "}
+                      {AnimToWatch.name}
+                    </div>
+                  }
+                />
+                <Form.Check
+                  type="checkbox"
+                  disabled={ActionEndAnime[1]}
+                  checked={ActionEndAnime[2]}
+                  onChange={() => {
+                    const ActionEndAnimeCopy = { ...this.state.ActionEndAnime };
+                    ActionEndAnimeCopy[2] = !ActionEndAnimeCopy[2];
+                    ActionEndAnimeCopy[1] = false;
+                    ActionEndAnimeCopy[0] = false;
+                    this.setState({
+                      ActionEndAnime: ActionEndAnimeCopy,
+                    });
+                  }}
+                  label={
+                    <div style={{ color: "#dc3545" }}>
+                      <span className="fas fa-trash-alt"></span> Supprimer{" "}
+                      {AnimToWatch.name}
+                    </div>
+                  }
+                />
+              </Form>
+            </section>
           </Modal.Body>
           <Modal.Footer id="ModalFooter">
             <Button
@@ -1213,7 +1325,20 @@ class Watch extends Component {
             <Button
               variant="success"
               onClick={() => {
+                let GoToHome = false;
+                if (ActionEndAnime[0] && !ActionEndAnime[2]) {
+                  this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+                    Paused: true,
+                  });
+                  GoToHome = true;
+                }
+                if (ActionEndAnime[1] && !ActionEndAnime[2])
+                  this.handleAlleger();
+                if (ActionEndAnime[2] && !ActionEndAnime[1])
+                  this.handleDelete();
+
                 if (
+                  !ActionEndAnime[2] &&
                   Rate !== undefined &&
                   Rate !== null &&
                   Rate > 0 &&
@@ -1249,20 +1374,15 @@ class Watch extends Component {
                     });
 
                     setTimeout(() => {
-                      this.setState({ ShowMessageHtml: false, ResText: null });
+                      this.setState({
+                        ShowMessageHtml: false,
+                        ResText: null,
+                      });
                     }, 900);
                   }, 6000);
                 }
+                if (GoToHome) this.setState({ uid: null, RedirectHome: true });
               }}
-              disabled={
-                Rate !== undefined &&
-                Rate !== null &&
-                Rate > 0 &&
-                Rate <= 10 &&
-                (AnimToWatch.finished || AnimToWatch.finishedAnim)
-                  ? false
-                  : true
-              }
             >
               <span className="fas fa-check"></span> Valider
             </Button>

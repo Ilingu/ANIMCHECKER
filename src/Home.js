@@ -41,6 +41,7 @@ export default class Home extends Component {
     JustDefined: false,
     RedirectPage: null,
     ShowModalSearch: false,
+    IdToAddEp: null,
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
     ShowModalType: false,
@@ -59,6 +60,7 @@ export default class Home extends Component {
     LoadingMode: [true, true],
     palmares: null,
     MicOn: false,
+    addEPToAlleged: false,
     ShowMessage: false,
     ShowMessageHtml: false,
     SecondMessage: false,
@@ -578,8 +580,33 @@ export default class Home extends Component {
     }
   };
 
-  addAnime = (event) => {
-    event.preventDefault();
+  AddEPToAlleged = () => {
+    const { Pseudo, nbEP, IdToAddEp } = this.state;
+
+    if (typeof nbEP === "string" && nbEP.trim().length !== 0 && nbEP !== "") {
+      const AnimSEP = nbEP.split(",").map((nbEpS, i) => {
+        let EpObj = [];
+
+        for (let j = 0; j < parseInt(nbEpS); j++) {
+          EpObj = [...EpObj, { id: j + 1, finished: false }];
+        }
+
+        return {
+          name: `Saison ${i + 1}`,
+          Episodes: EpObj,
+          finished: false,
+        };
+      });
+
+      this.updateValue(`${Pseudo}/serie/${IdToAddEp}`, {
+        AnimEP: AnimSEP,
+        finishedAnim: false,
+      });
+      this.setState({ RedirectPage: `/Watch/${Pseudo}/${IdToAddEp}` });
+    }
+  };
+
+  addAnime = () => {
     const {
       title,
       nbEP,
@@ -1112,10 +1139,12 @@ export default class Home extends Component {
       PalmaresModal: false,
       ShowModalVerification: false,
       palmares: null,
+      IdToAddEp: null,
       findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
       NextAnimToDelete: null,
       titleSearchAnime: "",
+      addEPToAlleged: false,
       DeletePathVerif: null,
       title: "",
       type: "serie",
@@ -1150,6 +1179,7 @@ export default class Home extends Component {
       AllowUseReAuth,
       RedirectPage,
       ShowModalSearch,
+      addEPToAlleged,
       findAnim,
       animToDetails,
       ShowModalAddAnim,
@@ -1330,6 +1360,14 @@ export default class Home extends Component {
             Paused={
               serieFirebase[key].Paused ? serieFirebase[key].Paused : false
             }
+            AddEpSeasonToAlleged={() => {
+              this.setState({
+                addEPToAlleged: true,
+                ShowModalAddAnim: true,
+                IdToAddEp: key,
+                title: serieFirebase[key].name,
+              });
+            }}
             Drop={serieFirebase[key].Drop ? serieFirebase[key].Drop : false}
             isFav={serieFirebase[key].Fav ? serieFirebase[key].Fav : false}
             fnFav={(id, FavVal) => {
@@ -1498,6 +1536,19 @@ export default class Home extends Component {
               Pseudo,
               search: this.SearchAnim,
               logOut: this.logOut,
+              LoadingMode: LoadingMode[0],
+              RdaAnime: () => {
+                const KeyRda = Object.keys(NextAnimFireBase)[
+                  Math.round(
+                    Math.random() * (Object.keys(NextAnimFireBase).length - 1)
+                  )
+                ];
+                this.setState({
+                  ShowModalType: true,
+                  title: NextAnimFireBase[KeyRda].name,
+                  NextAnimToDelete: KeyRda,
+                });
+              },
               addToHome: this.AddToHome,
               openPalmares: () =>
                 this.setState({
@@ -1517,18 +1568,6 @@ export default class Home extends Component {
               LoadingMode={LoadingMode[0]}
               ResText={ResText}
               typeAlert={typeAlert}
-              RdaAnime={() => {
-                const KeyRda = Object.keys(NextAnimFireBase)[
-                  Math.round(
-                    Math.random() * (Object.keys(NextAnimFireBase).length - 1)
-                  )
-                ];
-                this.setState({
-                  ShowModalType: true,
-                  title: NextAnimFireBase[KeyRda].name,
-                  NextAnimToDelete: KeyRda,
-                });
-              }}
               ModeFindAnime={ModeFindAnime[0]}
               ModeFilter={ModeFilter}
               NewFilter={(filter) => {
@@ -1884,6 +1923,7 @@ export default class Home extends Component {
                   <Form.Label>Titre</Form.Label>
                   <Form.Control
                     type="text"
+                    disabled={addEPToAlleged}
                     placeholder="Titre de la série"
                     autoComplete="off"
                     value={title}
@@ -1915,7 +1955,17 @@ export default class Home extends Component {
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
               </Button>
-              <Button variant="success" onClick={this.addAnime}>
+              <Button
+                variant="success"
+                onClick={(event) => {
+                  event.preventDefault();
+                  if (addEPToAlleged) {
+                    this.AddEPToAlleged();
+                    return;
+                  }
+                  this.addAnime();
+                }}
+              >
                 <span className="fas fa-plus"></span> Créer {title}
               </Button>
             </Modal.Footer>
