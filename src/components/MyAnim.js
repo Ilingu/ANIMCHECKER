@@ -57,6 +57,7 @@ const MyAnim = ({
                 <Fragment>
                   <Button
                     variant="link"
+                    aria-label="Button for search an anime in the list"
                     onClick={() => SearchInAnimeListFn(true)}
                   >
                     <span className="fas fa-search"></span>

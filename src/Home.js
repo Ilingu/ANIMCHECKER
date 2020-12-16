@@ -130,7 +130,7 @@ export default class Home extends Component {
                   ? message.data["firebase-messaging-msg-data"].notification
                       .body
                   : `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
-              icon: "https://myanimchecker.netlify.app/Icon.png",
+              icon: "https://myanimchecker.netlify.app/Img/Icon.png",
               vibrate: [100, 50, 100],
             }
           );
@@ -158,7 +158,7 @@ export default class Home extends Component {
                   ? message.data["firebase-messaging-msg-data"].notification
                       .body
                   : `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
-              icon: "https://myanimchecker.netlify.app/Icon.png",
+              icon: "https://myanimchecker.netlify.app/Img/Icon.png",
             }
           );
         });
@@ -870,7 +870,7 @@ export default class Home extends Component {
               notification: {
                 body: NotifFirebase[notifKey].name,
                 title: NotifFirebase[notifKey].name,
-                icon: "https://myanimchecker.netlify.app/Icon.png",
+                icon: "https://myanimchecker.netlify.app/Img/Icon.png",
               },
               to: JSON.parse(window.localStorage.getItem("PushNotifSub")),
             }),

@@ -153,7 +153,11 @@ const Header = () => {
                 onChange={(event) => SetAnim(event.target.value)}
               />
             </Form.Group>
-            <Button id="SearchFormBtnSubmit" type="submit">
+            <Button
+              id="SearchFormBtnSubmit"
+              aria-label="Submit The anime"
+              type="submit"
+            >
               <span className="fas fa-search"></span>
             </Button>
             <div id="SearchFormBtnVoice" onClick={StartSpeechRecognition}>
@@ -166,7 +170,11 @@ const Header = () => {
           </Form>
           <aside id="account">
             <Dropdown>
-              <Dropdown.Toggle variant="light" id="dropdown-basic">
+              <Dropdown.Toggle
+                variant="light"
+                aria-label="Show the account button of the user"
+                id="dropdown-basic"
+              >
                 <span className="fas fa-user"></span>
               </Dropdown.Toggle>
 
