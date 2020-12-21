@@ -45,6 +45,7 @@ const PosterAnim = ({
   fnFav,
   AddEpSeasonToAlleged,
   isFinished,
+  ChangeNote,
   deleteAnim,
   isFav,
   Paused,
@@ -102,9 +103,19 @@ const PosterAnim = ({
           )}
 
           {Rate ? (
-            <span style={{ color: "gold" }} className="RatingStar fas fa-star">
+            <span
+              style={{ color: "gold" }}
+              onClick={ChangeNote}
+              className="RatingStar fas fa-star"
+            >
               {Rate}
             </span>
+          ) : isFinished ? (
+            <span
+              style={{ color: "gold" }}
+              onClick={ChangeNote}
+              className="RatingStar fas fa-plus"
+            ></span>
           ) : null}
           <div className="ImgInterract">
             <img src={url} alt="Img of Anim" />

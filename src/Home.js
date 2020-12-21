@@ -1,7 +1,7 @@
-/* eslint-disable no-unused-expressions */
 import React, { Component, Fragment } from "react";
 import { Redirect } from "react-router-dom";
 import axios from "axios";
+import ReactStars from "react-rating-stars-component";
 // Components
 import Poster from "./components/dyna/PosterAnim";
 import NextAnimCO from "./components/dyna/NextAnim";
@@ -42,6 +42,8 @@ export default class Home extends Component {
     RedirectPage: null,
     ShowModalSearch: false,
     IdToAddEp: null,
+    InfoAnimeToChangeNote: null,
+    ShowModalChangeNote: false,
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
     ShowModalType: false,
@@ -67,6 +69,7 @@ export default class Home extends Component {
     // Form
     title: "",
     type: "serie",
+    Rate: 7.5,
     imageUrl: null,
     durer: 110,
     nbEP: "",
@@ -279,7 +282,7 @@ export default class Home extends Component {
     }
   };
 
-  refreshValueFirebase = async (after = null) => {
+  refreshValueFirebase = async (after = null, HomePage = null) => {
     try {
       const NextAnim = await base.fetch(`${this.state.Pseudo}/NextAnim`, {
         context: this,
@@ -308,9 +311,12 @@ export default class Home extends Component {
               : true,
             Object.keys(NextAnim).length !== 0 ? false : true,
           ],
-          ModeFilter: ParamsOptn.TypeAnimeHomePage
-            ? ParamsOptn.TypeAnimeHomePage
-            : "NotFinished",
+          ModeFilter:
+            HomePage !== null
+              ? HomePage
+              : ParamsOptn.TypeAnimeHomePage
+              ? ParamsOptn.TypeAnimeHomePage
+              : "NotFinished",
           FirstQuerie: true,
           NextAnimFireBase: NextAnim,
           serieFirebase: serie,
@@ -353,12 +359,16 @@ export default class Home extends Component {
     }, 2500);
   };
 
-  updateValue = (path, value) => {
+  updateValue = (path, value, HomePage = null) => {
     base
       .update(path, {
         data: value,
       })
-      .then(this.refreshValueFirebase)
+      .then(
+        HomePage !== null
+          ? () => this.refreshValueFirebase(null, HomePage)
+          : this.refreshValueFirebase
+      )
       .catch((err) => console.error(err));
   };
 
@@ -1039,11 +1049,26 @@ export default class Home extends Component {
       },
       0
     );
+    const RatedTotal = Object.values(CopyState.serieFirebase)
+      .concat(Object.values(CopyState.filmFireBase))
+      .reduce((acc, currentVal) => {
+        const add = typeof currentVal.Rate === "number" ? 1 : 0;
+        return acc + add;
+      }, 0);
 
     return {
       nbNextAnime: Object.keys(CopyState.NextAnimFireBase).length,
-      nbFilm: Object.keys(CopyState.filmFireBase).length,
-      nbSeries: Object.keys(CopyState.serieFirebase).length,
+      nbFilm: [Object.keys(CopyState.filmFireBase).length, FinishedTotalFilm],
+      nbSeries: [
+        Object.keys(CopyState.serieFirebase).length,
+        FinishedTotalSerie,
+      ],
+      RatedTotal: [
+        RatedTotal,
+        `${Math.round(
+          (RatedTotal / (FinishedTotalSerie + FinishedTotalFilm)) * 100
+        )}%`,
+      ],
       durerFilm: (
         parseFloat("0." + (DurerTotal / 60).toString().split(".")[1]) * 0.6 +
         parseInt((DurerTotal / 60).toString().split(".")[0])
@@ -1140,6 +1165,9 @@ export default class Home extends Component {
       ShowModalVerification: false,
       palmares: null,
       IdToAddEp: null,
+      InfoAnimeToChangeNote: null,
+      Rate: 7.5,
+      ShowModalChangeNote: false,
       findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
       NextAnimToDelete: null,
@@ -1191,6 +1219,7 @@ export default class Home extends Component {
       ModeFilter,
       ShowModalAddFilm,
       PalmaresModal,
+      Rate,
       ShowModalVerification,
       ShowModalType,
       MicOn,
@@ -1204,8 +1233,10 @@ export default class Home extends Component {
       LoadingMode,
       CodeNumber,
       JustDefined,
+      InfoAnimeToChangeNote,
       nbEP,
       SearchInAnimeList,
+      ShowModalChangeNote,
       RefreshRandomizeAnime,
       RefreshRandomizeAnime2,
       MyAnimListSaved,
@@ -1369,6 +1400,12 @@ export default class Home extends Component {
               });
             }}
             Drop={serieFirebase[key].Drop ? serieFirebase[key].Drop : false}
+            ChangeNote={() =>
+              this.setState({
+                ShowModalChangeNote: true,
+                InfoAnimeToChangeNote: key,
+              })
+            }
             isFav={serieFirebase[key].Fav ? serieFirebase[key].Fav : false}
             fnFav={(id, FavVal) => {
               this.updateValue(`${Pseudo}/serie/${id}`, {
@@ -1424,6 +1461,12 @@ export default class Home extends Component {
               isFav={filmFireBase[key].Fav ? filmFireBase[key].Fav : false}
               isFinished={filmFireBase[key].finished}
               Rate={filmFireBase[key].Rate}
+              ChangeNote={() =>
+                this.setState({
+                  ShowModalChangeNote: true,
+                  InfoAnimeToChangeNote: key,
+                })
+              }
               deleteAnim={this.DeleteAnimVerification}
               isAlleged={false}
               inMyAnim={true}
@@ -1588,6 +1631,12 @@ export default class Home extends Component {
                         url={
                           { ...serieFirebase, ...filmFireBase }[key].imageUrl
                         }
+                        ChangeNote={() =>
+                          this.setState({
+                            ShowModalChangeNote: true,
+                            InfoAnimeToChangeNote: key,
+                          })
+                        }
                         title={{ ...serieFirebase, ...filmFireBase }[key].name}
                         isFinished={
                           { ...serieFirebase, ...filmFireBase }[key]
@@ -1600,6 +1649,14 @@ export default class Home extends Component {
                               : false
                             : false
                         }
+                        AddEpSeasonToAlleged={() => {
+                          this.setState({
+                            addEPToAlleged: true,
+                            ShowModalAddAnim: true,
+                            IdToAddEp: key,
+                            title: serieFirebase[key].name,
+                          });
+                        }}
                         Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
                         deleteAnim={this.DeleteAnimVerification}
                         Paused={
@@ -1709,6 +1766,76 @@ export default class Home extends Component {
             </Modal.Footer>
           </Modal>
 
+          <Modal show={ShowModalChangeNote} size="lg" onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>
+                Changée la Note de{" "}
+                {ShowModalChangeNote
+                  ? { ...serieFirebase, ...filmFireBase }[InfoAnimeToChangeNote]
+                      .name
+                  : null}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <ReactStars
+                {...{
+                  size: 50,
+                  count: 10,
+                  color: "black",
+                  activeColor: "yellow",
+                  value: 7.5,
+                  a11y: true,
+                  isHalf: true,
+                  emptyIcon: <i className="far fa-star" />,
+                  halfIcon: <i className="fa fa-star-half-alt" />,
+                  filledIcon: <i className="fa fa-star" />,
+                  onChange: (Rate) => this.setState({ Rate }),
+                }}
+              />
+              <p>{Rate} étoiles</p>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  let Good = false;
+                  const AnimToChange = { ...serieFirebase, ...filmFireBase }[
+                    InfoAnimeToChangeNote
+                  ];
+
+                  if (
+                    AnimToChange.finishedAnim !== undefined &&
+                    AnimToChange.finishedAnim
+                  )
+                    Good = true;
+                  else if (
+                    AnimToChange.finished !== undefined &&
+                    AnimToChange.finished
+                  )
+                    Good = true;
+
+                  if (Good)
+                    this.updateValue(
+                      `${Pseudo}/${
+                        InfoAnimeToChangeNote.split("-")[0]
+                      }/${InfoAnimeToChangeNote}`,
+                      {
+                        Rate,
+                      },
+                      ModeFilter
+                    );
+
+                  this.cancelModal();
+                }}
+              >
+                <span className="fas fa-check"></span> Validez
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
           <Modal
             show={ShowModalVerification}
             size="lg"
@@ -1759,12 +1886,19 @@ export default class Home extends Component {
               {palmares ? (
                 <ul id="palamaresUl">
                   <li>
-                    <span className="palma">Animes en cours:</span>{" "}
+                    <span className="palma">
+                      Animes en cours (Serie + Film):
+                    </span>{" "}
                     {palmares.EnCours}
                   </li>
                   <li>
-                    <span className="palma">Animes finis:</span>{" "}
+                    <span className="palma">Animes finis (Serie + Film):</span>{" "}
                     {palmares.Finished}
+                  </li>
+                  <li>
+                    <span className="palma">Nombre d'Animes Notée:</span>{" "}
+                    {palmares.RatedTotal[0]}, tu as donc notée{" "}
+                    {palmares.RatedTotal[1]} de tous tes animes finis
                   </li>
                   <li>
                     <span className="palma">Nombres Anime Allégé:</span>{" "}
@@ -1789,11 +1923,20 @@ export default class Home extends Component {
                   </li>
                   <li>
                     <span className="palma">Nombre Total Film:</span>{" "}
-                    {palmares.nbFilm}
+                    {palmares.nbFilm[0]} dont {palmares.nbFilm[1]} finis soit{" "}
+                    {Math.round(
+                      (palmares.nbFilm[1] / palmares.nbFilm[0]) * 100
+                    )}
+                    % de film finis
                   </li>
                   <li>
                     <span className="palma">Nombre Total Series:</span>{" "}
-                    {palmares.nbSeries}
+                    {palmares.nbSeries[0]} dont {palmares.nbSeries[1]} finis
+                    soit{" "}
+                    {Math.round(
+                      (palmares.nbSeries[1] / palmares.nbSeries[0]) * 100
+                    )}
+                    % de séries finis
                   </li>
                   <li>
                     <span className="palma">
@@ -1803,13 +1946,15 @@ export default class Home extends Component {
                   </li>
                   <li>
                     <span className="palma">Nombre Total d'anime:</span>{" "}
-                    {palmares.nbFilm + palmares.nbSeries}
+                    {palmares.nbFilm[0] + palmares.nbSeries[0]}
                   </li>
                   <li>
                     <span className="palma">
                       Nombre Total d'element stocké:
                     </span>{" "}
-                    {palmares.nbFilm + palmares.nbSeries + palmares.nbNextAnime}
+                    {palmares.nbFilm[0] +
+                      palmares.nbSeries[0] +
+                      palmares.nbNextAnime}
                   </li>
                 </ul>
               ) : null}
