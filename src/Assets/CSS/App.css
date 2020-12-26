@@ -1443,6 +1443,8 @@ a:hover {
 
 #Watch .nonStartMod section #badgeStreaming #InputBadgeStreaming #InputNbadgeReperage {
   height: 20px;
+  border: none;
+  background: transparent;
 }
 
 #Watch .nonStartMod section #badgeStreaming .badge:empty {
