@@ -34,6 +34,7 @@ class Watch extends Component {
     isFirstTime: true,
     RedirectHome: false,
     ToOpen: "",
+    ModeEditTitle: false,
     ShowFormBadge: false,
     ShowModalRateAnime: false,
     ShowMessage: false,
@@ -48,6 +49,8 @@ class Watch extends Component {
     // Form
     SeasonToAddEp: null,
     Rate: 7.5,
+    Newtitle: "",
+    NewBadgeName: "",
     ActionEndAnime: [false, false, false],
     nbEpToAdd: 1,
     // Modal
@@ -143,6 +146,7 @@ class Watch extends Component {
 
       this.setState({
         AnimToWatch,
+        Newtitle: AnimToWatch.name,
         SmartRepere:
           AllDataPseudo.ParamsOptn === undefined
             ? true
@@ -512,6 +516,24 @@ class Watch extends Component {
     this.updateValue(`${Pseudo}/${type}/${id}/`, { Badge: Badges });
   };
 
+  addBadge = (event) => {
+    event.preventDefault();
+    const { Pseudo, type, id, Badges, NewBadgeName } = this.state;
+    if (
+      event.target.id !== undefined &&
+      (event.target.id === "InputNbadgeReperage" ||
+        event.target.id === "InputBadgeStreaming")
+    )
+      return;
+    if (typeof NewBadgeName === "string" && NewBadgeName.trim().length !== 0) {
+      window.removeEventListener("click", this.addBadge, false);
+      this.updateValue(`${Pseudo}/${type}/${id}/`, {
+        Badge: [...Badges, NewBadgeName],
+      });
+      this.setState({ ShowFormBadge: false, NewBadgeName: "" });
+    }
+  };
+
   handleAlleger = () => {
     const { type, id } = this.state;
 
@@ -522,6 +544,24 @@ class Watch extends Component {
         AnimeSeason: null,
       });
       this.setState({ uid: null, RedirectHome: true });
+    }
+  };
+
+  ChangeTitle = (event) => {
+    event.preventDefault();
+    const { Pseudo, type, id, Newtitle } = this.state;
+    if (
+      event.target.id !== undefined &&
+      event.target.id === "InputNTitleReperage"
+    )
+      return;
+
+    if (typeof Newtitle === "string" && Newtitle.trim().length !== 0) {
+      window.removeEventListener("click", this.ChangeTitle, false);
+      this.setState({ ModeEditTitle: false });
+      this.updateValue(`${Pseudo}/${type}/${id}`, {
+        name: Newtitle,
+      });
     }
   };
 
@@ -605,6 +645,7 @@ class Watch extends Component {
       ShowModalRateAnime,
       Rate,
       ShowFormBadge,
+      NewBadgeName,
       SecondMessage,
       modeStart,
       ShowModalVerification,
@@ -613,9 +654,11 @@ class Watch extends Component {
       ResText,
       ActionEndAnime,
       repereEpisode,
+      Newtitle,
       repereSaison,
       ToOpen,
       LoadingMode,
+      ModeEditTitle,
       ShowModalAddEp,
       nbEpToAdd,
       SeasonToAddEp,
@@ -827,8 +870,29 @@ class Watch extends Component {
       <section id="Watch">
         <div className={modeStart ? "nonStartMod" : "nonStartMod active"}>
           <header>
-            <h1 className="title">
-              {AnimToWatch.name}{" "}
+            <h1
+              onDoubleClick={() => {
+                this.setState({ ModeEditTitle: true });
+                window.addEventListener("click", this.ChangeTitle, false);
+              }}
+              className="title"
+            >
+              {ModeEditTitle ? (
+                <Form onSubmit={this.ChangeTitle}>
+                  <Form.Control
+                    type="text"
+                    suppressContentEditableWarning={true}
+                    id="InputNTitleReperage"
+                    value={Newtitle}
+                    onChange={(event) =>
+                      this.setState({ Newtitle: event.target.value })
+                    }
+                    placeholder="Nouveaux titre"
+                  />
+                </Form>
+              ) : (
+                AnimToWatch.name
+              )}{" "}
               {type === "film" ? `(${AnimToWatch.durer}min)` : null}
             </h1>
             <div className="img">
@@ -1055,33 +1119,35 @@ class Watch extends Component {
               </Dropdown.Menu>
             </Dropdown>
             <div id="badgeStreaming">
-              <Badge
-                variant="warning"
-                className="BadgesME"
-                id="InputBadgeStreaming"
-                style={{ display: ShowFormBadge ? "block" : "none" }}
-                contentEditable="true"
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    this.updateValue(`${Pseudo}/${type}/${id}/`, {
-                      Badge: [
-                        ...Badges,
-                        document.querySelector("#InputBadgeStreaming")
-                          .innerText,
-                      ],
-                    });
-                    this.setState({ ShowFormBadge: false });
-                  }
-                }}
-              >
-                Nom du site
-              </Badge>
+              {ShowFormBadge ? (
+                <Badge
+                  variant="warning"
+                  className="BadgesME"
+                  id="InputBadgeStreaming"
+                >
+                  <Form onSubmit={this.addBadge}>
+                    <Form.Control
+                      type="text"
+                      suppressContentEditableWarning={true}
+                      id="InputNbadgeReperage"
+                      value={NewBadgeName}
+                      onChange={(event) =>
+                        this.setState({ NewBadgeName: event.target.value })
+                      }
+                      placeholder="Nom du site"
+                    />
+                  </Form>
+                </Badge>
+              ) : null}
               {BadgesHtml}
               <Badge
                 pill
                 className="BadgesME"
                 variant="secondary"
-                onClick={() => this.setState({ ShowFormBadge: true })}
+                onClick={() => {
+                  this.setState({ ShowFormBadge: true });
+                  window.addEventListener("click", this.addBadge, false);
+                }}
               >
                 <span className="fas fa-plus-circle"></span>
               </Badge>

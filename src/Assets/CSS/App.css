@@ -1415,6 +1415,10 @@ a:hover {
           user-select: none;
 }
 
+#Watch .nonStartMod header h1 p {
+  margin-bottom: 0;
+}
+
 #Watch .nonStartMod section {
   margin-bottom: 15px;
 }
@@ -1435,6 +1439,10 @@ a:hover {
 #Watch .nonStartMod section #badgeStreaming #InputBadgeStreaming {
   background-image: linear-gradient(45deg, #13c2c2, #fadb14);
   color: #101010;
+}
+
+#Watch .nonStartMod section #badgeStreaming #InputBadgeStreaming #InputNbadgeReperage {
+  height: 20px;
 }
 
 #Watch .nonStartMod section #badgeStreaming .badge:empty {
