@@ -121,7 +121,7 @@ const PosterAnim = ({
             <img src={url} alt="Img of Anim" />
           </div>
           <div className="action">
-            {Paused || Drop ? (
+            {(Paused && !isAlleged) || (Drop && !isAlleged) ? (
               <div
                 className="watch paused"
                 onClick={() => UnPaused(id)}

@@ -611,6 +611,8 @@ export default class Home extends Component {
       this.updateValue(`${Pseudo}/serie/${IdToAddEp}`, {
         AnimEP: AnimSEP,
         finishedAnim: false,
+        Drop: null,
+        Paused: null,
       });
       this.setState({ RedirectPage: `/Watch/${Pseudo}/${IdToAddEp}` });
     }
@@ -1415,12 +1417,12 @@ export default class Home extends Component {
             UnPaused={(id) => {
               if (id.split("-")[0] === "film") {
                 this.updateValue(`${Pseudo}/film/${id}`, {
-                  Drop: false,
+                  Drop: null,
                 });
               } else {
                 this.updateValue(`${Pseudo}/serie/${id}`, {
-                  Paused: false,
-                  Drop: false,
+                  Paused: null,
+                  Drop: null,
                 });
               }
 
@@ -1685,9 +1687,17 @@ export default class Home extends Component {
                           );
                         }}
                         UnPaused={(id) => {
-                          this.updateValue(`${Pseudo}/serie/${id}`, {
-                            Paused: false,
-                          });
+                          if (id.split("-")[0] === "film") {
+                            this.updateValue(`${Pseudo}/film/${id}`, {
+                              Drop: null,
+                            });
+                          } else {
+                            this.updateValue(`${Pseudo}/serie/${id}`, {
+                              Paused: null,
+                              Drop: null,
+                            });
+                          }
+
                           this.setState({
                             RedirectPage: `/Watch/${Pseudo}/${id}`,
                           });

@@ -41,6 +41,8 @@ class Watch extends Component {
     ShowMessageHtml: false,
     SmartRepere: true,
     SecondMessage: false,
+    PauseWithAlleged: false,
+    DropWithAlleged: false,
     AlreadyClicked: false,
     ResText: null,
     // Repere
@@ -535,13 +537,15 @@ class Watch extends Component {
   };
 
   handleAlleger = () => {
-    const { type, id } = this.state;
+    const { type, id, PauseWithAlleged, DropWithAlleged } = this.state;
 
     if (type !== "film") {
       this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
         AnimEP: null,
         Badge: null,
         AnimeSeason: null,
+        Paused: PauseWithAlleged ? true : null,
+        Drop: DropWithAlleged ? true : null,
       });
       this.setState({ uid: null, RedirectHome: true });
     }
@@ -971,6 +975,7 @@ class Watch extends Component {
                               `${this.state.Pseudo}/serie/${id}`,
                               {
                                 Paused: true,
+                                Drop: null,
                               }
                             );
                             this.setState({ uid: null, RedirectHome: true });
@@ -1040,6 +1045,7 @@ class Watch extends Component {
                               `${this.state.Pseudo}/${type}/${id}`,
                               {
                                 Drop: true,
+                                Paused: null,
                               }
                             );
                             this.setState({ uid: null, RedirectHome: true });
@@ -1064,6 +1070,35 @@ class Watch extends Component {
                         {AnimToWatch.name}
                       </Button>
                     </Dropdown.Item>
+                    <Dropdown className="FakeDropDownItem">
+                      <Dropdown.Toggle
+                        variant="outline-primary"
+                        id="dropdown-basic"
+                        block
+                      >
+                        Actions combinées
+                      </Dropdown.Toggle>
+
+                      <Dropdown.Menu>
+                        {!AnimToWatch.finishedAnim ? (
+                          <Dropdown.Item>
+                            <Button
+                              variant="light"
+                              block
+                              onClick={() =>
+                                this.setState({
+                                  DropWithAlleged: true,
+                                  ShowModalVerification: [true, "alleger"],
+                                })
+                              }
+                            >
+                              <span className="fas fa-window-close"></span>{" "}
+                              Alléger et Mettre en Pause {AnimToWatch.name}
+                            </Button>
+                          </Dropdown.Item>
+                        ) : null}
+                      </Dropdown.Menu>
+                    </Dropdown>
                   </Fragment>
                 ) : !AnimToWatch.finished ? (
                   <Dropdown.Item>
@@ -1073,6 +1108,7 @@ class Watch extends Component {
                       onClick={() => {
                         this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
                           Drop: true,
+                          Paused: null,
                         });
                         this.setState({ uid: null, RedirectHome: true });
                       }}
@@ -1252,7 +1288,13 @@ class Watch extends Component {
         <Modal
           show={ShowModalVerification[0]}
           size="lg"
-          onHide={() => this.setState({ ShowModalVerification: [false, null] })}
+          onHide={() =>
+            this.setState({
+              ShowModalVerification: [false, null],
+              PauseWithAlleged: false,
+              DropWithAlleged: false,
+            })
+          }
         >
           <Modal.Header id="ModalTitle" closeButton>
             <Modal.Title
@@ -1277,7 +1319,11 @@ class Watch extends Component {
             <Button
               variant="secondary"
               onClick={() =>
-                this.setState({ ShowModalVerification: [false, null] })
+                this.setState({
+                  ShowModalVerification: [false, null],
+                  PauseWithAlleged: false,
+                  DropWithAlleged: true,
+                })
               }
             >
               Annuler
@@ -1415,12 +1461,21 @@ class Watch extends Component {
                 if (
                   ActionEndAnime[0] &&
                   !ActionEndAnime[2] &&
-                  type === "serie"
+                  type === "serie" &&
+                  !ActionEndAnime[1]
                 ) {
                   this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
                     Paused: true,
+                    Drop: null,
                   });
                   GoToHome = true;
+                } else if (
+                  ActionEndAnime[0] &&
+                  !ActionEndAnime[2] &&
+                  type === "serie" &&
+                  ActionEndAnime[1]
+                ) {
+                  this.setState({ PauseWithAlleged: true });
                 }
                 if (ActionEndAnime[1] && !ActionEndAnime[2] && type === "serie")
                   this.setState({
