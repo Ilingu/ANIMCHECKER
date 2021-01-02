@@ -1103,6 +1103,11 @@ a:hover {
 #MyAnime .content.none header {
   text-align: center;
   margin-top: -25px;
+  margin-bottom: 25px !important;
+}
+
+#MyAnime .content.none header #BtnModeDisplayNextAnim {
+  margin-right: 5px;
 }
 
 #MyAnime .content.none .NextAnimContainer {
@@ -1111,21 +1116,21 @@ a:hover {
   overflow-x: hidden;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim {
+#MyAnime .content.none .NextAnimContainer .NextAnim {
   text-align: center;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim .name {
+#MyAnime .content.none .NextAnimContainer .NextAnim .name {
   font-size: 1.3rem;
   font-weight: bold;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim button {
+#MyAnime .content.none .NextAnimContainer .NextAnim button {
   position: relative;
   font-weight: bold;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim button .animation {
+#MyAnime .content.none .NextAnimContainer .NextAnim button .animation {
   position: absolute;
   top: 20%;
   width: 100%;
@@ -1137,12 +1142,12 @@ a:hover {
   transition: 1.5s;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim button:hover .animation {
+#MyAnime .content.none .NextAnimContainer .NextAnim button:hover .animation {
   -webkit-animation: LToR 0.5s ease-in 0.1s 1 forwards;
           animation: LToR 0.5s ease-in 0.1s 1 forwards;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #nameSkeleton {
+#MyAnime .content.none .NextAnimContainer .NextAnim.Skeleton #nameSkeleton {
   position: relative;
   overflow: hidden;
   margin-left: calc(50% - 150px / 2);
@@ -1152,7 +1157,7 @@ a:hover {
   background-color: #3e4449;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #BtnSkeleton {
+#MyAnime .content.none .NextAnimContainer .NextAnim.Skeleton #BtnSkeleton {
   position: relative;
   overflow: hidden;
   margin-top: 15px;
@@ -1162,7 +1167,7 @@ a:hover {
   background-color: #3e4449;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #nameSkeleton::after {
+#MyAnime .content.none .NextAnimContainer .NextAnim.Skeleton #nameSkeleton::after {
   content: "";
   position: absolute;
   left: 0;
@@ -1175,7 +1180,7 @@ a:hover {
           animation: SkeletonName 2s ease-in 1s infinite;
 }
 
-#MyAnime .content.none .NextAnimContainer #NextAnim.Skeleton #BtnSkeleton::after {
+#MyAnime .content.none .NextAnimContainer .NextAnim.Skeleton #BtnSkeleton::after {
   content: "";
   position: absolute;
   left: 0;
@@ -1186,6 +1191,45 @@ a:hover {
   background-image: linear-gradient(90deg, #485058, #3e4449, #485058);
   -webkit-animation: SkeletonBtn 2s ease-in 1s infinite;
           animation: SkeletonBtn 2s ease-in 1s infinite;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: (1fr)[4];
+      grid-template-columns: repeat(4, 1fr);
+  gap: 23px;
+  border-radius: 15px;
+  padding: 13px;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim {
+  cursor: pointer;
+  border-radius: 15px;
+  background: #212121;
+  -webkit-box-shadow: 11px 11px 6px #1c1c1c, -11px -11px 6px #262626;
+          box-shadow: 11px 11px 6px #1c1c1c, -11px -11px 6px #262626;
+  text-align: center;
+  width: 200px;
+  height: 200px;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .name {
+  font-size: 18px;
+  word-break: break-all;
+  letter-spacing: 1px;
+  text-transform: capitalize;
+  color: #2daa61;
+  text-decoration: underline;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim:hover {
+  -webkit-box-shadow: -11px -11px 6px #1c1c1c, 11px 11px 6px #262626;
+          box-shadow: -11px -11px 6px #1c1c1c, 11px 11px 6px #262626;
+  -webkit-transform: scale(1.05);
+          transform: scale(1.05);
 }
 
 @media screen and (max-width: 1200px) {

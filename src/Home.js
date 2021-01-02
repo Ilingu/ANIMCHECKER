@@ -59,6 +59,11 @@ export default class Home extends Component {
     MyAnimListSaved: null,
     MyNextAnimListSaved: null,
     ModeFilter: "NotFinished",
+    ModeDisplayNextAnim: !JSON.parse(
+      window.localStorage.getItem("ModeDisplayNextAnim")
+    )
+      ? null
+      : JSON.parse(window.localStorage.getItem("ModeDisplayNextAnim")),
     ModeFindAnime: [false, null],
     LoadingMode: [true, true],
     palmares: null,
@@ -495,20 +500,32 @@ export default class Home extends Component {
       .then(() => {
         this.setState({
           // Firebase
+          Pseudo: null,
+          NumTel: "",
+          NewLogin: false,
           NextAnimFireBase: {},
           filmFireBase: {},
           serieFirebase: {},
+          PhoneNumFireBase: null,
+          ParamsOptn: null,
+          FirstQuerie: false,
+          AuthenticateMethod: false,
+          AllowUseReAuth: false,
           uid: null,
           proprio: null,
           // Bon fonctionnement de l'app
           findAnim: [],
+          JustDefined: false,
+          RedirectPage: null,
           ShowModalSearch: false,
+          IdToAddEp: null,
+          InfoAnimeToChangeNote: null,
+          ShowModalChangeNote: false,
           ShowModalAddAnim: false,
           ShowModalAddFilm: false,
           ShowModalType: false,
-          PalmaresModal: false,
           ShowModalVerification: false,
-          palmares: null,
+          PalmaresModal: false,
           SwitchMyAnim: true,
           animToDetails: [],
           NextAnimToDelete: null,
@@ -517,7 +534,32 @@ export default class Home extends Component {
           RefreshRandomizeAnime2: true,
           MyAnimListSaved: null,
           MyNextAnimListSaved: null,
+          ModeFilter: "NotFinished",
+          ModeDisplayNextAnim: "Block",
           ModeFindAnime: [false, null],
+          LoadingMode: [true, true],
+          palmares: null,
+          MicOn: false,
+          addEPToAlleged: false,
+          ShowMessage: false,
+          ShowMessageHtml: false,
+          SecondMessage: false,
+          // Form
+          title: "",
+          type: "serie",
+          Rate: 7.5,
+          imageUrl: null,
+          durer: 110,
+          nbEP: "",
+          NextAnim: "",
+          CodeNumber: ["", 1],
+          titleSearchAnime: "",
+          DeletePathVerif: null,
+          // Alerts
+          ResText: null,
+          typeAlert: null,
+          // A2HS
+          AddToHomeScreen: null,
         });
         if (refresh) {
           window.location.reload();
@@ -1207,6 +1249,7 @@ export default class Home extends Component {
       uid,
       proprio,
       AuthenticateMethod,
+      ModeDisplayNextAnim,
       AllowUseReAuth,
       RedirectPage,
       ShowModalSearch,
@@ -1487,8 +1530,8 @@ export default class Home extends Component {
       });
     } else if (
       !SwitchMyAnim &&
-      Object.keys(NextAnimFireBase).length !== 0 &&
       NextAnimFireBase !== undefined &&
+      Object.keys(NextAnimFireBase).length !== 0 &&
       !LoadingMode[1] &&
       RefreshRandomizeAnime2
     ) {
@@ -1497,8 +1540,10 @@ export default class Home extends Component {
           <NextAnimCO
             key={key}
             name={NextAnimFireBase[key].name}
+            ModeDisplay={ModeDisplayNextAnim}
             Skeleton={[false, null]}
-            handleClick={() => {
+            handleClick={(event) => {
+              if (event.target.id === "RepereImportantNextAnime") return;
               this.setState({
                 ShowModalType: true,
                 title: NextAnimFireBase[key].name,
@@ -1569,7 +1614,11 @@ export default class Home extends Component {
         for (let i = 0; i < 6; i++) {
           SkeletonListNextAnime = [
             ...SkeletonListNextAnime,
-            <NextAnimCO key={i} Skeleton={[true, i]} />,
+            <NextAnimCO
+              key={i}
+              ModeDisplay={ModeDisplayNextAnim}
+              Skeleton={[true, i]}
+            />,
           ];
         }
       }
@@ -1612,6 +1661,18 @@ export default class Home extends Component {
               }
               NextAnim={NextAnim}
               LoadingMode={LoadingMode[0]}
+              ModeDisplayNextAnim={ModeDisplayNextAnim}
+              ChangeModeDisplayNextAnim={(NewMode) => {
+                if (NewMode === ModeDisplayNextAnim) return;
+                window.localStorage.setItem(
+                  "ModeDisplayNextAnim",
+                  JSON.stringify(NewMode)
+                );
+                this.setState({
+                  ModeDisplayNextAnim: NewMode,
+                  RefreshRandomizeAnime2: true,
+                });
+              }}
               ResText={ResText}
               typeAlert={typeAlert}
               ModeFindAnime={ModeFindAnime[0]}
@@ -1731,6 +1792,7 @@ export default class Home extends Component {
                         key={key}
                         Skeleton={[false, null]}
                         name={NextAnimFireBase[key].name}
+                        ModeDisplay={ModeDisplayNextAnim}
                         handleClick={() => {
                           this.setState({
                             ShowModalType: true,

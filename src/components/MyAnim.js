@@ -13,6 +13,8 @@ const MyAnim = ({
   LoadingMode,
   typeAlert,
   MyAnimList,
+  ModeDisplayNextAnim,
+  ChangeModeDisplayNextAnim,
   NextAnim,
   MyNextAnimList,
   handleSubmit,
@@ -203,8 +205,29 @@ const MyAnim = ({
                 </Button>
               </Form>
               <hr />
+              <Button
+                id="BtnModeDisplayNextAnim"
+                variant="outline-secondary"
+                onClick={() => ChangeModeDisplayNextAnim("Lines")}
+              >
+                <span className="fas fa-grip-lines"></span>
+              </Button>
+              <Button
+                variant="outline-secondary"
+                onClick={() => ChangeModeDisplayNextAnim("Block")}
+              >
+                <span className="fas fa-th-large"></span>
+              </Button>
             </header>
-            <div className="NextAnimContainer">{MyNextAnimList}</div>
+            <div
+              className={`NextAnimContainer${
+                !ModeDisplayNextAnim || ModeDisplayNextAnim === "Block"
+                  ? " ModeBlock"
+                  : ""
+              }`}
+            >
+              {MyNextAnimList}
+            </div>
             <br />
           </Fragment>
         )}
