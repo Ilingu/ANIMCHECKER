@@ -124,7 +124,7 @@ const PosterAnim = ({
             {(Paused && !isAlleged) || (Drop && !isAlleged) ? (
               <div
                 className="watch paused"
-                onClick={() => UnPaused(id)}
+                onClick={UnPaused}
                 title={`Reprendre ${title}`}
               >
                 <span className="fas fa-play-circle"></span>

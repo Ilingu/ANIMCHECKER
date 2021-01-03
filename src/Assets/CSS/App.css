@@ -72,6 +72,10 @@ a:hover {
   border: 0;
 }
 
+.dropdown-toggle::after {
+  display: none;
+}
+
 .ackmessage {
   position: absolute;
   right: 10px;
@@ -1106,6 +1110,25 @@ a:hover {
   margin-bottom: 25px !important;
 }
 
+#MyAnime .content.none header form #actionFormAddNA {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+#MyAnime .content.none header form #actionFormAddNA .dropdown {
+  margin-right: 5px;
+}
+
+#MyAnime .content.none header form #actionFormAddNA input {
+  position: absolute;
+  width: 38.1%;
+  left: 0;
+}
+
 #MyAnime .content.none header #BtnModeDisplayNextAnim {
   margin-right: 5px;
 }
@@ -1204,6 +1227,7 @@ a:hover {
 }
 
 #MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim {
+  position: relative;
   cursor: pointer;
   border-radius: 15px;
   background: #212121;
@@ -1216,7 +1240,23 @@ a:hover {
   transition: 0.6s;
 }
 
-#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .name {
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front {
+  visibility: visible;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front .name {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  min-height: 54px;
   font-size: 18px;
   word-break: break-all;
   letter-spacing: 1px;
@@ -1225,11 +1265,135 @@ a:hover {
   text-decoration: underline;
 }
 
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  width: 100%;
+  overflow: auto;
+  max-height: calc(54px + 38px);
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .badge:empty {
+  display: block;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .BadgesNA {
+  position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  margin-right: 5px;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .BadgesNA #ValueBadge {
+  visibility: visible;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .BadgesNA #CancelBadge {
+  display: none;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .BadgesNA:hover img {
+  visibility: hidden;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .BadgesNA:hover #ValueBadge {
+  visibility: hidden;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .BadgesNA:hover #CancelBadge {
+  display: block;
+  position: absolute;
+  left: calc(50% - 8px / 2);
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front #BadgesType .BadgesNA.badge-pill:active {
+  background-color: #464c52;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .back {
+  visibility: hidden;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .back .deleteNA {
+  position: absolute;
+  top: calc(50% - 67.98px / 2);
+  left: calc(50% - 65.92px / 2);
+  color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  padding: 15px;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .back .deleteNA span {
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .back .deleteNA:hover {
+  color: #fb401f;
+  border: 2px solid #ff4c2c;
+}
+
 #MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim:hover {
   -webkit-box-shadow: -11px -11px 6px #1c1c1c, 11px 11px 6px #262626;
           box-shadow: -11px -11px 6px #1c1c1c, 11px 11px 6px #262626;
-  -webkit-transform: scale(1.05);
-          transform: scale(1.05);
+  -webkit-transition-delay: 2s;
+          transition-delay: 2s;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim:hover .front {
+  visibility: hidden;
+  -webkit-transition-delay: 2s;
+          transition-delay: 2s;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim:hover .back {
+  visibility: visible;
+  -webkit-transition-delay: 2s;
+          transition-delay: 2s;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.small {
+  background-color: rgba(77, 140, 207, 0.08);
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.small .name {
+  color: #4d8ccf;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.medium {
+  background-color: rgba(255, 193, 7, 0.03);
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.medium .name {
+  color: #ffc107;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.big {
+  background-color: rgba(251, 64, 31, 0.09);
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.big .name {
+  color: #fb401f;
 }
 
 @media screen and (max-width: 1200px) {

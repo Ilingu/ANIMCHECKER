@@ -62,6 +62,7 @@ class Watch extends Component {
   };
 
   setIntervalVar = null;
+  FirstBadge = true;
 
   componentDidMount() {
     const self = this;
@@ -532,6 +533,12 @@ class Watch extends Component {
       this.updateValue(`${Pseudo}/${type}/${id}/`, {
         Badge: [...Badges, NewBadgeName],
       });
+      this.setState({ ShowFormBadge: false, NewBadgeName: "" });
+    } else if (this.FirstBadge) {
+      this.FirstBadge = false;
+    } else {
+      this.FirstBadge = true;
+      window.removeEventListener("click", this.addBadge, false);
       this.setState({ ShowFormBadge: false, NewBadgeName: "" });
     }
   };
@@ -1165,6 +1172,7 @@ class Watch extends Component {
                     <Form.Control
                       type="text"
                       suppressContentEditableWarning={true}
+                      autoComplete="off"
                       id="InputNbadgeReperage"
                       value={NewBadgeName}
                       onChange={(event) =>

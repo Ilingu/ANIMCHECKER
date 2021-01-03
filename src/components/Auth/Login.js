@@ -55,7 +55,7 @@ const Login = ({
   } else if (forForm[1] === 2) {
     stepToShow = (
       <Fragment>
-        <Form>
+        <Form onSubmit={verificateCode}>
           <Form.Group controlId="login">
             <Form.Control
               type="text"

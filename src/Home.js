@@ -80,6 +80,8 @@ export default class Home extends Component {
     durer: 110,
     nbEP: "",
     NextAnim: "",
+    ImportanceNA: 0,
+    TagNA: "",
     CodeNumber: ["", 1],
     titleSearchAnime: "",
     DeletePathVerif: null,
@@ -468,7 +470,8 @@ export default class Home extends Component {
       });
   };
 
-  verificateCode = () => {
+  verificateCode = (event) => {
+    event.preventDefault();
     window.confirmationResult
       .confirm(this.state.CodeNumber[0])
       .then(() => {
@@ -551,6 +554,8 @@ export default class Home extends Component {
           imageUrl: null,
           durer: 110,
           nbEP: "",
+          ImportanceNA: 0,
+          TagNA: "",
           NextAnim: "",
           CodeNumber: ["", 1],
           titleSearchAnime: "",
@@ -955,8 +960,16 @@ export default class Home extends Component {
   newNextAnim = (event) => {
     event.preventDefault();
 
-    const { NextAnim, NextAnimFireBase } = this.state;
+    const { NextAnim, ImportanceNA, TagNA, NextAnimFireBase } = this.state;
     let IsGoodForPost = true;
+
+    const BadgeStrToArr = () => {
+      if (typeof TagNA !== "string" || TagNA.trim().length <= 0) {
+        return null;
+      }
+
+      return TagNA.split(",").map((tag) => tag);
+    };
 
     if (
       NextAnim !== undefined &&
@@ -980,6 +993,8 @@ export default class Home extends Component {
           ...this.state.NextAnimFireBase,
           [`NextAnim${Date.now()}`]: {
             name: NextAnim,
+            Importance: !ImportanceNA ? null : ImportanceNA,
+            Badges: BadgeStrToArr(),
           },
         });
       } else {
@@ -996,10 +1011,10 @@ export default class Home extends Component {
         }, 4000);
       }
 
-      this.setState({ NextAnim: "" });
+      this.setState({ NextAnim: "", ImportanceNA: 0, TagNA: "" });
     } else {
       this.setState({
-        ResText: "Vueillez me donner le nom de l'anime à rajouter",
+        ResText: "Veuillez me donner le nom de l'anime à rajouter",
         typeAlert: "danger",
       });
     }
@@ -1271,6 +1286,7 @@ export default class Home extends Component {
       MicOn,
       ShowMessage,
       ShowMessageHtml,
+      TagNA,
       durer,
       FirstQuerie,
       SwitchMyAnim,
@@ -1279,6 +1295,7 @@ export default class Home extends Component {
       LoadingMode,
       CodeNumber,
       JustDefined,
+      ImportanceNA,
       InfoAnimeToChangeNote,
       nbEP,
       SearchInAnimeList,
@@ -1335,7 +1352,7 @@ export default class Home extends Component {
               ShowMessage: true,
               ShowMessageHtml: true,
               ResText:
-                "Le système est actuellement entrain de régler le problème, vueillez patientez... (attente de 0s à 1-2min)",
+                "Le système est actuellement entrain de régler le problème, veuillez patientez... (attente de 0s à 1-2min)",
             });
             this.AllowVpn();
             setTimeout(() => {
@@ -1378,6 +1395,149 @@ export default class Home extends Component {
     }
 
     let animList = null;
+    const TemplateGAnime = (key) => (
+      <Poster
+        key={key}
+        id={key}
+        Skeleton={false}
+        Pseudo={Pseudo}
+        Paused={
+          key.split("-")[0] === "serie"
+            ? serieFirebase[key].Paused
+              ? serieFirebase[key].Paused
+              : false
+            : false
+        }
+        AddEpSeasonToAlleged={() => {
+          if (key.split("-")[0] !== "serie") return;
+          this.setState({
+            addEPToAlleged: true,
+            ShowModalAddAnim: true,
+            IdToAddEp: key,
+            title: serieFirebase[key].name,
+          });
+        }}
+        Drop={
+          key.split("-")[0] === "serie"
+            ? serieFirebase[key].Drop
+              ? serieFirebase[key].Drop
+              : false
+            : false
+        }
+        ChangeNote={() =>
+          this.setState({
+            ShowModalChangeNote: true,
+            InfoAnimeToChangeNote: key,
+          })
+        }
+        isFav={
+          { ...serieFirebase, ...filmFireBase }[key].Fav
+            ? { ...serieFirebase, ...filmFireBase }[key].Fav
+            : false
+        }
+        fnFav={(id, FavVal) => {
+          this.updateValue(
+            `${Pseudo}/${key.split("-")[0]}/${id}`,
+            {
+              Fav: FavVal,
+            },
+            ModeFilter
+          );
+        }}
+        UnPaused={() => {
+          this.updateValue(`${Pseudo}/${key.split("-")[0]}/${key}`, {
+            Paused: null,
+            Drop: null,
+          });
+
+          this.setState({ RedirectPage: `/Watch/${Pseudo}/${key}` });
+        }}
+        AnimeSeason={
+          key.split("-")[0] === "serie"
+            ? serieFirebase[key].AnimeSeason
+              ? serieFirebase[key].AnimeSeason
+              : false
+            : false
+        }
+        ModeFilter={ModeFilter}
+        url={{ ...serieFirebase, ...filmFireBase }[key].imageUrl}
+        title={{ ...serieFirebase, ...filmFireBase }[key].name}
+        isFinished={
+          key.split("-")[0] === "serie"
+            ? serieFirebase[key].finishedAnim
+            : filmFireBase[key].finished
+        }
+        Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
+        deleteAnim={this.DeleteAnimVerification}
+        isAlleged={
+          key.split("-")[0] === "serie"
+            ? !serieFirebase[key].AnimEP
+              ? true
+              : false
+            : false
+        }
+        inMyAnim={true}
+      />
+    );
+    const TemplateGNextAnim = (key) => (
+      <NextAnimCO
+        key={key}
+        name={NextAnimFireBase[key].name}
+        ModeDisplay={ModeDisplayNextAnim}
+        ModeImportant={
+          !NextAnimFireBase[key].Importance
+            ? 0
+            : NextAnimFireBase[key].Importance
+        }
+        setImportance={(LvlImportance) => {
+          this.updateValue(`${Pseudo}/NextAnim/${key}/`, {
+            Importance: LvlImportance,
+          });
+        }}
+        BadgesType={NextAnimFireBase[key].Badges}
+        AddNewBadgeType={(NameBadge) => {
+          this.updateValue(`${Pseudo}/NextAnim/${key}/`, {
+            Badges: [
+              ...(!NextAnimFireBase[key].Badges
+                ? []
+                : NextAnimFireBase[key].Badges),
+              NameBadge,
+            ],
+          });
+        }}
+        handleDeleteBadge={(index) => {
+          const Badges = [...NextAnimFireBase[key].Badges];
+          Badges.splice(index, 1);
+          this.updateValue(`${Pseudo}/NextAnim/${key}/`, { Badges });
+        }}
+        Skeleton={[false, null]}
+        handleClick={(event) => {
+          if (
+            event.target.id === "RepereImportantNextAnime" ||
+            event.target.id === "RepereMenuImportantNextAnime" ||
+            event.target.id === "InputBadgeNA" ||
+            event.target.id === "InputNANbadgeReperage" ||
+            event.target.id === "BadgeAddReperagePill" ||
+            event.target.id === "BadgeAddReperagePillSpan" ||
+            event.target.classList[0] === "BadgesNA" ||
+            event.target.classList[0] === "fas" ||
+            event.target.id === "CancelBadge" ||
+            event.target.classList[0] === "deleteNA"
+          )
+            return;
+          this.setState({
+            ShowModalType: true,
+            title: NextAnimFireBase[key].name,
+            NextAnimToDelete: key,
+          });
+        }}
+        DeleteNextAnim={() => {
+          this.updateValue(`${Pseudo}/NextAnim/`, {
+            [key]: null,
+          });
+        }}
+      />
+    );
 
     if (findAnim.length !== 0) {
       animList = findAnim.map((anim) => (
@@ -1392,7 +1552,7 @@ export default class Home extends Component {
             this.setState({
               ShowMessage: true,
               ShowMessageHtml: true,
-              ResText: "Chargement de la page... Vueillez patienté...",
+              ResText: "Chargement de la page... Veuillez patienté...",
             });
             setTimeout(() => {
               this.setState({ ShowMessage: false });
@@ -1427,98 +1587,11 @@ export default class Home extends Component {
       !LoadingMode[0] &&
       RefreshRandomizeAnime
     ) {
-      const MyAnimListTemplate = Object.keys(serieFirebase)
-        .map((key) => (
-          <Poster
-            key={key}
-            id={key}
-            Skeleton={false}
-            Pseudo={Pseudo}
-            Paused={
-              serieFirebase[key].Paused ? serieFirebase[key].Paused : false
-            }
-            AddEpSeasonToAlleged={() => {
-              this.setState({
-                addEPToAlleged: true,
-                ShowModalAddAnim: true,
-                IdToAddEp: key,
-                title: serieFirebase[key].name,
-              });
-            }}
-            Drop={serieFirebase[key].Drop ? serieFirebase[key].Drop : false}
-            ChangeNote={() =>
-              this.setState({
-                ShowModalChangeNote: true,
-                InfoAnimeToChangeNote: key,
-              })
-            }
-            isFav={serieFirebase[key].Fav ? serieFirebase[key].Fav : false}
-            fnFav={(id, FavVal) => {
-              this.updateValue(`${Pseudo}/serie/${id}`, {
-                Fav: FavVal,
-              });
-            }}
-            UnPaused={(id) => {
-              if (id.split("-")[0] === "film") {
-                this.updateValue(`${Pseudo}/film/${id}`, {
-                  Drop: null,
-                });
-              } else {
-                this.updateValue(`${Pseudo}/serie/${id}`, {
-                  Paused: null,
-                  Drop: null,
-                });
-              }
+      const MyAnimListTemplate = Object.keys({
+        ...serieFirebase,
+        ...filmFireBase,
+      }).map((key) => TemplateGAnime(key));
 
-              this.setState({ RedirectPage: `/Watch/${Pseudo}/${id}` });
-            }}
-            AnimeSeason={
-              serieFirebase[key].AnimeSeason
-                ? serieFirebase[key].AnimeSeason
-                : false
-            }
-            ModeFilter={ModeFilter}
-            url={serieFirebase[key].imageUrl}
-            title={serieFirebase[key].name}
-            isFinished={serieFirebase[key].finishedAnim}
-            Rate={serieFirebase[key].Rate}
-            deleteAnim={this.DeleteAnimVerification}
-            isAlleged={!serieFirebase[key].AnimEP ? true : false}
-            inMyAnim={true}
-          />
-        ))
-        .concat(
-          Object.keys(filmFireBase).map((key) => (
-            <Poster
-              key={key}
-              id={key}
-              Pseudo={Pseudo}
-              Skeleton={false}
-              Paused={false}
-              fnFav={(id, FavVal) => {
-                this.updateValue(`${Pseudo}/film/${id}`, {
-                  Fav: FavVal,
-                });
-              }}
-              AnimeSeason={false}
-              ModeFilter={ModeFilter}
-              url={filmFireBase[key].imageUrl}
-              title={filmFireBase[key].name}
-              isFav={filmFireBase[key].Fav ? filmFireBase[key].Fav : false}
-              isFinished={filmFireBase[key].finished}
-              Rate={filmFireBase[key].Rate}
-              ChangeNote={() =>
-                this.setState({
-                  ShowModalChangeNote: true,
-                  InfoAnimeToChangeNote: key,
-                })
-              }
-              deleteAnim={this.DeleteAnimVerification}
-              isAlleged={false}
-              inMyAnim={true}
-            />
-          ))
-        );
       this.setState({
         RefreshRandomizeAnime: false,
         MyAnimListSaved:
@@ -1535,23 +1608,8 @@ export default class Home extends Component {
       !LoadingMode[1] &&
       RefreshRandomizeAnime2
     ) {
-      const MyNextAnimListTemplate = Object.keys(NextAnimFireBase).map(
-        (key) => (
-          <NextAnimCO
-            key={key}
-            name={NextAnimFireBase[key].name}
-            ModeDisplay={ModeDisplayNextAnim}
-            Skeleton={[false, null]}
-            handleClick={(event) => {
-              if (event.target.id === "RepereImportantNextAnime") return;
-              this.setState({
-                ShowModalType: true,
-                title: NextAnimFireBase[key].name,
-                NextAnimToDelete: key,
-              });
-            }}
-          />
-        )
+      const MyNextAnimListTemplate = Object.keys(NextAnimFireBase).map((key) =>
+        TemplateGNextAnim(key)
       );
       this.setState({
         RefreshRandomizeAnime2: false,
@@ -1660,6 +1718,14 @@ export default class Home extends Component {
                 this.setState({ NextAnim: event.target.value })
               }
               NextAnim={NextAnim}
+              fnNextAnimForm={[
+                (LvlImportance) => {
+                  this.setState({ ImportanceNA: LvlImportance });
+                },
+                (event) => this.setState({ TagNA: event.target.value }),
+              ]}
+              Tag={TagNA}
+              ModeImportant={ImportanceNA}
               LoadingMode={LoadingMode[0]}
               ModeDisplayNextAnim={ModeDisplayNextAnim}
               ChangeModeDisplayNextAnim={(NewMode) => {
@@ -1686,122 +1752,14 @@ export default class Home extends Component {
               }}
               MyAnimList={
                 ModeFindAnime[0] && SearchInAnimeList[1]
-                  ? ModeFindAnime[1].map((key) => (
-                      <Poster
-                        key={key}
-                        id={key}
-                        Pseudo={Pseudo}
-                        Skeleton={false}
-                        url={
-                          { ...serieFirebase, ...filmFireBase }[key].imageUrl
-                        }
-                        ChangeNote={() =>
-                          this.setState({
-                            ShowModalChangeNote: true,
-                            InfoAnimeToChangeNote: key,
-                          })
-                        }
-                        title={{ ...serieFirebase, ...filmFireBase }[key].name}
-                        isFinished={
-                          { ...serieFirebase, ...filmFireBase }[key]
-                            .finishedAnim
-                        }
-                        AnimeSeason={
-                          serieFirebase[key] !== undefined
-                            ? serieFirebase[key].AnimeSeason !== undefined
-                              ? serieFirebase[key].AnimeSeason
-                              : false
-                            : false
-                        }
-                        AddEpSeasonToAlleged={() => {
-                          this.setState({
-                            addEPToAlleged: true,
-                            ShowModalAddAnim: true,
-                            IdToAddEp: key,
-                            title: serieFirebase[key].name,
-                          });
-                        }}
-                        Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
-                        deleteAnim={this.DeleteAnimVerification}
-                        Paused={
-                          serieFirebase[key] !== undefined
-                            ? serieFirebase[key].Paused !== undefined
-                              ? serieFirebase[key].Paused
-                              : false
-                            : false
-                        }
-                        Drop={
-                          { ...serieFirebase, ...filmFireBase }[key].Drop
-                            ? { ...serieFirebase, ...filmFireBase }[key].Drop
-                            : false
-                        }
-                        isFav={
-                          { ...serieFirebase, ...filmFireBase }[key].Fav
-                            ? { ...serieFirebase, ...filmFireBase }[key].Fav
-                            : false
-                        }
-                        fnFav={(id, FavVal) => {
-                          this.updateValue(
-                            `${Pseudo}/${id.split("-")[0]}/${id}`,
-                            {
-                              Fav: FavVal,
-                            }
-                          );
-                        }}
-                        UnPaused={(id) => {
-                          if (id.split("-")[0] === "film") {
-                            this.updateValue(`${Pseudo}/film/${id}`, {
-                              Drop: null,
-                            });
-                          } else {
-                            this.updateValue(`${Pseudo}/serie/${id}`, {
-                              Paused: null,
-                              Drop: null,
-                            });
-                          }
-
-                          this.setState({
-                            RedirectPage: `/Watch/${Pseudo}/${id}`,
-                          });
-                        }}
-                        ModeFilter={ModeFilter}
-                        isAlleged={
-                          { ...serieFirebase, ...filmFireBase }[key].AnimEP ===
-                            undefined &&
-                          { ...serieFirebase, ...filmFireBase }[key].durer ===
-                            undefined
-                            ? true
-                            : { ...serieFirebase, ...filmFireBase }[key]
-                                .durer !== undefined
-                            ? false
-                            : !{ ...serieFirebase, ...filmFireBase }[key].AnimEP
-                            ? true
-                            : false
-                        }
-                        inMyAnim={true}
-                      />
-                    ))
+                  ? ModeFindAnime[1].map((key) => TemplateGAnime(key))
                   : LoadingMode[0]
                   ? SkeletonListAnime
                   : MyAnimListSaved || "Vous avez aucun anime :/\nRajoutez-en !"
               }
               MyNextAnimList={
                 ModeFindAnime[0] && !SearchInAnimeList[1]
-                  ? ModeFindAnime[1].map((key) => (
-                      <NextAnimCO
-                        key={key}
-                        Skeleton={[false, null]}
-                        name={NextAnimFireBase[key].name}
-                        ModeDisplay={ModeDisplayNextAnim}
-                        handleClick={() => {
-                          this.setState({
-                            ShowModalType: true,
-                            title: NextAnimFireBase[key].name,
-                            NextAnimToDelete: key,
-                          });
-                        }}
-                      />
-                    ))
+                  ? ModeFindAnime[1].map((key) => TemplateGNextAnim(key))
                   : LoadingMode[1]
                   ? SkeletonListNextAnime
                   : MyNextAnimListSaved ||
