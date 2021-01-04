@@ -34,11 +34,7 @@ const MyAnim = ({
   for (let i = 0; i < NbFois; i++) {
     NbTemplate = [
       ...NbTemplate,
-      <span
-        key={i}
-        id="RepereImportantNextAnime"
-        className="fas fa-exclamation"
-      ></span>,
+      <span key={i} className="fas fa-exclamation"></span>,
     ];
   }
 
@@ -73,7 +69,7 @@ const MyAnim = ({
                 className={SwitchMyAnimVar ? "active" : ""}
                 onClick={ModeFindAnime ? null : SwitchMyAnim}
               >
-                My Anim{" "}
+                Mes Animes{" "}
                 {SwitchMyAnimVar && !LoadingMode ? (
                   <Fragment>
                     <Button
@@ -178,7 +174,7 @@ const MyAnim = ({
                 active={!SwitchMyAnimVar}
                 onClick={ModeFindAnime ? null : SwitchMyNextAnim}
               >
-                My next anim{" "}
+                My next anime{" "}
                 {!SwitchMyAnimVar && !LoadingMode ? (
                   <Button
                     variant="link"
@@ -238,49 +234,45 @@ const MyAnim = ({
                             ? "warning"
                             : "danger"
                         }`}
-                        id="RepereImportantNextAnime"
                       >
                         {NbTemplate}
                       </Dropdown.Toggle>
 
-                      <Dropdown.Menu id="RepereMenuImportantNextAnime">
-                        <Dropdown.Item
-                          style={{ "pointer-events": "none" }}
-                          id="RepereImportantNextAnime"
-                        >
+                      <Dropdown.Menu>
+                        <Dropdown.Item style={{ "pointer-events": "none" }}>
                           Importance pour regarder l'anime ({NextAnim})
                         </Dropdown.Item>
-                        <Dropdown.Divider id="RepereImportantNextAnime" />
+                        <Dropdown.Divider />
                         <Dropdown.Item
                           onClick={() => fnNextAnimForm[0](0)}
                           style={{ color: "rgb(108, 117, 125)" }}
                           id="RepereImportantNextAnime"
                         >
-                          Aucune
+                          Aucune Importance
                         </Dropdown.Item>
                         <Dropdown.Item
                           onClick={() => fnNextAnimForm[0](1)}
                           style={{ color: "#4d8ccf" }}
-                          id="RepereImportantNextAnime"
                         >
-                          <span className="fas fa-exclamation"></span> Basse
+                          <span className="fas fa-exclamation"></span> Faible
+                          Importance
                         </Dropdown.Item>
                         <Dropdown.Item
                           onClick={() => fnNextAnimForm[0](2)}
                           style={{ color: "rgb(255, 193, 7)" }}
-                          id="RepereImportantNextAnime"
                         >
                           <span className="fas fa-exclamation"></span>{" "}
-                          <span className="fas fa-exclamation"></span> Moyenne
+                          <span className="fas fa-exclamation"></span>{" "}
+                          Importance Moyenne
                         </Dropdown.Item>
                         <Dropdown.Item
                           onClick={() => fnNextAnimForm[0](3)}
                           style={{ color: "#fb401f" }}
-                          id="RepereImportantNextAnime"
                         >
                           <span className="fas fa-exclamation"></span>{" "}
                           <span className="fas fa-exclamation"></span>{" "}
                           <span className="fas fa-exclamation"></span> Haute
+                          Importance
                         </Dropdown.Item>
                       </Dropdown.Menu>
                     </Dropdown>

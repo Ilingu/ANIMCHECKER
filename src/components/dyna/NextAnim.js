@@ -17,6 +17,7 @@ const NextAnim = ({
   // State
   const [ShowFormBadge, SetShowFormBadge] = useState(false);
   const [NewBadgeName, SetNewBadgeName] = useState("");
+  const [Back, setBack] = useState(false);
   // App
   if (!ModeDisplay)
     window.localStorage.setItem("ModeDisplayNextAnim", JSON.stringify("Block"));
@@ -28,6 +29,8 @@ const NextAnim = ({
     .join("");
   let NameRef = useRef(name),
     First = true;
+  let timer = null,
+    prevent = false;
 
   /* Fn */
   const countLines = (elem) => {
@@ -56,6 +59,27 @@ const NextAnim = ({
       window.removeEventListener("click", addBadge, false);
       SetShowFormBadge(false);
     }
+  };
+
+  const handleClickPrevent = (event) => {
+    const Target = event.target;
+    timer = setTimeout(() => {
+      if (
+        !prevent &&
+        !Skeleton[0] &&
+        (!ModeDisplay || ModeDisplay === "Block")
+      ) {
+        handleClick(Target);
+      } else {
+        prevent = false;
+      }
+    }, 200);
+  };
+
+  const handleDbClick = () => {
+    clearTimeout(timer);
+    prevent = true;
+    setBack(!Back);
   };
 
   useEffect(() => {
@@ -127,11 +151,8 @@ const NextAnim = ({
     <div
       id={IDElem}
       title={name}
-      onClick={
-        !Skeleton[0] && (!ModeDisplay || ModeDisplay === "Block")
-          ? handleClick
-          : null
-      }
+      onClick={handleClickPrevent}
+      onDoubleClick={handleDbClick}
       className={`NextAnim${Skeleton[0] ? " Skeleton" : ""}${
         !ModeDisplay || ModeDisplay === "Block"
           ? !ModeImportant
@@ -142,7 +163,7 @@ const NextAnim = ({
             ? " medium"
             : " big"
           : ""
-      }`}
+      }${Back ? " BackActive" : ""}`}
     >
       {Skeleton[0] ? (
         <Fragment>
@@ -150,7 +171,7 @@ const NextAnim = ({
         </Fragment>
       ) : !ModeDisplay || ModeDisplay === "Block" ? (
         <Fragment>
-          <div className="front">
+          <div className={`front${Back ? "" : " active"}`}>
             <div className="name">{name}</div>
             <Dropdown>
               <Dropdown.Toggle
@@ -181,14 +202,14 @@ const NextAnim = ({
                   style={{ color: "rgb(108, 117, 125)" }}
                   id="RepereImportantNextAnime"
                 >
-                  Aucune
+                  Aucune Importance
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => setImportance(1)}
                   style={{ color: "#4d8ccf" }}
                   id="RepereImportantNextAnime"
                 >
-                  <span className="fas fa-exclamation"></span> Basse
+                  <span className="fas fa-exclamation"></span> Faible Importance
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => setImportance(2)}
@@ -196,7 +217,8 @@ const NextAnim = ({
                   id="RepereImportantNextAnime"
                 >
                   <span className="fas fa-exclamation"></span>{" "}
-                  <span className="fas fa-exclamation"></span> Moyenne
+                  <span className="fas fa-exclamation"></span> Importance
+                  Moyenne
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => setImportance(3)}
@@ -205,7 +227,7 @@ const NextAnim = ({
                 >
                   <span className="fas fa-exclamation"></span>{" "}
                   <span className="fas fa-exclamation"></span>{" "}
-                  <span className="fas fa-exclamation"></span> Haute
+                  <span className="fas fa-exclamation"></span> Haute Importance
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
@@ -244,7 +266,7 @@ const NextAnim = ({
               </Badge>
             </div>
           </div>
-          <div className="back">
+          <div className={`back${Back ? " active" : ""}`}>
             <div className="deleteNA" onClick={DeleteNextAnim}>
               <span className="fas fa-trash-alt"></span>
             </div>

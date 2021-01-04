@@ -13,7 +13,7 @@ import PseudoCO from "./components/Auth/Pseudo";
 // Context
 import ContextForMyAnim from "./ContextSchema";
 // CSS
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, Dropdown } from "react-bootstrap";
 // DB
 import base, { firebaseApp, messaging } from "./db/base";
 import firebase from "firebase/app";
@@ -77,11 +77,14 @@ export default class Home extends Component {
     type: "serie",
     Rate: 7.5,
     imageUrl: null,
+    ModeCombinaisonSearch: "ET",
     durer: 110,
     nbEP: "",
     NextAnim: "",
     ImportanceNA: 0,
+    ImportanceSearch: null,
     TagNA: "",
+    TagSearchAnime: "",
     CodeNumber: ["", 1],
     titleSearchAnime: "",
     DeletePathVerif: null,
@@ -555,7 +558,9 @@ export default class Home extends Component {
           durer: 110,
           nbEP: "",
           ImportanceNA: 0,
+          ImportanceSearch: null,
           TagNA: "",
+          TagSearchAnime: "",
           NextAnim: "",
           CodeNumber: ["", 1],
           titleSearchAnime: "",
@@ -581,60 +586,254 @@ export default class Home extends Component {
         serieFirebase,
         filmFireBase,
         NextAnimFireBase,
+        ImportanceSearch,
+        TagSearchAnime,
+        ModeCombinaisonSearch,
       } = this.state,
       self = this;
+
+    let index = [],
+      GoodModeET = 0,
+      Mode = 1;
+
     if (
-      SearchInAnimeList[0] !== undefined &&
-      titleSearchAnime &&
       typeof titleSearchAnime === "string" &&
-      titleSearchAnime.trim().length !== 0 &&
-      titleSearchAnime !== ""
+      titleSearchAnime.trim().length !== 0
+    )
+      GoodModeET++;
+    if (
+      typeof TagSearchAnime === "string" &&
+      TagSearchAnime.trim().length !== 0
+    )
+      GoodModeET++;
+    if (ImportanceSearch !== null) GoodModeET++;
+
+    if (
+      SearchInAnimeList[1] &&
+      typeof titleSearchAnime === "string" &&
+      titleSearchAnime.trim().length !== 0
     ) {
-      let index = [];
-      if (SearchInAnimeList[1]) {
-        // Anime
-        Object.values(serieFirebase)
-          .concat(Object.values(filmFireBase))
-          .filter((anime, i) => {
-            if (
-              anime.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
-              anime.name.toLowerCase().includes(titleSearchAnime.toLowerCase())
-            )
-              index = [...index, i];
-            return null;
-          });
-        next(
-          index.map(
-            (In) =>
-              Object.keys(serieFirebase).concat(Object.keys(filmFireBase))[In]
-          )
-        );
-      } else {
-        // NextAnime
-        Object.values(NextAnimFireBase).filter((NextAnime, i) => {
+      // My Anime
+      Mode = 1;
+      Object.values(serieFirebase)
+        .concat(Object.values(filmFireBase))
+        .forEach((anime, i) => {
           if (
-            NextAnime.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
-            NextAnime.name
-              .toLowerCase()
-              .includes(titleSearchAnime.toLowerCase())
+            anime.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+            anime.name.toLowerCase().includes(titleSearchAnime.toLowerCase())
           )
             index = [...index, i];
           return null;
         });
-        next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
+      next(
+        index.map(
+          (In) =>
+            Object.keys(serieFirebase).concat(Object.keys(filmFireBase))[In]
+        )
+      );
+    } else if (ModeCombinaisonSearch === "OU" || GoodModeET === 1) {
+      let GlobalSearchArr = [];
+      if (
+        !SearchInAnimeList[1] &&
+        typeof titleSearchAnime === "string" &&
+        titleSearchAnime.trim().length !== 0
+      ) {
+        // NextAnime By Title
+        Mode = 1;
+        Object.values(NextAnimFireBase).forEach((NA, i) => {
+          if (
+            NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+            NA.name.toLowerCase().includes(titleSearchAnime.toLowerCase())
+          )
+            index = [...index, i];
+          return null;
+        });
+        GlobalSearchArr = [
+          ...GlobalSearchArr,
+          ...index.map((In) => Object.keys(NextAnimFireBase)[In]),
+        ];
+        index = [];
+      }
+      if (
+        !SearchInAnimeList[1] &&
+        typeof TagSearchAnime === "string" &&
+        TagSearchAnime.trim().length !== 0
+      ) {
+        // NextAnime By Tag
+        Mode = 2;
+        const TagArr = TagSearchAnime.split(",");
+        Object.values(NextAnimFireBase).forEach((NA, i) => {
+          TagArr.forEach((Tag) => {
+            if (NA.Badges)
+              NA.Badges.forEach((Bdg) => {
+                if (
+                  Tag.toLowerCase() === Bdg.toLowerCase() ||
+                  Bdg.toLowerCase().includes(Tag.toLowerCase())
+                )
+                  index = [...index, i];
+              });
+          });
+          return null;
+        });
+        GlobalSearchArr = [
+          ...GlobalSearchArr,
+          ...index.map((In) => Object.keys(NextAnimFireBase)[In]),
+        ];
+        index = [];
+      }
+      if (!SearchInAnimeList[1] && ImportanceSearch !== null) {
+        // NextAnime By Importance
+        Mode = 3;
+        Object.values(NextAnimFireBase).forEach((NA, i) => {
+          if (
+            NA.Importance === ImportanceSearch ||
+            (ImportanceSearch === 0 && !NA.Importance)
+          )
+            index = [...index, i];
+          return null;
+        });
+        GlobalSearchArr = [
+          ...GlobalSearchArr,
+          ...index.map((In) => Object.keys(NextAnimFireBase)[In]),
+        ];
+        index = [];
       }
 
-      function next(key) {
-        key.length === 0
-          ? self.setState({
-              ResText: `Aucun anime trouvé pour: ${titleSearchAnime}`,
-              typeAlert: "danger",
-            })
-          : self.setState({ ModeFindAnime: [true, key] });
-        self.cancelModal();
-      }
+      // Anti doublons
+      GlobalSearchArr.forEach((SearchedAnim) => {
+        let DoublonsIndex = null;
+        let HowManyTimes = 0;
+        GlobalSearchArr.forEach((Anim) => {
+          if (SearchedAnim === Anim) {
+            HowManyTimes++;
+            if (HowManyTimes > 1) {
+              DoublonsIndex = GlobalSearchArr.indexOf(SearchedAnim);
+            }
+          }
+        });
+        if (DoublonsIndex !== null) GlobalSearchArr.splice(DoublonsIndex, 1);
+      });
+
+      // Send
+      next(GlobalSearchArr);
     } else {
-      this.cancelModal();
+      if (
+        typeof titleSearchAnime === "string" &&
+        titleSearchAnime.trim().length !== 0 &&
+        typeof TagSearchAnime === "string" &&
+        TagSearchAnime.trim().length !== 0 &&
+        ImportanceSearch !== null
+      ) {
+        const TagArr = TagSearchAnime.split(",");
+        Object.values(NextAnimFireBase).forEach((NA, i) => {
+          TagArr.forEach((Tag) => {
+            if (NA.Badges)
+              NA.Badges.forEach((Bdg) => {
+                if (
+                  (Tag.toLowerCase() === Bdg.toLowerCase() ||
+                    Bdg.toLowerCase().includes(Tag.toLowerCase())) &&
+                  (NA.Importance === ImportanceSearch ||
+                    (ImportanceSearch === 0 && !NA.Importance)) &&
+                  (NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+                    NA.name
+                      .toLowerCase()
+                      .includes(titleSearchAnime.toLowerCase()))
+                )
+                  index = [...index, i];
+              });
+          });
+
+          return null;
+        });
+        next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
+      } else if (
+        typeof TagSearchAnime === "string" &&
+        TagSearchAnime.trim().length !== 0 &&
+        ImportanceSearch !== null
+      ) {
+        const TagArr = TagSearchAnime.split(",");
+        Object.values(NextAnimFireBase).forEach((NA, i) => {
+          TagArr.forEach((Tag) => {
+            if (NA.Badges)
+              NA.Badges.forEach((Bdg) => {
+                if (
+                  (Tag.toLowerCase() === Bdg.toLowerCase() ||
+                    Bdg.toLowerCase().includes(Tag.toLowerCase())) &&
+                  (NA.Importance === ImportanceSearch ||
+                    (ImportanceSearch === 0 && !NA.Importance))
+                )
+                  index = [...index, i];
+              });
+          });
+
+          return null;
+        });
+        next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
+      } else if (
+        ImportanceSearch !== null &&
+        typeof titleSearchAnime === "string" &&
+        titleSearchAnime.trim().length !== 0
+      ) {
+        Object.values(NextAnimFireBase).forEach((NA, i) => {
+          if (
+            (NA.Importance === ImportanceSearch ||
+              (ImportanceSearch === 0 && !NA.Importance)) &&
+            (NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+              NA.name.toLowerCase().includes(titleSearchAnime.toLowerCase()))
+          )
+            index = [...index, i];
+
+          return null;
+        });
+        next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
+      } else {
+        const TagArr = TagSearchAnime.split(",");
+        Object.values(NextAnimFireBase).forEach((NA, i) => {
+          TagArr.forEach((Tag) => {
+            if (NA.Badges)
+              NA.Badges.forEach((Bdg) => {
+                if (
+                  (Tag.toLowerCase() === Bdg.toLowerCase() ||
+                    Bdg.toLowerCase().includes(Tag.toLowerCase())) &&
+                  (NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+                    NA.name
+                      .toLowerCase()
+                      .includes(titleSearchAnime.toLowerCase()))
+                )
+                  index = [...index, i];
+              });
+          });
+
+          return null;
+        });
+        next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
+      }
+    }
+
+    function next(key) {
+      key.length === 0
+        ? self.setState({
+            ResText: `Aucun anime trouvé pour${
+              Mode === 1
+                ? ` ${titleSearchAnime}`
+                : Mode === 2
+                ? `: Tag = ${TagSearchAnime}`
+                : Mode === 3
+                ? `: Importance = ${
+                    ImportanceSearch === 0
+                      ? "Auncune"
+                      : ImportanceSearch === 1
+                      ? "Faible"
+                      : ImportanceSearch === 2
+                      ? "Moyenne"
+                      : "Haute"
+                  }`
+                : " cette combinaisons de critères"
+            }`,
+            typeAlert: "danger",
+          })
+        : self.setState({ ModeFindAnime: [true, key] });
+      self.cancelModal();
     }
   };
 
@@ -851,6 +1050,8 @@ export default class Home extends Component {
           animToDetails: [],
           // Form
           titleSearchAnime: "",
+          ImportanceSearch: null,
+          TagSearchAnime: "",
           DeletePathVerif: null,
           title: "",
           type: "serie",
@@ -1230,8 +1431,11 @@ export default class Home extends Component {
       ShowModalChangeNote: false,
       findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
+      ModeCombinaisonSearch: "ET",
       NextAnimToDelete: null,
       titleSearchAnime: "",
+      ImportanceSearch: null,
+      TagSearchAnime: "",
       addEPToAlleged: false,
       DeletePathVerif: null,
       title: "",
@@ -1287,6 +1491,7 @@ export default class Home extends Component {
       ShowMessage,
       ShowMessageHtml,
       TagNA,
+      TagSearchAnime,
       durer,
       FirstQuerie,
       SwitchMyAnim,
@@ -1296,6 +1501,7 @@ export default class Home extends Component {
       CodeNumber,
       JustDefined,
       ImportanceNA,
+      ImportanceSearch,
       InfoAnimeToChangeNote,
       nbEP,
       SearchInAnimeList,
@@ -1394,7 +1600,6 @@ export default class Home extends Component {
       );
     }
 
-    let animList = null;
     const TemplateGAnime = (key) => (
       <Poster
         key={key}
@@ -1511,18 +1716,18 @@ export default class Home extends Component {
           this.updateValue(`${Pseudo}/NextAnim/${key}/`, { Badges });
         }}
         Skeleton={[false, null]}
-        handleClick={(event) => {
+        handleClick={(eventTarget) => {
           if (
-            event.target.id === "RepereImportantNextAnime" ||
-            event.target.id === "RepereMenuImportantNextAnime" ||
-            event.target.id === "InputBadgeNA" ||
-            event.target.id === "InputNANbadgeReperage" ||
-            event.target.id === "BadgeAddReperagePill" ||
-            event.target.id === "BadgeAddReperagePillSpan" ||
-            event.target.classList[0] === "BadgesNA" ||
-            event.target.classList[0] === "fas" ||
-            event.target.id === "CancelBadge" ||
-            event.target.classList[0] === "deleteNA"
+            eventTarget.id === "RepereImportantNextAnime" ||
+            eventTarget.id === "RepereMenuImportantNextAnime" ||
+            eventTarget.id === "InputBadgeNA" ||
+            eventTarget.id === "InputNANbadgeReperage" ||
+            eventTarget.id === "BadgeAddReperagePill" ||
+            eventTarget.id === "BadgeAddReperagePillSpan" ||
+            eventTarget.classList[0] === "BadgesNA" ||
+            eventTarget.classList[0] === "fas" ||
+            eventTarget.id === "CancelBadge" ||
+            eventTarget.classList[0] === "deleteNA"
           )
             return;
           this.setState({
@@ -1538,6 +1743,8 @@ export default class Home extends Component {
         }}
       />
     );
+    let animList = null;
+    let NbTemplate = [];
 
     if (findAnim.length !== 0) {
       animList = findAnim.map((anim) => (
@@ -1577,6 +1784,16 @@ export default class Home extends Component {
         } else {
           animList = [<Poster key={i} Skeleton={true} inMyAnim={false} />];
         }
+      }
+    }
+
+    if (SearchInAnimeList[0] && !SearchInAnimeList[1]) {
+      let NbFois = !ImportanceSearch ? 1 : ImportanceSearch;
+      for (let i = 0; i < NbFois; i++) {
+        NbTemplate = [
+          ...NbTemplate,
+          <span key={i} className="fas fa-exclamation"></span>,
+        ];
       }
     }
 
@@ -1669,7 +1886,7 @@ export default class Home extends Component {
         }
       }
       if (LoadingMode[1]) {
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 8; i++) {
           SkeletonListNextAnime = [
             ...SkeletonListNextAnime,
             <NextAnimCO
@@ -2003,11 +2220,19 @@ export default class Home extends Component {
             </Modal.Header>
             <Modal.Body id="ModalBody">
               <Form onSubmit={this.SearchAnimInList}>
+                {!SearchInAnimeList[1] ? (
+                  <Form.Text>
+                    Au moins un critère dois être rempli les autres sont
+                    facultatif mais vous pouvez combinée plusieurs critère (Par
+                    ex: Anime avec le tag "Fate" et/ou qui sont en haute
+                    importance ...) <br />
+                  </Form.Text>
+                ) : null}
                 <Form.Group id="searchInAnimeList">
                   <Form.Label>Nom de l'animé:</Form.Label>
                   <Form.Control
                     type="text"
-                    id="searchInAnimeListInput"
+                    className="searchInAnimeListInput"
                     placeholder="Titre de l'anime à rechercher"
                     autoComplete="off"
                     value={titleSearchAnime}
@@ -2027,6 +2252,123 @@ export default class Home extends Component {
                       }
                     ></span>
                   </div>
+
+                  {!SearchInAnimeList[1] ? (
+                    <Fragment>
+                      <Form.Label>Importance de l'anime:</Form.Label>
+                      <Dropdown>
+                        <Dropdown.Toggle
+                          variant={`outline-${
+                            !ImportanceSearch
+                              ? "secondary"
+                              : ImportanceSearch === 1
+                              ? "info"
+                              : ImportanceSearch === 2
+                              ? "warning"
+                              : "danger"
+                          }`}
+                        >
+                          {NbTemplate}
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                          <Dropdown.Item
+                            onClick={() =>
+                              this.setState({ ImportanceSearch: null })
+                            }
+                          >
+                            Rien
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              this.setState({ ImportanceSearch: 0 })
+                            }
+                            style={{ color: "rgb(108, 117, 125)" }}
+                          >
+                            Aucune Importance
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              this.setState({ ImportanceSearch: 1 })
+                            }
+                            style={{ color: "#4d8ccf" }}
+                          >
+                            <span className="fas fa-exclamation"></span> Faible
+                            Importance
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              this.setState({ ImportanceSearch: 2 })
+                            }
+                            style={{ color: "rgb(255, 193, 7)" }}
+                            id="RepereImportantNextAnime"
+                          >
+                            <span className="fas fa-exclamation"></span>{" "}
+                            <span className="fas fa-exclamation"></span>{" "}
+                            Importance Moyenne
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() =>
+                              this.setState({ ImportanceSearch: 3 })
+                            }
+                            style={{ color: "#fb401f" }}
+                          >
+                            <span className="fas fa-exclamation"></span>{" "}
+                            <span className="fas fa-exclamation"></span>{" "}
+                            <span className="fas fa-exclamation"></span> Haute
+                            Importance
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                      <Form.Label>Type de l'anime:</Form.Label>
+                      <Form.Control
+                        type="text"
+                        className="searchInAnimeListInput"
+                        placeholder={`Les Tag de l'anime séparé par une "," (tag1,tag2...)`}
+                        autoComplete="off"
+                        value={TagSearchAnime}
+                        onChange={(event) =>
+                          this.setState({
+                            TagSearchAnime: event.target.value,
+                          })
+                        }
+                      />
+                      <Form.Label>
+                        Combinée en <b>OU</b> ou en <b>ET</b>
+                      </Form.Label>
+                      <br />
+                      <Form.Check
+                        inline
+                        label="ET"
+                        onClick={() =>
+                          this.setState({ ModeCombinaisonSearch: "ET" })
+                        }
+                        type="radio"
+                        name="ouet"
+                      />
+                      <Form.Check
+                        inline
+                        onClick={() =>
+                          this.setState({ ModeCombinaisonSearch: "OU" })
+                        }
+                        label="OU"
+                        type="radio"
+                        name="ouet"
+                      />
+                      <Form.Text>
+                        Par défault{" "}
+                        <b style={{ textDecoration: "underline" }}>ET</b> <br />
+                        En <b style={{ textDecoration: "underline" }}>OU</b> =
+                        Il faut que l'anime ait le critère1 <b>OU</b> le
+                        critère2... (exemple: Tous les animes avec le Tag "Fate"{" "}
+                        <b>OU</b> qui sont en Haute Importance) <br /> En{" "}
+                        <b style={{ textDecoration: "underline" }}>ET</b> = Il
+                        faut que l'anime ait le critère1 <b>ET</b> le
+                        critère2... (exemple: Tous les animes avec le Tag "Fate"{" "}
+                        <b>ET</b> qui sont en Haute Importance)
+                      </Form.Text>
+                    </Fragment>
+                  ) : null}
                 </Form.Group>
               </Form>
             </Modal.Body>
@@ -2048,10 +2390,17 @@ export default class Home extends Component {
                   : "Type d'anime"}
               </Modal.Title>
             </Modal.Header>
-            <Modal.Body id="ModalBody">
+            <Modal.Body
+              id="ModalBody"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  this.setState({ ShowModalType: false });
+                  this.openNext();
+                }
+              }}
+            >
               <Form
                 onSubmit={(event) => {
-                  event.preventDefault();
                   this.setState({ ShowModalType: false });
                   this.openNext();
                 }}
@@ -2093,7 +2442,12 @@ export default class Home extends Component {
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Ajouter une série</Modal.Title>
             </Modal.Header>
-            <Modal.Body id="ModalBody">
+            <Modal.Body
+              onKeyDown={(event) => {
+                if (event.key === "Enter") this.addAnime();
+              }}
+              id="ModalBody"
+            >
               <Form id="AddAnim" onSubmit={this.addAnime}>
                 <Form.Group controlId="titre">
                   <Form.Label>Titre</Form.Label>
@@ -2151,7 +2505,12 @@ export default class Home extends Component {
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Ajouter un Film</Modal.Title>
             </Modal.Header>
-            <Modal.Body id="ModalBody">
+            <Modal.Body
+              id="ModalBody"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") this.addAnime();
+              }}
+            >
               <Form id="AddAnim" onSubmit={this.addAnime}>
                 <Form.Group controlId="titre">
                   <Form.Label>Titre</Form.Label>

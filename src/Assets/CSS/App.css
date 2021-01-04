@@ -193,7 +193,7 @@ a:hover {
   background-color: #007bff;
 }
 
-@media screen and (max-width: 992px) {
+@media screen and (max-width: 991px) {
   .container > nav .navbar-collapse {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -367,7 +367,7 @@ a:hover {
   position: relative;
 }
 
-#ModalBody #searchInAnimeList #searchInAnimeListInput {
+#ModalBody #searchInAnimeList .searchInAnimeListInput {
   padding-right: 27px;
 }
 
@@ -1219,6 +1219,7 @@ a:hover {
 #MyAnime .content.none .NextAnimContainer.ModeBlock {
   display: -ms-grid;
   display: grid;
+  justify-items: center;
   -ms-grid-columns: (1fr)[4];
       grid-template-columns: repeat(4, 1fr);
   gap: 23px;
@@ -1241,7 +1242,8 @@ a:hover {
 }
 
 #MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front {
-  visibility: visible;
+  visibility: hidden;
+  opacity: 0;
   -webkit-transition: 0.6s;
   transition: 0.6s;
 }
@@ -1326,6 +1328,7 @@ a:hover {
 
 #MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .back {
   visibility: hidden;
+  opacity: 0;
   -webkit-transition: 0.6s;
   transition: 0.6s;
 }
@@ -1353,23 +1356,15 @@ a:hover {
   border: 2px solid #ff4c2c;
 }
 
-#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim:hover {
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .front.active,
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim .back.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.BackActive {
   -webkit-box-shadow: -11px -11px 6px #1c1c1c, 11px 11px 6px #262626;
           box-shadow: -11px -11px 6px #1c1c1c, 11px 11px 6px #262626;
-  -webkit-transition-delay: 2s;
-          transition-delay: 2s;
-}
-
-#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim:hover .front {
-  visibility: hidden;
-  -webkit-transition-delay: 2s;
-          transition-delay: 2s;
-}
-
-#MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim:hover .back {
-  visibility: visible;
-  -webkit-transition-delay: 2s;
-          transition-delay: 2s;
 }
 
 #MyAnime .content.none .NextAnimContainer.ModeBlock .NextAnim.small {
@@ -1401,9 +1396,23 @@ a:hover {
     -ms-grid-columns: (1fr)[4];
         grid-template-columns: repeat(4, 1fr);
   }
+  #MyAnime .content.none header form #actionFormAddNA {
+    -webkit-box-pack: end;
+        -ms-flex-pack: end;
+            justify-content: flex-end;
+  }
+  #MyAnime .content.none header form #actionFormAddNA input {
+    width: 70%;
+  }
+  #MyAnime .content.none .NextAnimContainer.ModeBlock {
+    justify-items: center;
+    -ms-grid-columns: (1fr)[3];
+        grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
 }
 
-@media screen and (max-width: 992px) {
+@media screen and (max-width: 991px) {
   #MyAnime .content {
     -ms-grid-columns: (1fr)[3];
         grid-template-columns: repeat(3, 1fr);
@@ -1411,7 +1420,7 @@ a:hover {
   }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767px) {
   #MyAnime .content {
     -ms-grid-columns: (1fr)[3];
         grid-template-columns: repeat(3, 1fr);
@@ -1433,6 +1442,26 @@ a:hover {
   #MyAnime .content .MyAnimPoster.Season {
     background-size: 150px 222px !important;
   }
+  #MyAnime .content.none header form #actionFormAddNA {
+    display: block;
+  }
+  #MyAnime .content.none header form #actionFormAddNA .dropdown {
+    position: absolute;
+    bottom: 71px;
+    left: calc(50% - 32px / 2 - 96.36px / 2);
+  }
+  #MyAnime .content.none header form #actionFormAddNA button[type="submit"] {
+    margin-top: 48px;
+    margin-left: calc(50% - 96.36px - 96.36px / 3.5);
+  }
+  #MyAnime .content.none header form #actionFormAddNA input {
+    width: 100%;
+  }
+  #MyAnime .content.none .NextAnimContainer.ModeBlock {
+    -ms-grid-columns: (1fr)[2];
+        grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
 }
 
 @media screen and (max-width: 500px) {
@@ -1440,6 +1469,10 @@ a:hover {
     -ms-grid-columns: (1fr)[2];
         grid-template-columns: repeat(2, 1fr);
     gap: 5px;
+  }
+  #MyAnime .content.none .NextAnimContainer.ModeBlock {
+    -ms-grid-columns: (1fr)[1];
+        grid-template-columns: repeat(1, 1fr);
   }
 }
 
@@ -1464,6 +1497,15 @@ a:hover {
   }
   #MyAnime .content .MyAnimPoster.Season {
     background-size: 100px 148px !important;
+  }
+  #MyAnime .content.none header form #actionFormAddNA .dropdown {
+    position: absolute;
+    bottom: 71px;
+    left: calc(50% - 32px / 2 - 96.36px / 2);
+  }
+  #MyAnime .content.none header form #actionFormAddNA button[type="submit"] {
+    margin-top: 48px;
+    margin-left: calc(50% - 96.36px);
   }
 }
 
