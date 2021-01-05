@@ -4,6 +4,8 @@ import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 // SW
 import * as serviceWorker from "./serviceWorker";
+// IndexedDB
+import "./db/initIndexedDB";
 // Main Components
 import Home from "./Home";
 // Components

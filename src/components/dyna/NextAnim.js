@@ -83,22 +83,19 @@ const NextAnim = ({
   };
 
   useEffect(() => {
-    for (let i = 0; i < 2; i++) {
-      if (
-        !Skeleton[0] &&
-        countLines(IDElem) >= 3 &&
-        (!ModeDisplay || ModeDisplay === "Block")
-      ) {
-        try {
-          NameRef.current = NameRef.current.split(" ");
-        } catch (error) {}
-        for (let i = 0; i < countLines(IDElem) - 1; i++) {
-          NameRef.current.pop();
+    if (!ModeDisplay || ModeDisplay === "Block")
+      for (let i = 0; i < 2; i++) {
+        if (!Skeleton[0] && countLines(IDElem) >= 3) {
+          try {
+            NameRef.current = NameRef.current.split(" ");
+          } catch (error) {}
+          for (let i = 0; i < countLines(IDElem) - 1; i++) {
+            NameRef.current.pop();
+          }
+          document.getElementById(IDElem).children[0].children[0].innerText =
+            NameRef.current.join(" ") + "...";
         }
-        document.getElementById(IDElem).children[0].children[0].innerText =
-          NameRef.current.join(" ") + "...";
       }
-    }
   });
 
   /* Dyna Components */

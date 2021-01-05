@@ -7,7 +7,7 @@
 /src/Assets/CSS/App.css.map
 /src/Assets/CSS/App.scss
 /src/Assets/Img
-/src/db
+/src/db/base.js
 
 # testing
 /coverage
