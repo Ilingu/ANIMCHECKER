@@ -8,7 +8,7 @@ const Login = ({
   verificateCode,
   SubmitLogin,
   resetPseudo,
-  resetVpn,
+  OfflineMode,
   JustDefined,
   ShowMessageHtml,
   ShowMessage,
@@ -86,9 +86,8 @@ const Login = ({
         </Button>
       ) : null}
 
-      <Button variant="danger" id="resetVpnBtn" onClick={resetVpn}>
-        <span className="fas fa-exclamation-triangle"></span> Impossible de se
-        connecter
+      <Button variant="danger" id="resetVpnBtn" onClick={OfflineMode}>
+        <span className="fas fa-exclamation-triangle"></span> Mode hors ligne
       </Button>
       {forForm[1] === 1 ? <div id="recaptcha-container"></div> : null}
       <h2>Connecte toi pour faire des list d'anime:</h2>

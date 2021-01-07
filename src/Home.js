@@ -2,6 +2,7 @@
 import React, { Component, Fragment } from "react";
 import { Redirect } from "react-router-dom";
 import axios from "axios";
+import { openDB } from "idb";
 import ReactStars from "react-rating-stars-component";
 // Components
 import Poster from "./components/dyna/PosterAnim";
@@ -37,7 +38,11 @@ export default class Home extends Component {
     AllowUseReAuth: false,
     uid: null,
     proprio: null,
+    ReConnectionFirebase: false,
     // Bon fonctionnement de l'app
+    OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
+      ? false
+      : JSON.parse(window.localStorage.getItem("OfflineMode")),
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
@@ -99,6 +104,11 @@ export default class Home extends Component {
 
   componentDidMount() {
     const self = this;
+    // Offline Mode
+    if (!JSON.parse(window.localStorage.getItem("OfflineMode")))
+      window.localStorage.setItem("OfflineMode", JSON.stringify(false));
+    else if (JSON.parse(window.localStorage.getItem("OfflineMode")) === true)
+      this.OfflineMode();
     // Push Message
     messaging
       .getToken()
@@ -240,17 +250,87 @@ export default class Home extends Component {
     this.AllowVpn();
   }
 
-  reconectFirebase = () => {
-    let i = 0;
-    this.setIntervalVar = setInterval(() => {
-      if (i === 5) this.reAuth();
-      // Allow Vpn
-      window.localStorage.removeItem("firebase:previous_websocket_failure");
-      i++;
-    }, 1000);
+  OfflineMode = (forced) => {
+    const self = this;
+    if (forced === true) {
+      next();
+    } else {
+      axios
+        .get("https://tytoux-api.herokuapp.com/v1/site/Actu/AllActuSite")
+        .then(() => {
+          this.setState({
+            ShowMessage: true,
+            ShowMessageHtml: true,
+            ResText: "Impossible d'activé le mode hors ligne",
+          });
+          setTimeout(() => {
+            this.setState({ ShowMessage: false });
+
+            setTimeout(() => {
+              this.setState({ ShowMessageHtml: false, ResText: null });
+            }, 900);
+          }, 7000);
+        })
+        .catch(next);
+    }
+
+    async function next() {
+      self.setState({
+        ShowMessage: true,
+        ShowMessageHtml: true,
+        ResText: "Mode hors ligne activé",
+      });
+
+      if (self.setIntervalVar !== null) {
+        clearInterval(self.setIntervalVar);
+        self.setIntervalVar = null;
+      }
+      window.localStorage.setItem("OfflineMode", JSON.stringify(true));
+      // Get Data IndexedDB
+      const db = await openDB("AckDb", 1);
+      const Store = [
+        db.transaction("serieFirebase").objectStore("serieFirebase"),
+        db.transaction("filmFireBase").objectStore("filmFireBase"),
+        db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
+      ];
+
+      const results = await Promise.all(
+        Store.map(async (req) => await req.getAll())
+      );
+      self.setState({
+        OfflineMode: true,
+        serieFirebase: results[0][0].data,
+        filmFireBase: results[1][0].data,
+        NextAnimFireBase: results[2][0].data,
+        LoadingMode: [
+          Object.keys(results[0][0].data).length !== 0 ||
+          Object.keys(results[1][0].data).length !== 0
+            ? false
+            : true,
+          Object.keys(results[2][0].data).length !== 0 ? false : true,
+        ],
+        ModeFindAnime: [false, null],
+        RefreshRandomizeAnime: true,
+        RefreshRandomizeAnime2: true,
+        ModeFilter: "NotFinished",
+        FirstQuerie: true,
+      });
+      setTimeout(() => {
+        self.setState({ ShowMessage: false });
+
+        setTimeout(() => {
+          self.setState({ ShowMessageHtml: false, ResText: null });
+        }, 900);
+      }, 6000);
+    }
   };
 
   reAuth = () => {
+    // Verified Internet
+    axios
+      .get("https://tytoux-api.herokuapp.com/v1/site/Actu/AllActuSite")
+      .catch(() => this.OfflineMode(true));
+    // reAuth
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         this.handleAuth({ user });
@@ -260,16 +340,30 @@ export default class Home extends Component {
     });
   };
 
+  reconectFirebase = () => {
+    let i = 0;
+    this.setIntervalVar = setInterval(() => {
+      console.log(i);
+      if (i === 5) this.reAuth();
+      if (i === 10) this.OfflineMode();
+      // Allow Vpn
+      window.localStorage.removeItem("firebase:previous_websocket_failure");
+      i++;
+    }, 1000);
+  };
+
   AllowVpn = () => {
     // Allow Vpn
     let i = 0;
-    const interval = setInterval(() => {
-      if (i === 6) this.reAuth();
+    this.setIntervalVar = setInterval(() => {
+      if (i === 5) this.reAuth();
+      if (i === 10) this.OfflineMode();
       if (this.state.uid === null && this.state.proprio === null) {
         // Allow Vpn
         window.localStorage.removeItem("firebase:previous_websocket_failure");
       } else {
-        clearInterval(interval);
+        clearInterval(this.setIntervalVar);
+        this.setIntervalVar = null;
       }
       i++;
     }, 1000);
@@ -295,19 +389,7 @@ export default class Home extends Component {
 
   refreshValueFirebase = async (after = null, HomePage = null) => {
     try {
-      const NextAnim = await base.fetch(`${this.state.Pseudo}/NextAnim`, {
-        context: this,
-      });
-      const serie = await base.fetch(`${this.state.Pseudo}/serie`, {
-        context: this,
-      });
-      const film = await base.fetch(`${this.state.Pseudo}/film`, {
-        context: this,
-      });
-      const ParamsOptn = await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
-        context: this,
-      });
-      const PhoneNum = await base.fetch(`${this.state.Pseudo}/PhoneNum`, {
+      const GlobalInfoUser = await base.fetch(`${this.state.Pseudo}`, {
         context: this,
       });
 
@@ -317,26 +399,49 @@ export default class Home extends Component {
           RefreshRandomizeAnime: true,
           RefreshRandomizeAnime2: true,
           LoadingMode: [
-            Object.keys(serie).length !== 0 || Object.keys(film).length !== 0
+            Object.keys(GlobalInfoUser.serie).length !== 0 ||
+            Object.keys(GlobalInfoUser.film).length !== 0
               ? false
               : true,
-            Object.keys(NextAnim).length !== 0 ? false : true,
+            Object.keys(GlobalInfoUser.NextAnim).length !== 0 ? false : true,
           ],
           ModeFilter:
             HomePage !== null
               ? HomePage
-              : ParamsOptn.TypeAnimeHomePage
-              ? ParamsOptn.TypeAnimeHomePage
+              : GlobalInfoUser.ParamsOptn.TypeAnimeHomePage
+              ? GlobalInfoUser.ParamsOptn.TypeAnimeHomePage
               : "NotFinished",
           FirstQuerie: true,
-          NextAnimFireBase: NextAnim,
-          serieFirebase: serie,
-          filmFireBase: film,
-          PhoneNumFireBase: PhoneNum,
-          ParamsOptn,
+          NextAnimFireBase: GlobalInfoUser.NextAnim,
+          serieFirebase: GlobalInfoUser.serie,
+          filmFireBase: GlobalInfoUser.film,
+          PhoneNumFireBase: GlobalInfoUser.PhoneNum,
+          ParamsOptn: GlobalInfoUser.ParamsOptn,
         },
         after
       );
+      // Add Data To IndexedDB
+      const db = await openDB("AckDb", 1);
+      const Store = [
+        db
+          .transaction("serieFirebase", "readwrite")
+          .objectStore("serieFirebase"),
+        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
+        db
+          .transaction("NextAnimFireBase", "readwrite")
+          .objectStore("NextAnimFireBase"),
+      ];
+      Store.forEach(async (req) => {
+        req.put({
+          id: req.name,
+          data:
+            req.name === "serieFirebase"
+              ? GlobalInfoUser.serie
+              : req.name === "filmFireBase"
+              ? GlobalInfoUser.film
+              : GlobalInfoUser.NextAnim,
+        });
+      });
     } catch (err) {
       console.error(err);
     }
@@ -433,12 +538,23 @@ export default class Home extends Component {
     // Verified listener Conn
     connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
-        if (this.setIntervalVar !== null) {
+        // Disable OfflineMode
+        window.localStorage.setItem("OfflineMode", JSON.stringify(false));
+        this.setState({ OfflineMode: false });
+        if (
+          this.setIntervalVar !== null &&
+          this.state.ReConnectionFirebase === true
+        ) {
           clearInterval(this.setIntervalVar);
-          console.warn("Firebase Connexion retablished");
+          this.setIntervalVar = null;
+          // Disable OfflineMode
+          window.localStorage.setItem("OfflineMode", JSON.stringify(false));
+          this.setState({ OfflineMode: false, ReConnectionFirebase: false });
+          console.warn("Firebase Connexion (re)establish");
         }
       } else {
         this.reconectFirebase();
+        this.setState({ ReConnectionFirebase: true });
         console.warn(
           "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
         );
@@ -1479,6 +1595,7 @@ export default class Home extends Component {
       title,
       ResText,
       DeletePathVerif,
+      OfflineMode,
       typeAlert,
       type,
       ModeFilter,
@@ -1536,7 +1653,7 @@ export default class Home extends Component {
       this.reAuth();
     }
 
-    if (!uid) {
+    if (!uid && !OfflineMode) {
       return (
         <Login
           verificateCode={this.verificateCode}
@@ -1553,22 +1670,7 @@ export default class Home extends Component {
           ShowMessage={ShowMessage}
           ShowMessageHtml={ShowMessageHtml}
           ResText={ResText}
-          resetVpn={() => {
-            this.setState({
-              ShowMessage: true,
-              ShowMessageHtml: true,
-              ResText:
-                "Le système est actuellement entrain de régler le problème, veuillez patientez... (attente de 0s à 1-2min)",
-            });
-            this.AllowVpn();
-            setTimeout(() => {
-              this.setState({ ShowMessage: false });
-
-              setTimeout(() => {
-                this.setState({ ShowMessageHtml: false, ResText: null });
-              }, 900);
-            }, 7000);
-          }}
+          OfflineMode={this.OfflineMode}
           resetPseudo={() => {
             window.localStorage.removeItem("Pseudo");
             this.setState({ Pseudo: null });
