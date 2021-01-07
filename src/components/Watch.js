@@ -147,6 +147,7 @@ class Watch extends Component {
           ? AllDataPseudo[ForFirstTime.split("-")[0]][ForFirstTime]
           : AllDataPseudo[id.split("-")[0]][id];
 
+      document.title = `ACK:${AnimToWatch.name}`;
       this.setState({
         AnimToWatch,
         Newtitle: AnimToWatch.name,
@@ -485,7 +486,11 @@ class Watch extends Component {
         });
       });
 
-      this.setRepere(lastOne[0], lastOne[1]);
+      try {
+        this.setRepere(lastOne[0], lastOne[1]);
+      } catch (error) {
+        this.setRepere(AnimToWatch.AnimEP[0], 1);
+      }
     }
     this.StartModeWatch();
   };
@@ -612,6 +617,41 @@ class Watch extends Component {
     }
   };
 
+  ShareFinishedAnime = () => {
+    // Token a stocké dans la DB et quand une requet est fait sur ce token => ajouter l'anime
+    /* Dans la db:
+        [Token]: {
+          name
+          AnimEp (en chiffres juste pour alléger) ou durée
+          img
+        }
+        Exemple animeEp
+        AnimEp: {
+        Saison: 2,
+        Episode: [12,13]
+                  ^   ^
+                  S1  S2
+        }
+      */
+
+    try {
+      const { Pseudo, AnimToWatch } = this.state;
+      // Token form: Pseudo-token
+      const TokenURL = "nom-token";
+      navigator.share({
+        title: document.title,
+        text: `${Pseudo} a fini ${AnimToWatch.name} ! Clické sur le lien pour vous aussi commencer cette anime !`,
+        url: `https://myanimchecker.netlify.app/Template/${TokenURL}`,
+      });
+    } catch (err) {
+      console.error(
+        "Share Failed: " +
+          err +
+          " (It's probably because your navigator doesn't support yet the share in Web, navigator like Chrome and opera Desktop, Firefox)"
+      );
+    }
+  };
+
   WhitchSeason = () => {
     const Month = new Date().getMonth() + 1;
     let season = null;
@@ -731,6 +771,17 @@ class Watch extends Component {
           AddEp={() =>
             this.setState({ ShowModalAddEp: true, SeasonToAddEp: EpSaison })
           }
+          ReverseFinished={(idSaison, idEP) => {
+            const AnimToWatchCopy = { ...this.state.AnimToWatch.AnimEP };
+            AnimToWatchCopy[idSaison].finished = false;
+            AnimToWatchCopy[idSaison].Episodes[
+              idEP - 1
+            ].finished = !AnimToWatchCopy[idSaison].Episodes[idEP - 1].finished;
+            this.updateValue(`${Pseudo}/serie/${id}`, {
+              finishedAnim: false,
+              AnimEP: AnimToWatchCopy,
+            });
+          }}
           NextToOpen={(SaisonName) => {
             if (SaisonName === ToOpen) {
               this.setState({ ToOpen: "" });
@@ -1461,6 +1512,9 @@ class Watch extends Component {
               }
             >
               Annuler
+            </Button>
+            <Button variant="info" onClick={this.ShareFinishedAnime}>
+              <span className="fas fa-share"></span>
             </Button>
             <Button
               variant="success"

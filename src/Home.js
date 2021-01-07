@@ -2218,7 +2218,14 @@ export default class Home extends Component {
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Chercher un Animé</Modal.Title>
             </Modal.Header>
-            <Modal.Body id="ModalBody">
+            <Modal.Body
+              id="ModalBody"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  this.SearchAnimInList(event);
+                }
+              }}
+            >
               <Form onSubmit={this.SearchAnimInList}>
                 {!SearchInAnimeList[1] ? (
                   <Form.Text>
@@ -2400,7 +2407,7 @@ export default class Home extends Component {
               }}
             >
               <Form
-                onSubmit={(event) => {
+                onSubmit={() => {
                   this.setState({ ShowModalType: false });
                   this.openNext();
                 }}

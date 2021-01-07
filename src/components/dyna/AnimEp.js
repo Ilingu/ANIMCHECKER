@@ -8,6 +8,7 @@ const AnimEp = ({
   NextToOpen,
   AddEp,
   nbTotalSeason,
+  ReverseFinished,
   RemoveVal,
 }) => {
   const idSaison = ObjInfo.name.split(" ")[1];
@@ -17,8 +18,8 @@ const AnimEp = ({
       id={id.id}
       onClick={(event) => {
         if (
-          event.target.classList[1] !== undefined &&
-          event.target.classList[1] === "fa-trash"
+          event.target.classList[1] === "fa-trash" ||
+          event.target.classList[1] === "fa-undo-alt"
         )
           return;
         play(ObjInfo, id.id);
@@ -38,6 +39,10 @@ const AnimEp = ({
       >
         Episode {id.id}
       </span>{" "}
+      <span
+        onClick={() => ReverseFinished(idSaison - 1, id.id)}
+        className="fas fa-undo-alt"
+      ></span>
       {id.id === ObjInfo.Episodes.length ? (
         <span
           onClick={() => RemoveVal("EP", idSaison - 1, id.id)}
@@ -60,8 +65,8 @@ const AnimEp = ({
       id={ObjInfo.name.split(" ").join("")}
       onClick={(event) => {
         if (
-          event.target.classList[1] !== undefined &&
-          event.target.classList[1] === "fa-trash"
+          event.target.classList[1] === "fa-trash" ||
+          event.target.classList[1] === "fa-undo-alt"
         )
           return;
         NextToOpen(ObjInfo.name.split(" ").join(""));
