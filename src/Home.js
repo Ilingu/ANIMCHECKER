@@ -106,6 +106,8 @@ export default class Home extends Component {
 
   componentDidMount() {
     const self = this;
+    // Title
+    document.title = "ACK:Anim-Checker";
     // Offline Mode
     if (!JSON.parse(window.localStorage.getItem("OfflineMode")))
       window.localStorage.setItem("OfflineMode", JSON.stringify(false));
@@ -788,7 +790,7 @@ export default class Home extends Component {
 
     if (NumTel !== "") {
       if (Object.keys(PhoneNumFireBase).length === 0) {
-        this.updateValue(`${Pseudo}/`, { PhoneNum: NumTel });
+        this.updateValue(`${Pseudo}`, { PhoneNum: NumTel });
       } else if (NumTel !== PhoneNumFireBase) {
         window.localStorage.removeItem("Pseudo");
         this.logOut(true);
@@ -1886,7 +1888,7 @@ export default class Home extends Component {
       this.reAuth();
     }
 
-    if (!uid && !OfflineMode) {
+    if (!uid && OfflineMode === false) {
       return (
         <Login
           verificateCode={this.verificateCode}
@@ -2040,13 +2042,13 @@ export default class Home extends Component {
             : NextAnimFireBase[key].Importance
         }
         setImportance={(LvlImportance) => {
-          this.updateValue(`${Pseudo}/NextAnim/${key}/`, {
+          this.updateValue(`${Pseudo}/NextAnim/${key}`, {
             Importance: LvlImportance,
           });
         }}
         BadgesType={NextAnimFireBase[key].Badges}
         AddNewBadgeType={(NameBadge) => {
-          this.updateValue(`${Pseudo}/NextAnim/${key}/`, {
+          this.updateValue(`${Pseudo}/NextAnim/${key}`, {
             Badges: [
               ...(!NextAnimFireBase[key].Badges
                 ? []
@@ -2058,7 +2060,7 @@ export default class Home extends Component {
         handleDeleteBadge={(index) => {
           const Badges = [...NextAnimFireBase[key].Badges];
           Badges.splice(index, 1);
-          this.updateValue(`${Pseudo}/NextAnim/${key}/`, { Badges });
+          this.updateValue(`${Pseudo}/NextAnim/${key}`, { Badges });
         }}
         Skeleton={[false, null]}
         handleClick={(eventTarget) => {

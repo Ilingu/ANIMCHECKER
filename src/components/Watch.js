@@ -1,5 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { Redirect, Link } from "react-router-dom";
+import { openDB } from "idb";
+import ObjectPath from "object-path";
 import ReactStars from "react-rating-stars-component";
 // Components
 import AnimEpCo from "./dyna/AnimEp";
@@ -28,6 +30,9 @@ class Watch extends Component {
     id: null,
     proprio: null,
     // Bon fonctionnement de l'app
+    OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
+      ? false
+      : JSON.parse(window.localStorage.getItem("OfflineMode")),
     modeStart: false,
     type: "",
     LoadingMode: true,
@@ -68,15 +73,23 @@ class Watch extends Component {
     const self = this;
 
     if (this.props.match.params.id !== undefined) {
-      this.refreshAnimToWatch(this.props.match.params.id);
-
-      this.setState({
-        id: this.props.match.params.id,
-        type: self.props.match.params.id.split("-")[0],
-      });
+      this.setState(
+        {
+          id: this.props.match.params.id,
+          type: this.props.match.params.id.split("-")[0],
+        },
+        () => {
+          if (this.state.OfflineMode === true) {
+            // Get Data IndexedDB
+            self.fnDbOffline("GET");
+            return;
+          }
+          this.refreshAnimToWatch();
+        }
+      );
     }
 
-    if (this.state.Pseudo) {
+    if (this.state.Pseudo && !this.state.OfflineMode) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           self.handleAuth({ user });
@@ -134,18 +147,15 @@ class Watch extends Component {
     });
   };
 
-  refreshAnimToWatch = async (ForFirstTime = null, next = null) => {
-    const { id } = this.state;
+  refreshAnimToWatch = async (next = null) => {
+    const { id, type } = this.state;
 
     try {
       const AllDataPseudo = await base.fetch(this.state.Pseudo, {
         context: this,
       });
 
-      const AnimToWatch =
-        ForFirstTime !== null
-          ? AllDataPseudo[ForFirstTime.split("-")[0]][ForFirstTime]
-          : AllDataPseudo[id.split("-")[0]][id];
+      const AnimToWatch = AllDataPseudo[type][id];
 
       document.title = `ACK:${AnimToWatch.name}`;
       this.setState({
@@ -166,29 +176,161 @@ class Watch extends Component {
     }
   };
 
+  fnDbOffline = async (type, path, value, next = null) => {
+    const db = await openDB("AckDb", 1);
+    if (type === "GET") {
+      // Get Data IndexedDB
+      const { id, type } = this.state;
+
+      const Store = [
+        type === "serie"
+          ? db.transaction("serieFirebase").objectStore("serieFirebase")
+          : db.transaction("filmFireBase").objectStore("filmFireBase"),
+        db.transaction("ParamsOptn").objectStore("ParamsOptn"),
+      ];
+
+      const results = await Promise.all(
+        Store.map(async (req) => await req.getAll())
+      );
+      const AnimToWatch = results[0] ? results[0][0].data[id] : {};
+
+      document.title = `ACK:${
+        Object.keys(AnimToWatch).length !== 0
+          ? AnimToWatch.name
+          : "Anim-Checker"
+      }`;
+      this.setState(
+        {
+          AnimToWatch,
+          Newtitle:
+            Object.keys(AnimToWatch).length !== 0 ? AnimToWatch.name : "",
+          SmartRepere: results[1]
+            ? results[1][0].data === undefined
+              ? true
+              : results[1][0].data.SmartRepere === undefined
+              ? true
+              : results[1][0].data.SmartRepere
+            : true,
+          Badges:
+            Object.keys(AnimToWatch).length !== 0
+              ? AnimToWatch.Badge
+                ? AnimToWatch.Badge
+                : []
+              : [],
+          LoadingMode: false,
+        },
+        next
+      );
+    } else if (type === "POST") {
+      const Store = db
+        .transaction("serieFirebase", "readwrite")
+        .objectStore("serieFirebase");
+
+      const CopyData = [...(await Store.getAll())][0].data;
+      let NewPath = path.split("/"),
+        NewValue = null;
+      NewPath.shift();
+      NewPath.shift();
+      NewValue = NewPath.pop();
+      NewPath = NewPath.join(".");
+      const ObjToEdit = ObjectPath.get(CopyData, NewPath);
+      ObjToEdit[NewValue] = value;
+      Store.put({
+        id: "serieFirebase",
+        data: CopyData,
+      })
+        .then(() => this.fnDbOffline("GET", null, null, next))
+        .catch(console.error);
+    } else if (type === "PUT") {
+      const WayStr = path.split("/")[1];
+      const WayIndex = WayStr === "serie" ? 0 : 1;
+      const Store = [
+        db
+          .transaction("serieFirebase", "readwrite")
+          .objectStore("serieFirebase"),
+        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
+      ];
+      const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+      let NewPath = path.split("/");
+      NewPath.shift();
+      NewPath.shift();
+      NewPath = NewPath.join(".");
+      const ObjToEdit = ObjectPath.get(CopyData, NewPath);
+      Object.keys(value).forEach((key, i) => {
+        if (Object.values(value)[i] === null) {
+          ObjectPath.del(CopyData, `${NewPath}.${key}`);
+          return;
+        }
+        ObjToEdit[key] = Object.values(value)[i];
+      });
+      Store[WayIndex].put({
+        id: Store[WayIndex].name,
+        data: CopyData,
+      })
+        .then(() => this.fnDbOffline("GET", null, null, next))
+        .catch(console.error);
+    } else if (type === "DELETE") {
+      const WayStr = path.split("/")[1];
+      const WayIndex = WayStr === "serie" ? 0 : 1;
+      const Store = [
+        db
+          .transaction("serieFirebase", "readwrite")
+          .objectStore("serieFirebase"),
+        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
+      ];
+      const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+      let NewPath = path.split("/");
+      NewPath.shift();
+      NewPath.shift();
+      NewPath = NewPath.join(".");
+      ObjectPath.del(CopyData, NewPath);
+      Store[WayIndex].put({
+        id: Store[WayIndex].name,
+        data: CopyData,
+      })
+        .then(() => this.fnDbOffline("GET", null, null, next))
+        .catch(console.error);
+    }
+  };
+
   addValue = (path, value) => {
+    const { OfflineMode } = this.state;
+    if (OfflineMode === true) {
+      this.fnDbOffline("POST", path, value);
+      return;
+    }
+
     base
       .post(path, {
         data: value,
       })
       .then(this.refreshAnimToWatch)
-      .catch((err) => console.error(err));
+      .catch(console.error);
   };
 
   deleteValue = (path) => {
-    base
-      .remove(path)
-      .then(this.refreshAnimToWatch)
-      .catch((err) => console.error(err));
+    const { OfflineMode } = this.state;
+    if (OfflineMode === true) {
+      this.fnDbOffline("DELETE", path);
+      return;
+    }
+
+    base.remove(path).then(this.refreshAnimToWatch).catch(console.error);
   };
 
   updateValue = (path, value, next = null, nextAfterRefresh = false) => {
+    const { OfflineMode } = this.state;
+    if (OfflineMode === true) {
+      this.fnDbOffline("PUT", path, value, next);
+      return;
+    }
+
     base
       .update(path, {
         data: value,
       })
       .then(() => {
-        this.refreshAnimToWatch(null, nextAfterRefresh ? next : null);
+        this.refreshAnimToWatch(nextAfterRefresh ? next : null);
         if (next !== null && !nextAfterRefresh) next();
       })
       .catch((err) => console.error(err));
@@ -521,7 +663,7 @@ class Watch extends Component {
   handleDeleteBadge = (index) => {
     const { Badges, Pseudo, type, id } = this.state;
     Badges.splice(index, 1);
-    this.updateValue(`${Pseudo}/${type}/${id}/`, { Badge: Badges });
+    this.updateValue(`${Pseudo}/${type}/${id}`, { Badge: Badges });
   };
 
   addBadge = (event) => {
@@ -535,7 +677,7 @@ class Watch extends Component {
       return;
     if (typeof NewBadgeName === "string" && NewBadgeName.trim().length !== 0) {
       window.removeEventListener("click", this.addBadge, false);
-      this.updateValue(`${Pseudo}/${type}/${id}/`, {
+      this.updateValue(`${Pseudo}/${type}/${id}`, {
         Badge: [...Badges, NewBadgeName],
       });
       this.setState({ ShowFormBadge: false, NewBadgeName: "" });
@@ -610,7 +752,7 @@ class Watch extends Component {
       }
 
       if (idSeason === AnimToWatch.AnimEP.length - 1)
-        this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}`);
+        this.deleteValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}`);
     }
   };
 
