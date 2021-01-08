@@ -3,6 +3,7 @@ import React, { Component, Fragment } from "react";
 import { Redirect } from "react-router-dom";
 import axios from "axios";
 import { openDB } from "idb";
+import ObjectPath from "object-path";
 import ReactStars from "react-rating-stars-component";
 // Components
 import Poster from "./components/dyna/PosterAnim";
@@ -43,6 +44,7 @@ export default class Home extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
+    UpdateDbFromIndexedDB: false,
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
@@ -360,6 +362,35 @@ export default class Home extends Component {
     }
   };
 
+  UpdateDbFromIndexeddb = async () => {
+    const { Pseudo, UpdateDbFromIndexedDB } = this.state;
+
+    if (UpdateDbFromIndexedDB) {
+      // Get Data IndexedDB
+      const db = await openDB("AckDb", 1);
+      const Store = [
+        db.transaction("serieFirebase").objectStore("serieFirebase"),
+        db.transaction("filmFireBase").objectStore("filmFireBase"),
+        db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
+        db.transaction("ParamsOptn").objectStore("ParamsOptn"),
+      ];
+
+      const results = await Promise.all(
+        Store.map(async (req) => await req.getAll())
+      );
+
+      [
+        "serieFirebase",
+        "filmFireBase",
+        "NextAnimFireBase",
+        "ParamsOptn",
+      ].forEach((key, i) => {
+        if (!results[i] || !results[i][0].data) return;
+        this.updateValue(`${Pseudo}/${key}`, { [key]: results[i][0].data });
+      });
+    }
+  };
+
   refreshValueFirebase = async (after = null, HomePage = null) => {
     try {
       const GlobalInfoUser = await base.fetch(`${this.state.Pseudo}`, {
@@ -393,36 +424,40 @@ export default class Home extends Component {
         },
         after
       );
-      // Add Data To IndexedDB
-      const db = await openDB("AckDb", 1);
-      const Store = [
-        db
-          .transaction("serieFirebase", "readwrite")
-          .objectStore("serieFirebase"),
-        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
-        db
-          .transaction("NextAnimFireBase", "readwrite")
-          .objectStore("NextAnimFireBase"),
-        db
-          .transaction("NotifFirebase", "readwrite")
-          .objectStore("NotifFirebase"),
-        db.transaction("ParamsOptn", "readwrite").objectStore("ParamsOptn"),
-      ];
-      Store.forEach(async (req) => {
-        req.put({
-          id: req.name,
-          data:
-            req.name === "serieFirebase"
-              ? GlobalInfoUser.serie
-              : req.name === "filmFireBase"
-              ? GlobalInfoUser.film
-              : req.name === "NextAnimFireBase"
-              ? GlobalInfoUser.NextAnim
-              : req.name === "NotifFirebase"
-              ? GlobalInfoUser.Notif
-              : GlobalInfoUser.ParamsOptn,
+      if (!this.state.UpdateDbFromIndexedDB) {
+        // Add Data To IndexedDB
+        const db = await openDB("AckDb", 1);
+        const Store = [
+          db
+            .transaction("serieFirebase", "readwrite")
+            .objectStore("serieFirebase"),
+          db
+            .transaction("filmFireBase", "readwrite")
+            .objectStore("filmFireBase"),
+          db
+            .transaction("NextAnimFireBase", "readwrite")
+            .objectStore("NextAnimFireBase"),
+          db
+            .transaction("NotifFirebase", "readwrite")
+            .objectStore("NotifFirebase"),
+          db.transaction("ParamsOptn", "readwrite").objectStore("ParamsOptn"),
+        ];
+        Store.forEach(async (req) => {
+          req.put({
+            id: req.name,
+            data:
+              req.name === "serieFirebase"
+                ? GlobalInfoUser.serie
+                : req.name === "filmFireBase"
+                ? GlobalInfoUser.film
+                : req.name === "NextAnimFireBase"
+                ? GlobalInfoUser.NextAnim
+                : req.name === "NotifFirebase"
+                ? GlobalInfoUser.Notif
+                : GlobalInfoUser.ParamsOptn,
+          });
         });
-      });
+      }
     } catch (err) {
       console.error(err);
     }
@@ -445,16 +480,22 @@ export default class Home extends Component {
       this.setState(
         {
           OfflineMode: true,
-          serieFirebase: results[0][0].data,
-          filmFireBase: results[1][0].data,
-          NextAnimFireBase: results[2][0].data,
-          ParamsOptn: results[3][0].data,
+          serieFirebase: results[0] ? results[0][0].data : {},
+          filmFireBase: results[1] ? results[1][0].data : {},
+          NextAnimFireBase: results[2] ? results[2][0].data : {},
+          ParamsOptn: results[3] ? results[3][0].data : {},
           LoadingMode: [
-            Object.keys(results[0][0].data).length !== 0 ||
-            Object.keys(results[1][0].data).length !== 0
-              ? false
+            results[0] && results[1]
+              ? Object.keys(results[0][0].data).length !== 0 ||
+                Object.keys(results[1][0].data).length !== 0
+                ? false
+                : true
               : true,
-            Object.keys(results[2][0].data).length !== 0 ? false : true,
+            results[2]
+              ? Object.keys(results[2][0].data).length !== 0
+                ? false
+                : true
+              : true,
           ],
           ModeFindAnime: [false, null],
           RefreshRandomizeAnime: true,
@@ -493,19 +534,82 @@ export default class Home extends Component {
             typeAlert: "danger",
           })
         );
-      setTimeout(() => {
-        this.setState({
-          ResText: null,
-          typeAlert: null,
-        });
-      }, 2500);
     } else if (type === "PUT") {
-      // const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+      const WayStr = path.split("/")[1];
+      const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
+      const Store = [
+        db
+          .transaction("serieFirebase", "readwrite")
+          .objectStore("serieFirebase"),
+        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
+        db
+          .transaction("NextAnimFireBase", "readwrite")
+          .objectStore("NextAnimFireBase"),
+      ];
+      const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+      let NewPath = path.split("/");
+      NewPath.shift();
+      NewPath.shift();
+      NewPath = NewPath.join(".");
+      const ObjToEdit = ObjectPath.get(CopyData, NewPath);
+      Object.keys(value).forEach((key, i) => {
+        if (Object.values(value)[i] === null) {
+          ObjectPath.del(CopyData, `${NewPath}.${key}`);
+          return;
+        }
+        ObjToEdit[key] = Object.values(value)[i];
+      });
 
-      this.fnDbOffline("GET");
+      Store[WayIndex].put({
+        id: Store[WayIndex].name,
+        data: CopyData,
+      })
+        .then(() => this.fnDbOffline("GET", null, null, next))
+        .catch(console.error);
     } else if (type === "DELETE") {
-      this.fnDbOffline("GET");
+      const WayStr = path.split("/")[1];
+      const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
+      const Store = [
+        db
+          .transaction("serieFirebase", "readwrite")
+          .objectStore("serieFirebase"),
+        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
+        db
+          .transaction("NextAnimFireBase", "readwrite")
+          .objectStore("NextAnimFireBase"),
+      ];
+      const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+      let NewPath = path.split("/");
+      NewPath.shift();
+      NewPath.shift();
+      NewPath = NewPath.join(".");
+      ObjectPath.del(CopyData, NewPath);
+      Store[WayIndex].put({
+        id: Store[WayIndex].name,
+        data: CopyData,
+      })
+        .then(() => {
+          this.cancelModal();
+          this.fnDbOffline("GET", null, null, next);
+          this.setState({
+            ResText: "Votre requête de suppression a réussite.",
+            typeAlert: "success",
+          });
+        })
+        .catch(() => {
+          this.setState({
+            ResText: "Votre requête de suppression a échoué.",
+            typeAlert: "danger",
+          });
+        });
     }
+
+    setTimeout(() => {
+      this.setState({
+        ResText: null,
+        typeAlert: null,
+      });
+    }, 2500);
   };
 
   addValue = (path, value) => {
@@ -581,12 +685,6 @@ export default class Home extends Component {
           ResText: "Votre requête de suppression a réussite.",
           typeAlert: "success",
         });
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2000);
       })
       .catch((err) => {
         console.error(err);
@@ -596,14 +694,13 @@ export default class Home extends Component {
           ResText: "Votre requête de suppression a échoué.",
           typeAlert: "danger",
         });
-
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2000);
       });
+    setTimeout(() => {
+      this.setState({
+        ResText: null,
+        typeAlert: null,
+      });
+    }, 2000);
   };
 
   handleAuth = async (authData) => {
@@ -622,6 +719,13 @@ export default class Home extends Component {
     // Verified listener Conn
     connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
+        // Verified if OfflineMode In an another session
+        if (this.state.OfflineMode === true) {
+          this.setState({ UpdateDbFromIndexedDB: true });
+          this.UpdateDbFromIndexeddb();
+        }
+        // Fast Loading Anime before FnRefresh
+        this.fnDbOffline("GET");
         // Disable OfflineMode
         window.localStorage.setItem("OfflineMode", JSON.stringify(false));
         this.setState({ OfflineMode: false });
@@ -631,9 +735,7 @@ export default class Home extends Component {
         ) {
           clearInterval(this.setIntervalVar);
           this.setIntervalVar = null;
-          // Disable OfflineMode
-          window.localStorage.setItem("OfflineMode", JSON.stringify(false));
-          this.setState({ OfflineMode: false, ReConnectionFirebase: false });
+          this.setState({ ReConnectionFirebase: false });
           console.warn("Firebase Connexion (re)establish");
         }
       } else {
@@ -1974,9 +2076,7 @@ export default class Home extends Component {
           });
         }}
         DeleteNextAnim={() => {
-          this.updateValue(`${Pseudo}/NextAnim/`, {
-            [key]: null,
-          });
+          this.deleteValue(`${Pseudo}/NextAnim/${key}`);
         }}
       />
     );

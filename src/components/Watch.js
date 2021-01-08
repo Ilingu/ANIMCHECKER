@@ -514,7 +514,7 @@ class Watch extends Component {
   handleDelete = () => {
     const { type, id } = this.state;
 
-    this.updateValue(`${this.state.Pseudo}/${type}`, { [id]: null });
+    this.deleteValue(`${this.state.Pseudo}/${type}/${id}`);
     this.setState({ uid: null, RedirectHome: true });
   };
 
@@ -591,18 +591,17 @@ class Watch extends Component {
           return;
         }
         if (idSeason === AnimToWatch.AnimEP.length - 1)
-          this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP`, {
-            [idSeason]: null,
-          });
+          this.deleteValue(
+            `${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}`
+          );
         return;
       }
 
       if (idEP === AnimToWatch.AnimEP[idSeason].Episodes.length)
-        this.updateValue(
-          `${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}/Episodes`,
-          {
-            [idEP - 1]: null,
-          }
+        this.deleteValue(
+          `${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}/Episodes/${
+            idEP - 1
+          }`
         );
     } else {
       if (AnimToWatch.AnimEP.length === 1) {
@@ -611,9 +610,7 @@ class Watch extends Component {
       }
 
       if (idSeason === AnimToWatch.AnimEP.length - 1)
-        this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP`, {
-          [idSeason]: null,
-        });
+        this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}`);
     }
   };
 

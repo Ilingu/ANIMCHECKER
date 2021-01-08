@@ -10,6 +10,7 @@
     "bootstrap": "^4.5.3",
     "firebase": "^7.24.0",
     "idb": "^5.0.8",
+    "object-path": "^0.11.5",
     "re-base": "^4.0.0",
     "react": "^16.14.0",
     "react-bootstrap": "^1.4.0",
