@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from "react";
+import { openDB } from "idb";
 import { Redirect, Link } from "react-router-dom";
 // CSS
 import { Spinner, Alert, Button, Modal, Form } from "react-bootstrap";
@@ -16,6 +17,9 @@ class Settings extends Component {
     uid: null,
     proprio: null,
     // Bon Fonctionnement
+    OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
+      ? false
+      : JSON.parse(window.localStorage.getItem("OfflineMode")),
     isFirstTime: true,
     RedirectHome: null,
     ShowModalDeleteUser: false,
@@ -31,6 +35,7 @@ class Settings extends Component {
   componentDidMount() {
     const self = this;
 
+    this.refreshParamsOptn();
     if (this.state.Pseudo) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
@@ -60,9 +65,17 @@ class Settings extends Component {
 
   refreshParamsOptn = async () => {
     try {
-      const ParamsOptn = await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
-        context: this,
-      });
+      const { OfflineMode } = this.state;
+      const db = await openDB("AckDb", 1);
+      const Store = db.transaction("ParamsOptn").objectStore("ParamsOptn");
+      const results = await Store.getAll();
+      console.log(results);
+
+      const ParamsOptn = OfflineMode
+        ? results[0].data
+        : await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
+            context: this,
+          });
       this.setState({ ParamsOptn });
     } catch (err) {
       console.error(err);
@@ -70,28 +83,49 @@ class Settings extends Component {
   };
 
   addValue = (path, value, after = null) => {
-    base
-      .post(path, {
-        data: value,
-      })
-      .then(after)
-      .catch((err) => console.error(err));
+    if (this.state.OfflineMode === false) {
+      base
+        .post(path, {
+          data: value,
+        })
+        .then(after)
+        .catch((err) => console.error(err));
+    }
   };
 
-  updateValue = (path, value, after = null) => {
-    base
-      .update(path, {
-        data: value,
-      })
+  updateValue = async (path, value, after = null) => {
+    const { OfflineMode } = this.state;
+    let CopyDataGlobal = null;
+    const db = await openDB("AckDb", 1);
+    const Store = db
+      .transaction("ParamsOptn", "readwrite")
+      .objectStore("ParamsOptn");
+    if (OfflineMode === true) {
+      const CopyData = [...(await Store.getAll())][0].data;
+      CopyData[Object.keys(value)[0]] = Object.values(value)[0];
+      CopyDataGlobal = CopyData;
+    }
+
+    (OfflineMode === true
+      ? Store.put({
+          id: "ParamsOptn",
+          data: CopyDataGlobal,
+        })
+      : base.update(path, {
+          data: value,
+        })
+    )
       .then(after)
       .catch((err) => console.error(err));
   };
 
   deleteValue = (path, after = null) => {
-    base
-      .remove(path)
-      .then(after)
-      .catch((err) => console.error(err));
+    if (this.state.OfflineMode === false) {
+      base
+        .remove(path)
+        .then(after)
+        .catch((err) => console.error(err));
+    }
   };
 
   handleAuth = async (authData) => {
@@ -119,7 +153,6 @@ class Settings extends Component {
       }
     });
 
-    this.refreshParamsOptn();
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -130,32 +163,34 @@ class Settings extends Component {
     event.preventDefault();
     this.cancelState();
 
-    const { Pseudo, newPseudo } = this.state;
+    if (this.state.OfflineMode === false) {
+      const { Pseudo, newPseudo } = this.state;
 
-    if (
-      newPseudo &&
-      typeof newPseudo === "string" &&
-      newPseudo.trim().length !== 0
-    ) {
-      try {
-        const AllDataUser = await base.fetch(`${Pseudo}/`, {
-          context: this,
-        });
-        this.addValue(`${newPseudo}/`, { ...AllDataUser }, () => {
-          this.deleteValue(`/${Pseudo}`, () => {
-            window.localStorage.setItem("Pseudo", newPseudo);
-            this.setState({ RedirectHome: "/notifuser/6" });
+      if (
+        newPseudo &&
+        typeof newPseudo === "string" &&
+        newPseudo.trim().length !== 0
+      ) {
+        try {
+          const AllDataUser = await base.fetch(`${Pseudo}/`, {
+            context: this,
           });
+          this.addValue(`${newPseudo}/`, { ...AllDataUser }, () => {
+            this.deleteValue(`/${Pseudo}`, () => {
+              window.localStorage.setItem("Pseudo", newPseudo);
+              this.setState({ RedirectHome: "/notifuser/6" });
+            });
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        this.cancelState();
+        this.setState({
+          ResText: "Vueillez donné un nom pour votre nouveau pseudo !",
+          typeAlert: "danger",
         });
-      } catch (err) {
-        console.log(err);
       }
-    } else {
-      this.cancelState();
-      this.setState({
-        ResText: "Vueillez donné un nom pour votre nouveau pseudo !",
-        typeAlert: "danger",
-      });
     }
   };
 
@@ -178,6 +213,7 @@ class Settings extends Component {
       RedirectHome,
       newPseudo,
       isFirstTime,
+      OfflineMode,
       ResText,
       typeAlert,
       ShowModalChangePseudo,
@@ -194,7 +230,7 @@ class Settings extends Component {
       return <Redirect to="/Settings" />;
     }
 
-    if (!uid) {
+    if (!uid && OfflineMode === false) {
       return (
         <Spinner
           style={{
@@ -379,13 +415,19 @@ class Settings extends Component {
             <hr />
             <Button
               variant="outline-dark"
+              disabled={OfflineMode}
               className="BtnActionAccount"
-              onClick={() => this.setState({ ShowModalResetData: true })}
+              onClick={() => {
+                this.cancelState();
+                if (OfflineMode) return;
+                this.setState({ ShowModalResetData: true });
+              }}
             >
               <span className="fas fa-history"></span> Réinitialiser les données
             </Button>
             <Button
               variant="outline-danger"
+              disabled={OfflineMode}
               className="BtnActionAccount"
               onClick={() => this.setState({ ShowModalDeleteUser: true })}
             >
@@ -393,14 +435,24 @@ class Settings extends Component {
             </Button>
           </div>
         </section>
-        <Modal show={ShowModalChangePseudo} onHide={this.cancelState}>
+        {/* MODAL */}
+        <Modal
+          show={ShowModalChangePseudo && OfflineMode === false}
+          onHide={this.cancelState}
+        >
           <Modal.Header id="ModalTitle" closeButton>
             <Modal.Title>
               Changer de Pseudo ({Pseudo} -{">"} {newPseudo})
             </Modal.Title>
           </Modal.Header>
           <Modal.Body id="ModalBody">
-            <Form onSubmit={this.ChangePseudo}>
+            <Form
+              onSubmit={() => {
+                this.cancelState();
+                if (OfflineMode) return;
+                this.ChangePseudo();
+              }}
+            >
               <Form.Group controlId="changepseudo">
                 <Form.Label>
                   Votre nouveau nom de compte (ATTENTION En changeant votre
@@ -423,12 +475,24 @@ class Settings extends Component {
             <Button variant="secondary" onClick={this.cancelState}>
               Annuler
             </Button>
-            <Button variant="primary" onClick={this.ChangePseudo}>
+            <Button
+              disabled={OfflineMode}
+              variant="primary"
+              onClick={() => {
+                this.cancelState();
+                if (OfflineMode === true) return;
+                this.ChangePseudo();
+              }}
+            >
               Changer {Pseudo} pour {newPseudo}
             </Button>
           </Modal.Footer>
         </Modal>
-        <Modal show={ShowModalDeleteUser} size="lg" onHide={this.cancelState}>
+        <Modal
+          show={ShowModalDeleteUser && OfflineMode === false}
+          size="lg"
+          onHide={this.cancelState}
+        >
           <Modal.Header id="ModalTitle" closeButton>
             <Modal.Title>
               Voulez-vous vraiment Supprimer votre compte ({Pseudo})
@@ -445,14 +509,22 @@ class Settings extends Component {
             <Link to="/notifuser/6">
               <Button
                 variant="danger"
-                onClick={() => this.deleteValue(`/${Pseudo}`)}
+                onClick={() => {
+                  this.cancelState();
+                  if (OfflineMode) return;
+                  this.deleteValue(`/${Pseudo}`);
+                }}
               >
                 Supprimer ce compte
               </Button>
             </Link>
           </Modal.Footer>
         </Modal>
-        <Modal show={ShowModalResetData} size="lg" onHide={this.cancelState}>
+        <Modal
+          show={ShowModalResetData && OfflineMode === false}
+          size="lg"
+          onHide={this.cancelState}
+        >
           <Modal.Header id="ModalTitle" closeButton>
             <Modal.Title>
               Voulez-vous supprimez toutes vos données ?
@@ -470,17 +542,15 @@ class Settings extends Component {
             <Button
               variant="danger"
               onClick={() => {
-                this.deleteValue(`${Pseudo}/serie`);
-                this.deleteValue(`${Pseudo}/film`);
-                this.deleteValue(`${Pseudo}/NextAnim`);
-                this.deleteValue(`${Pseudo}/Notif`);
-                this.deleteValue(`${Pseudo}/ParamsOptn`, () =>
+                this.cancelState();
+                if (OfflineMode) return;
+
+                this.deleteValue(`${Pseudo}/`, () =>
                   this.setState({
                     ResText: "Toutes vos données ont bien été réinitialisées",
                     typeAlert: "success",
                   })
                 );
-                this.cancelState();
                 this.refreshParamsOptn();
               }}
             >

@@ -482,23 +482,49 @@ export default class Home extends Component {
       const results = await Promise.all(
         Store.map(async (req) => await req.getAll())
       );
+
       this.setState(
         {
-          serieFirebase: results[0] ? results[0][0].data : {},
-          filmFireBase: results[1] ? results[1][0].data : {},
-          NextAnimFireBase: results[2] ? results[2][0].data : {},
-          ParamsOptn: results[3] ? results[3][0].data : {},
-          AlreadyTakeByFnOffline: true,
+          serieFirebase: results[0]
+            ? results[0][0]
+              ? results[0][0].data
+              : {}
+            : {},
+          filmFireBase: results[1]
+            ? results[1][0]
+              ? results[1][0].data
+              : {}
+            : {},
+          NextAnimFireBase: results[2]
+            ? results[2][0]
+              ? results[2][0].data
+              : {}
+            : {},
+          ParamsOptn: results[3]
+            ? results[3][0]
+              ? results[3][0].data
+              : {}
+            : {},
+          AlreadyTakeByFnOffline:
+            results[0] && results[1] && results[2] && results[3]
+              ? results[0][0] && results[1][0] && results[2][0] && results[3][0]
+                ? true
+                : false
+              : false,
           LoadingMode: [
             results[0] && results[1]
-              ? Object.keys(results[0][0].data).length !== 0 ||
-                Object.keys(results[1][0].data).length !== 0
-                ? false
+              ? results[0][0] && results[1][0]
+                ? Object.keys(results[0][0].data).length !== 0 ||
+                  Object.keys(results[1][0].data).length !== 0
+                  ? false
+                  : true
                 : true
               : true,
             results[2]
-              ? Object.keys(results[2][0].data).length !== 0
-                ? false
+              ? results[2][0]
+                ? Object.keys(results[2][0].data).length !== 0
+                  ? false
+                  : true
                 : true
               : true,
           ],
