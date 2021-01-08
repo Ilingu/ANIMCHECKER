@@ -395,15 +395,15 @@ export default class Home extends Component {
       const GlobalInfoUser = await base.fetch(`${this.state.Pseudo}`, {
         context: this,
       });
-      const { AlreadyTakeByFnOffline } = this.state;
+      const { AlreadyTakeByFnOffline, SwitchMyAnim } = this.state;
 
       this.setState(
         {
           ModeFindAnime: [false, null],
-          RefreshRandomizeAnime: AlreadyTakeByFnOffline
+          RefreshRandomizeAnime: SwitchMyAnim && AlreadyTakeByFnOffline
             ? this.state.RefreshRandomizeAnime
             : true,
-          RefreshRandomizeAnime2: AlreadyTakeByFnOffline
+          RefreshRandomizeAnime2: !SwitchMyAnim && AlreadyTakeByFnOffline
             ? this.state.RefreshRandomizeAnime
             : true,
           AlreadyTakeByFnOffline: AlreadyTakeByFnOffline ? false : false,
