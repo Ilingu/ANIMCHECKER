@@ -1,5 +1,7 @@
 import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
+// Img
+import PlaceHolderImg from "../../Assets/Img/PlaceHolderImg.png";
 
 const WhitchSeason = () => {
   const Month = new Date().getMonth() + 1;
@@ -118,7 +120,10 @@ const PosterAnim = ({
             ></span>
           ) : null}
           <div className="ImgInterract">
-            <img src={url} alt="Img of Anim" />
+            <img
+              src={url === "PlaceHolderImg" ? PlaceHolderImg : url}
+              alt="Img of Anim"
+            />
           </div>
           <div className="action">
             {(Paused && !isAlleged) || (Drop && !isAlleged) ? (

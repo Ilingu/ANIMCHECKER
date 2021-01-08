@@ -287,34 +287,7 @@ export default class Home extends Component {
       }
       window.localStorage.setItem("OfflineMode", JSON.stringify(true));
       // Get Data IndexedDB
-      const db = await openDB("AckDb", 1);
-      const Store = [
-        db.transaction("serieFirebase").objectStore("serieFirebase"),
-        db.transaction("filmFireBase").objectStore("filmFireBase"),
-        db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
-      ];
-
-      const results = await Promise.all(
-        Store.map(async (req) => await req.getAll())
-      );
-      self.setState({
-        OfflineMode: true,
-        serieFirebase: results[0][0].data,
-        filmFireBase: results[1][0].data,
-        NextAnimFireBase: results[2][0].data,
-        LoadingMode: [
-          Object.keys(results[0][0].data).length !== 0 ||
-          Object.keys(results[1][0].data).length !== 0
-            ? false
-            : true,
-          Object.keys(results[2][0].data).length !== 0 ? false : true,
-        ],
-        ModeFindAnime: [false, null],
-        RefreshRandomizeAnime: true,
-        RefreshRandomizeAnime2: true,
-        ModeFilter: "NotFinished",
-        FirstQuerie: true,
-      });
+      self.fnDbOffline("GET", null, null, self.notifyMe);
       setTimeout(() => {
         self.setState({ ShowMessage: false });
 
@@ -430,6 +403,10 @@ export default class Home extends Component {
         db
           .transaction("NextAnimFireBase", "readwrite")
           .objectStore("NextAnimFireBase"),
+        db
+          .transaction("NotifFirebase", "readwrite")
+          .objectStore("NotifFirebase"),
+        db.transaction("ParamsOptn", "readwrite").objectStore("ParamsOptn"),
       ];
       Store.forEach(async (req) => {
         req.put({
@@ -439,7 +416,11 @@ export default class Home extends Component {
               ? GlobalInfoUser.serie
               : req.name === "filmFireBase"
               ? GlobalInfoUser.film
-              : GlobalInfoUser.NextAnim,
+              : req.name === "NextAnimFireBase"
+              ? GlobalInfoUser.NextAnim
+              : req.name === "NotifFirebase"
+              ? GlobalInfoUser.Notif
+              : GlobalInfoUser.ParamsOptn,
         });
       });
     } catch (err) {
@@ -447,7 +428,93 @@ export default class Home extends Component {
     }
   };
 
+  fnDbOffline = async (type, path, value, next = null) => {
+    const db = await openDB("AckDb", 1);
+    if (type === "GET") {
+      // Get Data IndexedDB
+      const Store = [
+        db.transaction("serieFirebase").objectStore("serieFirebase"),
+        db.transaction("filmFireBase").objectStore("filmFireBase"),
+        db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
+        db.transaction("ParamsOptn").objectStore("ParamsOptn"),
+      ];
+
+      const results = await Promise.all(
+        Store.map(async (req) => await req.getAll())
+      );
+      this.setState(
+        {
+          OfflineMode: true,
+          serieFirebase: results[0][0].data,
+          filmFireBase: results[1][0].data,
+          NextAnimFireBase: results[2][0].data,
+          ParamsOptn: results[3][0].data,
+          LoadingMode: [
+            Object.keys(results[0][0].data).length !== 0 ||
+            Object.keys(results[1][0].data).length !== 0
+              ? false
+              : true,
+            Object.keys(results[2][0].data).length !== 0 ? false : true,
+          ],
+          ModeFindAnime: [false, null],
+          RefreshRandomizeAnime: true,
+          RefreshRandomizeAnime2: true,
+          ModeFilter: typeof next === "string" ? next : "NotFinished",
+          FirstQuerie: true,
+        },
+        typeof next === "string" ? null : next
+      );
+    } else if (type === "POST") {
+      const WayStr = path.split("/")[1];
+      const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
+      const Store = [
+        db
+          .transaction("serieFirebase", "readwrite")
+          .objectStore("serieFirebase"),
+        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
+        db
+          .transaction("NextAnimFireBase", "readwrite")
+          .objectStore("NextAnimFireBase"),
+      ];
+      Store[WayIndex].put({
+        id: Store[WayIndex].name,
+        data: value,
+      })
+        .then(() => {
+          this.fnDbOffline("GET");
+          this.setState({
+            ResText: "Votre requête d'ajout a réussite.",
+            typeAlert: "success",
+          });
+        })
+        .catch(() =>
+          this.setState({
+            ResText: "Votre requête d'ajout à echoué.",
+            typeAlert: "danger",
+          })
+        );
+      setTimeout(() => {
+        this.setState({
+          ResText: null,
+          typeAlert: null,
+        });
+      }, 2500);
+    } else if (type === "PUT") {
+      // const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+
+      this.fnDbOffline("GET");
+    } else if (type === "DELETE") {
+      this.fnDbOffline("GET");
+    }
+  };
+
   addValue = (path, value) => {
+    const { OfflineMode } = this.state;
+    if (OfflineMode === true) {
+      this.fnDbOffline("POST", path, value);
+      return;
+    }
+
     base
       .post(path, {
         data: value,
@@ -461,6 +528,7 @@ export default class Home extends Component {
       })
       .catch((err) => {
         console.error(err);
+        this.OfflineMode();
         this.setState({
           ResText: "Votre requête d'ajout à echoué.",
           typeAlert: "danger",
@@ -476,6 +544,12 @@ export default class Home extends Component {
   };
 
   updateValue = (path, value, HomePage = null) => {
+    const { OfflineMode } = this.state;
+    if (OfflineMode === true) {
+      this.fnDbOffline("PUT", path, value, HomePage !== null ? HomePage : null);
+      return;
+    }
+
     base
       .update(path, {
         data: value,
@@ -485,10 +559,19 @@ export default class Home extends Component {
           ? () => this.refreshValueFirebase(null, HomePage)
           : this.refreshValueFirebase
       )
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        this.OfflineMode();
+        console.error(err);
+      });
   };
 
   deleteValue = async (path) => {
+    const { OfflineMode } = this.state;
+    if (OfflineMode === true) {
+      this.fnDbOffline("DELETE", path);
+      return;
+    }
+
     base
       .remove(path)
       .then(() => {
@@ -507,6 +590,7 @@ export default class Home extends Component {
       })
       .catch((err) => {
         console.error(err);
+        this.OfflineMode();
         this.cancelModal();
         this.setState({
           ResText: "Votre requête de suppression a échoué.",
@@ -981,6 +1065,18 @@ export default class Home extends Component {
     }
   };
 
+  TakeImgFromName = async (title) => {
+    try {
+      const ImgUrlRes = await axios.get(
+        `https://api.jikan.moe/v3/search/anime?q=${title}&limit=1`
+      );
+      return ImgUrlRes.data.results[0].image_url;
+    } catch (err) {
+      console.error(err);
+      return "PlaceHolderImg";
+    }
+  };
+
   addAnime = () => {
     const {
       title,
@@ -991,27 +1087,33 @@ export default class Home extends Component {
       NextAnimToDelete,
       filmFireBase,
       serieFirebase,
+      OfflineMode,
     } = this.state;
     const self = this;
 
     let imgUrl = imageUrl;
 
     if (imgUrl === null) {
-      const title2 = this.replaceSpace(title, "%20");
-      axios
-        .get(`https://api.jikan.moe/v3/search/anime?q=${title2}&limit=1`)
-        .then((result) => {
-          imgUrl = result.data.results[0].image_url;
-          next();
-        })
-        .catch((err) => {
-          this.setState({
-            ResText:
-              "Excusés-nous mais nous avons rencontré un problème lors de la recherche d'une photos de cette anim, vueillez réessayer plus tard ou chercher cette anim (non manuellement)",
-            typeAlert: "danger",
+      if (OfflineMode === true) {
+        imgUrl = "PlaceHolderImg";
+        next();
+      } else {
+        const title2 = this.replaceSpace(title, "%20");
+        axios
+          .get(`https://api.jikan.moe/v3/search/anime?q=${title2}&limit=1`)
+          .then((result) => {
+            imgUrl = result.data.results[0].image_url;
+            next();
+          })
+          .catch((err) => {
+            this.setState({
+              ResText:
+                "Excusés-nous mais nous avons rencontré un problème lors de la recherche d'une photos de cette anim, vueillez réessayer plus tard ou chercher cette anim (non manuellement)",
+              typeAlert: "danger",
+            });
+            console.error(err);
           });
-          console.error(err);
-        });
+      }
     } else if (typeof imgUrl === "string") {
       next();
     } else {
@@ -1223,9 +1325,18 @@ export default class Home extends Component {
 
   doNotif = async () => {
     try {
-      const NotifFirebase = await base.fetch(`${this.state.Pseudo}/Notif`, {
-          context: this,
-        }),
+      const { OfflineMode } = this.state;
+      const db = await openDB("AckDb", 1);
+      const Store = db
+        .transaction("NotifFirebase")
+        .objectStore("NotifFirebase");
+      const results = await Store.getAll();
+
+      const NotifFirebase = OfflineMode
+          ? results[0].data
+          : await base.fetch(`${this.state.Pseudo}/Notif`, {
+              context: this,
+            }),
         TimeNow = new Date().getHours() * 3600 + new Date().getMinutes() * 60;
 
       Object.keys(NotifFirebase).forEach((notifKey) => {
@@ -1253,23 +1364,47 @@ export default class Home extends Component {
             }),
           })
             .then((response) => {
-              base.update(`${this.state.Pseudo}/Notif/${notifKey}`, {
-                data: { called: true },
+              this.updateValue(`${this.state.Pseudo}/Notif/${notifKey}`, {
+                called: true,
               });
               return response.json();
             })
             .then((data) => console.log(data))
-            .catch((err) => console.error(err));
+            .catch((err) => {
+              navigator.serviceWorker
+                .getRegistration()
+                .then((reg) => {
+                  reg.showNotification(
+                    `Sortie Anime: ${NotifFirebase[notifKey].name} !`,
+                    {
+                      body: `Nouvel Épisode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
+                      icon: "https://myanimchecker.netlify.app/Img/Icon.png",
+                      vibrate: [100, 50, 100],
+                    }
+                  );
+                })
+                .catch(() => {
+                  new Notification(
+                    `Sortie Anime: ${NotifFirebase[notifKey].name} !`,
+                    {
+                      body: `Nouvel Épisode de ${NotifFirebase[notifKey].name}, ne le rate pas !`,
+                      icon: "https://myanimchecker.netlify.app/Img/Icon.png",
+                    }
+                  );
+                });
+              console.error(err);
+            });
         } else if (
           new Date().getDay().toString() !== NotifFirebase[notifKey].day &&
           NotifFirebase[notifKey].called
         ) {
-          base.update(`${this.state.Pseudo}/Notif/${notifKey}`, {
-            data: { called: false },
+          this.updateValue(`${this.state.Pseudo}/Notif/${notifKey}`, {
+            called: false,
           });
         }
       });
     } catch (err) {
+      this.OfflineMode();
       console.error(err);
     }
   };

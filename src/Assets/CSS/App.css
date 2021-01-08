@@ -805,7 +805,7 @@ a:hover {
       -ms-flex-align: center;
           align-items: center;
   position: absolute;
-  top: calc(50% - 66px / 2);
+  top: calc(50% - 290px / 4.55);
   width: 35px;
   height: 35px;
   font-size: 30px;
@@ -1435,6 +1435,10 @@ a:hover {
     height: 222px !important;
     border-radius: 7px;
   }
+  #MyAnime .content .MyAnimPoster .action .watch,
+  #MyAnime .content .MyAnimPoster .action .delete {
+    top: calc(50% - 222px / 4.55);
+  }
   #MyAnime .content .MyAnimPoster.Skeleton::before {
     width: 100px;
     left: calc(50% - 50px);
@@ -1490,6 +1494,17 @@ a:hover {
     width: 100px !important;
     height: 148px !important;
     border-radius: 7px;
+  }
+  #MyAnime .content .MyAnimPoster .action .watch,
+  #MyAnime .content .MyAnimPoster .action .delete {
+    padding: 20px !important;
+    top: calc(50% - 148px / 3);
+  }
+  #MyAnime .content .MyAnimPoster .action .watch {
+    left: calc(50%);
+  }
+  #MyAnime .content .MyAnimPoster .action .delete {
+    left: calc(50% - 48px);
   }
   #MyAnime .content .MyAnimPoster.Skeleton::before {
     width: 75px;
