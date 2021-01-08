@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { openDB } from "idb";
 import { Link, Redirect } from "react-router-dom";
 // Components
 import OneNotif from "./dyna/OneNotif";
@@ -19,6 +20,9 @@ export default class Notif extends Component {
     uid: null,
     proprio: null,
     // Bon fonctionnement de l'app
+    OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
+      ? false
+      : JSON.parse(window.localStorage.getItem("OfflineMode")),
     isFirstTime: true,
     // Form
     name: "",
@@ -78,6 +82,9 @@ export default class Notif extends Component {
 
     // Verified listener Conn
     connectedRef.on("value", (snap) => {
+      // Fast Loading Anime before FnRefresh
+      this.refreshNotif();
+
       if (snap.val() === true) {
         if (this.setIntervalVar !== null) {
           clearInterval(this.setIntervalVar);
@@ -99,9 +106,18 @@ export default class Notif extends Component {
 
   refreshNotif = async () => {
     try {
-      const Notif = await base.fetch(`${this.state.Pseudo}/Notif`, {
-        context: this,
-      });
+      const { OfflineMode } = this.state;
+      const db = await openDB("AckDb", 1);
+      const Store = db
+        .transaction("NotifFirebase")
+        .objectStore("NotifFirebase");
+      const results = await Store.getAll();
+
+      const Notif = OfflineMode
+        ? results[0].data
+        : await base.fetch(`${this.state.Pseudo}/Notif`, {
+            context: this,
+          });
 
       this.setState({ Notif });
     } catch (err) {
@@ -109,8 +125,8 @@ export default class Notif extends Component {
     }
   };
 
-  addNotif = () => {
-    const { name, day, time, Notif } = this.state;
+  addNotif = async () => {
+    const { name, day, time, Notif, OfflineMode } = this.state;
 
     if (
       name !== undefined &&
@@ -119,19 +135,31 @@ export default class Notif extends Component {
       name.trim().length !== 0 &&
       name !== ""
     ) {
-      base
-        .post(`${this.state.Pseudo}/Notif`, {
-          data: {
-            ...Notif,
-            [`notif${Date.now()}`]: {
-              name,
-              day,
-              time,
-              paused: false,
-              called: false,
-            },
-          },
-        })
+      const NewNotifTemplate = {
+        ...Notif,
+        [`notif${Date.now()}`]: {
+          name,
+          day,
+          time,
+          paused: false,
+          called: false,
+        },
+      };
+
+      const db = await openDB("AckDb", 1);
+      const Store = db
+        .transaction("NotifFirebase", "readwrite")
+        .objectStore("NotifFirebase");
+
+      (OfflineMode === true
+        ? Store.put({
+            id: "NotifFirebase",
+            data: NewNotifTemplate,
+          })
+        : base.post(`${this.state.Pseudo}/Notif`, {
+            data: NewNotifTemplate,
+          })
+      )
         .then(() => {
           this.refreshNotif();
           this.setState({
@@ -143,7 +171,7 @@ export default class Notif extends Component {
         .catch((err) => {
           console.error(err);
           this.setState({
-            ResText: "Error: Impossible d'ajouter la notif, fatal: true",
+            ResText: "Error: Impossible d'ajouter la notif",
             typeAlert: "danger",
             ShowModalAddNotif: false,
           });
@@ -158,18 +186,52 @@ export default class Notif extends Component {
     }
   };
 
-  updatePaused = (key, value) => {
-    base
-      .update(`${this.state.Pseudo}/Notif/${key}`, {
-        data: { paused: value },
-      })
+  updatePaused = async (key, value) => {
+    const { OfflineMode } = this.state;
+    let CopyDataGlobal = null;
+    const db = await openDB("AckDb", 1);
+    const Store = db
+      .transaction("NotifFirebase", "readwrite")
+      .objectStore("NotifFirebase");
+    if (OfflineMode === true) {
+      const CopyData = [...(await Store.getAll())][0].data;
+      CopyData[key].paused = value;
+      CopyDataGlobal = CopyData;
+    }
+
+    (OfflineMode === true
+      ? Store.put({
+          id: "NotifFirebase",
+          data: CopyDataGlobal,
+        })
+      : base.update(`${this.state.Pseudo}/Notif/${key}`, {
+          data: { paused: value },
+        })
+    )
       .then(this.refreshNotif)
       .catch((err) => console.error(err));
   };
 
-  handleDelete = (key) => {
-    base
-      .remove(`${this.state.Pseudo}/Notif/${key}`)
+  handleDelete = async (key) => {
+    const { OfflineMode } = this.state;
+    let CopyDataGlobal = null;
+    const db = await openDB("AckDb", 1);
+    const Store = db
+      .transaction("NotifFirebase", "readwrite")
+      .objectStore("NotifFirebase");
+    if (OfflineMode === true) {
+      const CopyData = [...(await Store.getAll())][0].data;
+      delete CopyData[key];
+      CopyDataGlobal = CopyData;
+    }
+
+    (OfflineMode === true
+      ? Store.put({
+          id: "NotifFirebase",
+          data: CopyDataGlobal,
+        })
+      : base.remove(`${this.state.Pseudo}/Notif/${key}`)
+    )
       .then(() => {
         this.refreshNotif();
         this.setState({
@@ -199,6 +261,7 @@ export default class Notif extends Component {
       proprio,
       isFirstTime,
       Notif,
+      OfflineMode,
       ShowModalAddNotif,
       name,
       day,
@@ -214,7 +277,7 @@ export default class Notif extends Component {
       return <Redirect to="/notificator" />;
     }
 
-    if (!uid) {
+    if (!uid && OfflineMode === false) {
       return (
         <Spinner
           style={{

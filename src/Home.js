@@ -45,6 +45,7 @@ export default class Home extends Component {
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
     UpdateDbFromIndexedDB: false,
+    AlreadyTakeByFnOffline: false,
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
@@ -394,12 +395,18 @@ export default class Home extends Component {
       const GlobalInfoUser = await base.fetch(`${this.state.Pseudo}`, {
         context: this,
       });
+      const { AlreadyTakeByFnOffline } = this.state;
 
       this.setState(
         {
           ModeFindAnime: [false, null],
-          RefreshRandomizeAnime: true,
-          RefreshRandomizeAnime2: true,
+          RefreshRandomizeAnime: AlreadyTakeByFnOffline
+            ? this.state.RefreshRandomizeAnime
+            : true,
+          RefreshRandomizeAnime2: AlreadyTakeByFnOffline
+            ? this.state.RefreshRandomizeAnime
+            : true,
+          AlreadyTakeByFnOffline: AlreadyTakeByFnOffline ? false : false,
           LoadingMode: [
             Object.keys(GlobalInfoUser.serie).length !== 0 ||
             Object.keys(GlobalInfoUser.film).length !== 0
@@ -481,6 +488,7 @@ export default class Home extends Component {
           filmFireBase: results[1] ? results[1][0].data : {},
           NextAnimFireBase: results[2] ? results[2][0].data : {},
           ParamsOptn: results[3] ? results[3][0].data : {},
+          AlreadyTakeByFnOffline: true,
           LoadingMode: [
             results[0] && results[1]
               ? Object.keys(results[0][0].data).length !== 0 ||

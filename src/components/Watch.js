@@ -129,6 +129,9 @@ class Watch extends Component {
     // Verified listener Conn
     connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
+        // Fast Loading Anime before FnRefresh
+        this.fnDbOffline("GET");
+
         if (this.setIntervalVar !== null) {
           clearInterval(this.setIntervalVar);
           console.warn("Firebase Connexion retablished");
