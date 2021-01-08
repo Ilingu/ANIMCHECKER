@@ -278,6 +278,7 @@ export default class Home extends Component {
 
     async function next() {
       self.setState({
+        OfflineMode: true,
         ShowMessage: true,
         ShowMessageHtml: true,
         ResText: "Mode hors ligne activé",
@@ -318,7 +319,6 @@ export default class Home extends Component {
   reconectFirebase = () => {
     let i = 0;
     this.setIntervalVar = setInterval(() => {
-      console.log(i);
       if (i === 5) this.reAuth();
       if (i === 10) this.OfflineMode();
       // Allow Vpn
@@ -364,7 +364,6 @@ export default class Home extends Component {
 
   UpdateDbFromIndexeddb = async () => {
     const { Pseudo, UpdateDbFromIndexedDB } = this.state;
-
     if (UpdateDbFromIndexedDB) {
       // Get Data IndexedDB
       const db = await openDB("AckDb", 1);
@@ -373,21 +372,18 @@ export default class Home extends Component {
         db.transaction("filmFireBase").objectStore("filmFireBase"),
         db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
         db.transaction("ParamsOptn").objectStore("ParamsOptn"),
+        db.transaction("NotifFirebase").objectStore("NotifFirebase"),
       ];
 
       const results = await Promise.all(
         Store.map(async (req) => await req.getAll())
       );
 
-      [
-        "serieFirebase",
-        "filmFireBase",
-        "NextAnimFireBase",
-        "ParamsOptn",
-      ].forEach((key, i) => {
+      ["serie", "film", "NextAnim", "ParamsOptn", "Notif"].forEach((key, i) => {
         if (!results[i] || !results[i][0].data) return;
-        this.updateValue(`${Pseudo}/${key}`, { [key]: results[i][0].data });
+        this.updateValue(`${Pseudo}`, { [key]: results[i][0].data });
       });
+      this.setState({ UpdateDbFromIndexedDB: false });
     }
   };
 
@@ -479,7 +475,6 @@ export default class Home extends Component {
       );
       this.setState(
         {
-          OfflineMode: true,
           serieFirebase: results[0] ? results[0][0].data : {},
           filmFireBase: results[1] ? results[1][0].data : {},
           NextAnimFireBase: results[2] ? results[2][0].data : {},
@@ -1167,12 +1162,23 @@ export default class Home extends Component {
     }
   };
 
-  TakeImgFromName = async (title) => {
+  TakeImgFromName = async (
+    title,
+    ModeRetake = false,
+    id = null,
+    next = null
+  ) => {
     try {
       const ImgUrlRes = await axios.get(
         `https://api.jikan.moe/v3/search/anime?q=${title}&limit=1`
       );
-      return ImgUrlRes.data.results[0].image_url;
+      if (ModeRetake === true) {
+        this.updateValue(`${this.state.Pseudo}/${id.split("-")[0]}/${id}`, {
+          imageUrl: ImgUrlRes.data.results[0].image_url,
+        });
+        return;
+      }
+      return next(ImgUrlRes.data.results[0].image_url);
     } catch (err) {
       console.error(err);
       return "PlaceHolderImg";
@@ -1201,20 +1207,10 @@ export default class Home extends Component {
         next();
       } else {
         const title2 = this.replaceSpace(title, "%20");
-        axios
-          .get(`https://api.jikan.moe/v3/search/anime?q=${title2}&limit=1`)
-          .then((result) => {
-            imgUrl = result.data.results[0].image_url;
-            next();
-          })
-          .catch((err) => {
-            this.setState({
-              ResText:
-                "Excusés-nous mais nous avons rencontré un problème lors de la recherche d'une photos de cette anim, vueillez réessayer plus tard ou chercher cette anim (non manuellement)",
-              typeAlert: "danger",
-            });
-            console.error(err);
-          });
+        this.TakeImgFromName(title2, false, null, (resImg) => {
+          imgUrl = resImg;
+          next();
+        });
       }
     } else if (typeof imgUrl === "string") {
       next();
@@ -1960,6 +1956,16 @@ export default class Home extends Component {
             IdToAddEp: key,
             title: serieFirebase[key].name,
           });
+        }}
+        ReTakeImgFromName={() => {
+          this.TakeImgFromName(
+            this.replaceSpace(
+              { ...serieFirebase, ...filmFireBase }[key].name,
+              "%20"
+            ),
+            true,
+            key
+          );
         }}
         Drop={
           key.split("-")[0] === "serie"

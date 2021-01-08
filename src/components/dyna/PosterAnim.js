@@ -56,8 +56,10 @@ const PosterAnim = ({
   ModeFilter,
   isAlleged,
   Skeleton,
+  ReTakeImgFromName,
 }) => {
   let Fav = isFav;
+  if (url === "PlaceHolderImg") ReTakeImgFromName();
 
   const templatePoster = (
     <div
