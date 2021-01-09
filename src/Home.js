@@ -45,13 +45,13 @@ export default class Home extends Component {
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
     UpdateDbFromIndexedDB: false,
-    AlreadyTakeByFnOffline: false,
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
     ShowModalSearch: false,
     IdToAddEp: null,
     InfoAnimeToChangeNote: null,
+    RefreshfromFnOffline: false,
     ShowModalChangeNote: false,
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
@@ -390,23 +390,64 @@ export default class Home extends Component {
     }
   };
 
+  deepEqualObj(object1, object2) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+
+    for (const key of keys1) {
+      const val1 = object1[key];
+      const val2 = object2[key];
+      const areObjects = this.isObject(val1) && this.isObject(val2);
+      if (
+        (areObjects && !this.deepEqualObj(val1, val2)) ||
+        (!areObjects && val1 !== val2)
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  isObject(object) {
+    return object != null && typeof object === "object";
+  }
+
   refreshValueFirebase = async (after = null, HomePage = null) => {
     try {
       const GlobalInfoUser = await base.fetch(`${this.state.Pseudo}`, {
         context: this,
       });
-      const { AlreadyTakeByFnOffline, SwitchMyAnim } = this.state;
+
+      const {
+        RefreshfromFnOffline,
+        NextAnimFireBase,
+        serieFirebase,
+        filmFireBase,
+      } = this.state;
 
       this.setState(
         {
           ModeFindAnime: [false, null],
-          RefreshRandomizeAnime: SwitchMyAnim && AlreadyTakeByFnOffline
-            ? this.state.RefreshRandomizeAnime
-            : true,
-          RefreshRandomizeAnime2: !SwitchMyAnim && AlreadyTakeByFnOffline
-            ? this.state.RefreshRandomizeAnime
-            : true,
-          AlreadyTakeByFnOffline: AlreadyTakeByFnOffline ? false : false,
+          RefreshRandomizeAnime:
+            RefreshfromFnOffline &&
+            this.deepEqualObj(
+              { ...serieFirebase, ...filmFireBase },
+              { ...GlobalInfoUser.serie, ...GlobalInfoUser.film }
+            ) === true
+              ? false
+              : true,
+          RefreshRandomizeAnime2:
+            RefreshfromFnOffline &&
+            this.deepEqualObj(NextAnimFireBase, GlobalInfoUser.NextAnim) ===
+              true
+              ? false
+              : true,
+          RefreshfromFnOffline: false,
           LoadingMode: [
             Object.keys(GlobalInfoUser.serie).length !== 0 ||
             Object.keys(GlobalInfoUser.film).length !== 0
@@ -505,12 +546,7 @@ export default class Home extends Component {
               ? results[3][0].data
               : {}
             : {},
-          AlreadyTakeByFnOffline:
-            results[0] && results[1] && results[2] && results[3]
-              ? results[0][0] && results[1][0] && results[2][0] && results[3][0]
-                ? true
-                : false
-              : false,
+          RefreshfromFnOffline: true,
           LoadingMode: [
             results[0] && results[1]
               ? results[0][0] && results[1][0]

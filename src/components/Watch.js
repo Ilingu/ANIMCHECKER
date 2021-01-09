@@ -760,6 +760,56 @@ class Watch extends Component {
   };
 
   ShareFinishedAnime = () => {
+    if (this.state.OfflineMode === false) {
+      try {
+        const { Pseudo, AnimToWatch } = this.state;
+        const TokenTemplate = `${Pseudo}-Template-${Date.now()}${
+          [
+            "UsntXqEYEw",
+            "mgbYwpVXXd",
+            "NgpàHzuh|J",
+            "/é6fXlN5D3",
+            "2GEQ5RfyVK",
+            "OLq7§5sXjb",
+            "àtdWXyHé7q",
+            "9Kdl3PHW&à",
+            "e21zé&E3zO",
+            "jlKIwIU&le",
+            "35AJ3sFLIA",
+            "hD0OApiToz",
+            "RUGh0Foxx5",
+            "y6x0cn2uJg",
+            "23&QYE2fva",
+          ][Math.round(Math.random() * 14)]
+        }${(Math.random() * 100000000).toString().split(".").join("")}`;
+        navigator
+          .share({
+            title: document.title,
+            text: `${Pseudo} a fini ${AnimToWatch.name} ! Clické sur le lien pour vous aussi commencer cette anime !`,
+            url: `https://myanimchecker.netlify.app/Template/${TokenTemplate}`,
+          })
+          .then(() => {
+            console.log("Successful share !");
+            const ArrEpSaison = AnimToWatch.AnimEP.map((saisons) => {
+              return saisons.Episodes.length;
+            });
+            this.updateValue(`${Pseudo}/TemplateAnim`, {
+              [TokenTemplate]: {
+                AnimEP: ArrEpSaison,
+                name: AnimToWatch.name,
+                imageUrl: AnimToWatch.imageUrl,
+              },
+            });
+          })
+          .catch(console.error);
+      } catch (err) {
+        console.error(
+          "Share Failed: " +
+            err +
+            " (It's probably because your navigator doesn't support yet the share in Web, navigator like Chrome and opera Desktop, Firefox)"
+        );
+      }
+    }
     // Token a stocké dans la DB et quand une requet est fait sur ce token => ajouter l'anime
     /* Dans la db:
         [Token]: {
@@ -775,23 +825,6 @@ class Watch extends Component {
                   S1  S2
         }
       */
-
-    try {
-      const { Pseudo, AnimToWatch } = this.state;
-      // Token form: Pseudo-token
-      const TokenURL = "nom-token";
-      navigator.share({
-        title: document.title,
-        text: `${Pseudo} a fini ${AnimToWatch.name} ! Clické sur le lien pour vous aussi commencer cette anime !`,
-        url: `https://myanimchecker.netlify.app/Template/${TokenURL}`,
-      });
-    } catch (err) {
-      console.error(
-        "Share Failed: " +
-          err +
-          " (It's probably because your navigator doesn't support yet the share in Web, navigator like Chrome and opera Desktop, Firefox)"
-      );
-    }
   };
 
   WhitchSeason = () => {

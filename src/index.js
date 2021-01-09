@@ -39,6 +39,7 @@ const Root = () => (
       <Route exact path={`/notificator/:pseudo`} component={Notif} />
       <Route exact path="/notificator" component={Notif} />
       <Route exact path={`/notifuser/:codemsg`} component={Home} />
+      <Route exact path={`/Template/:token`} component={Home} />
       <Route component={NotFound} />
     </Switch>
   </Router>

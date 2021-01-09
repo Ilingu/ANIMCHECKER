@@ -277,6 +277,7 @@ class Settings extends Component {
             <Button
               variant="outline-primary"
               className="BtnActionAccount"
+              disabled={OfflineMode}
               onClick={() => this.setState({ ShowModalChangePseudo: true })}
             >
               <span className="fas fa-user"></span> Changer De Pseudo
