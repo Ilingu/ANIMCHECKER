@@ -76,6 +76,7 @@ export default class Home extends Component {
     LoadingMode: [true, true],
     palmares: null,
     MicOn: false,
+    DeleteTemplateAnim: null,
     addEPToAlleged: false,
     ShowMessage: false,
     ShowMessageHtml: false,
@@ -213,6 +214,7 @@ export default class Home extends Component {
               : "",
           durer:
             TemplateFirebase.type === "film" ? TemplateFirebase.durer : 110,
+          DeleteTemplateAnim: Token,
         });
       })();
     }
@@ -451,6 +453,7 @@ export default class Home extends Component {
         NextAnimFireBase,
         serieFirebase,
         filmFireBase,
+        SwitchMyAnim,
       } = this.state;
 
       this.setState(
@@ -461,13 +464,15 @@ export default class Home extends Component {
             this.deepEqualObj(
               { ...serieFirebase, ...filmFireBase },
               { ...GlobalInfoUser.serie, ...GlobalInfoUser.film }
-            ) === true
+            ) === true &&
+            SwitchMyAnim
               ? false
               : true,
           RefreshRandomizeAnime2:
             RefreshfromFnOffline &&
             this.deepEqualObj(NextAnimFireBase, GlobalInfoUser.NextAnim) ===
-              true
+              true &&
+            !SwitchMyAnim
               ? false
               : true,
           RefreshfromFnOffline: false,
@@ -1291,6 +1296,7 @@ export default class Home extends Component {
       filmFireBase,
       serieFirebase,
       OfflineMode,
+      DeleteTemplateAnim,
     } = this.state;
     const self = this;
 
@@ -1443,6 +1449,17 @@ export default class Home extends Component {
         self.deleteValue(`${self.state.Pseudo}/NextAnim/${NextAnimToDelete}`);
         self.setState({
           NextAnimToDelete: null,
+        });
+      }
+
+      if (IsGood && DeleteTemplateAnim !== null) {
+        self.deleteValue(
+          `${
+            DeleteTemplateAnim.split("-")[0]
+          }/TemplateAnim/${DeleteTemplateAnim}`
+        );
+        self.setState({
+          DeleteTemplateAnim: null,
         });
       }
 

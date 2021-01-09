@@ -768,7 +768,7 @@ class Watch extends Component {
             "UsntXqEYEw",
             "mgbYwpVXXd",
             "NgpàHzuh|J",
-            "/é6fXlN5D3",
+            "é6fXlN5D3R",
             "2GEQ5RfyVK",
             "OLq7§5sXjb",
             "àtdWXyHé7q",
@@ -782,6 +782,7 @@ class Watch extends Component {
             "23&QYE2fva",
           ][Math.round(Math.random() * 14)]
         }${(Math.random() * 100000000).toString().split(".").join("")}`;
+
         navigator
           .share({
             title: document.title,
