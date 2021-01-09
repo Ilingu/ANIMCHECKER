@@ -192,7 +192,30 @@ export default class Home extends Component {
           );
         });
     });
+    // Recup templateAnim
+    if (this.props.match.params.token !== undefined && this.state.Pseudo) {
+      const Token = this.props.match.params.token;
+      (async () => {
+        const TemplateFirebase = await base.fetch(
+          `${Token.split("-")[0]}/TemplateAnim/${Token}`,
+          {
+            context: this,
+          }
+        );
 
+        this.setState({
+          ShowModalAddAnim: true,
+          title: TemplateFirebase.name,
+          type: TemplateFirebase.type,
+          nbEP:
+            TemplateFirebase.type === "serie"
+              ? TemplateFirebase.AnimEP.join(",")
+              : "",
+          durer:
+            TemplateFirebase.type === "film" ? TemplateFirebase.durer : 110,
+        });
+      })();
+    }
     // Recup Message Inter-page
     if (this.props.match.params.codemsg !== undefined) {
       let ResText = null;

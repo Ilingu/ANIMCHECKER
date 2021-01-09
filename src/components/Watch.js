@@ -762,7 +762,7 @@ class Watch extends Component {
   ShareFinishedAnime = () => {
     if (this.state.OfflineMode === false) {
       try {
-        const { Pseudo, AnimToWatch } = this.state;
+        const { Pseudo, AnimToWatch, type } = this.state;
         const TokenTemplate = `${Pseudo}-Template-${Date.now()}${
           [
             "UsntXqEYEw",
@@ -789,13 +789,21 @@ class Watch extends Component {
             url: `https://myanimchecker.netlify.app/Template/${TokenTemplate}`,
           })
           .then(() => {
-            console.log("Successful share !");
-            const ArrEpSaison = AnimToWatch.AnimEP.map((saisons) => {
-              return saisons.Episodes.length;
-            });
-            this.updateValue(`${Pseudo}/TemplateAnim`, {
+            // Successful share !
+            let ArrEpSaison = null,
+              durer = null;
+            if (type === "serie") {
+              ArrEpSaison = AnimToWatch.AnimEP.map((saisons) => {
+                return saisons.Episodes.length;
+              });
+            } else {
+              durer = AnimToWatch.durer;
+            }
+            this.addValue(`${Pseudo}/TemplateAnim`, {
               [TokenTemplate]: {
+                type,
                 AnimEP: ArrEpSaison,
+                durer,
                 name: AnimToWatch.name,
                 imageUrl: AnimToWatch.imageUrl,
               },
@@ -810,21 +818,6 @@ class Watch extends Component {
         );
       }
     }
-    // Token a stocké dans la DB et quand une requet est fait sur ce token => ajouter l'anime
-    /* Dans la db:
-        [Token]: {
-          name
-          AnimEp (en chiffres juste pour alléger) ou durée
-          img
-        }
-        Exemple animeEp
-        AnimEp: {
-        Saison: 2,
-        Episode: [12,13]
-                  ^   ^
-                  S1  S2
-        }
-      */
   };
 
   WhitchSeason = () => {
