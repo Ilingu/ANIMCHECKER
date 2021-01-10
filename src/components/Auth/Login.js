@@ -29,9 +29,7 @@ const Login = ({
               NumTel !== null &&
               typeof NumTel === "string" &&
               NumTel.trim().length !== 0 &&
-              /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im.test(
-                String(NumTel)
-              )
+              /^((\+)33|0|0033)[1-9](\d{2}){4}$/g.test(NumTel)
             ) {
               SubmitLogin(NumTel.trim());
             }
@@ -43,7 +41,9 @@ const Login = ({
               placeholder="1. Ton Numéro de téléphone"
               autoComplete="off"
               value={NumTel}
-              onChange={(event) => setNumTel(event.target.value)}
+              onChange={(event) => {
+                setNumTel(event.target.value);
+              }}
             />
           </Form.Group>
           <Button type="submit" block className="google-button">
@@ -58,7 +58,7 @@ const Login = ({
         <Form onSubmit={verificateCode}>
           <Form.Group controlId="login">
             <Form.Control
-              type="text"
+              type="tel"
               placeholder="3. Code reçu"
               autoComplete="off"
               value={forForm[0]}
