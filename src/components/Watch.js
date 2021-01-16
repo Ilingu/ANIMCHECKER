@@ -1195,27 +1195,6 @@ class Watch extends Component {
                     </Dropdown.Item>
                     <Dropdown.Item>
                       <Button
-                        variant="info"
-                        block
-                        onClick={() => {
-                          if (type === "serie") {
-                            this.updateValue(
-                              `${this.state.Pseudo}/serie/${id}`,
-                              {
-                                Paused: true,
-                                Drop: null,
-                              }
-                            );
-                            this.setState({ uid: null, RedirectHome: true });
-                          }
-                        }}
-                      >
-                        <span className="fas fa-pause"></span> Mettre en Pause{" "}
-                        {AnimToWatch.name}
-                      </Button>
-                    </Dropdown.Item>
-                    <Dropdown.Item>
-                      <Button
                         variant="dark"
                         onClick={() => {
                           this.updateValue(
@@ -1325,6 +1304,21 @@ class Watch extends Component {
                             </Button>
                           </Dropdown.Item>
                         ) : null}
+                        <Dropdown.Item>
+                          <Button
+                            variant="light"
+                            block
+                            onClick={() =>
+                              this.setState({
+                                PauseWithAlleged: true,
+                                ShowModalVerification: [true, "alleger"],
+                              })
+                            }
+                          >
+                            <span className="fas fa-window-close"></span>{" "}
+                            Alléger et pauser {AnimToWatch.name}
+                          </Button>
+                        </Dropdown.Item>
                       </Dropdown.Menu>
                     </Dropdown>
                   </Fragment>
@@ -1334,7 +1328,7 @@ class Watch extends Component {
                       variant="primary"
                       block
                       onClick={() => {
-                        this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+                        this.updateValue(`${this.state.Pseudo}/film/${id}`, {
                           Drop: true,
                           Paused: null,
                         });
@@ -1365,6 +1359,22 @@ class Watch extends Component {
                     </Button>
                   </Dropdown.Item>
                 ) : null}
+                <Dropdown.Item>
+                  <Button
+                    variant="info"
+                    block
+                    onClick={() => {
+                      this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
+                        Paused: true,
+                        Drop: null,
+                      });
+                      this.setState({ uid: null, RedirectHome: true });
+                    }}
+                  >
+                    <span className="fas fa-pause"></span> Mettre en Pause{" "}
+                    {AnimToWatch.name}
+                  </Button>
+                </Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item>
                   <Button
@@ -1419,16 +1429,46 @@ class Watch extends Component {
               </Badge>
             </div>
             <header>
-              <h1>{type === "serie" ? "Anime:" : "Film:"}</h1>
+              <h1>
+                {type === "serie" ? (
+                  "Anime:"
+                ) : AnimToWatch.finished ? (
+                  <Fragment>
+                    <span
+                      style={{ color: "greenyellow" }}
+                      className="fas fa-check"
+                    ></span>{" "}
+                    Film:
+                  </Fragment>
+                ) : (
+                  "Film:"
+                )}
+              </h1>
             </header>
             <div className="content">
               {type === "film" ? (
                 <div
                   className="film"
                   id={AnimToWatch.name}
-                  onClick={this.StartModeWatch}
+                  onClick={(event) => {
+                    if (
+                      event.target.classList[0] === "fas" &&
+                      event.target.classList[1] === "fa-undo-alt"
+                    )
+                      return;
+                    this.StartModeWatch();
+                  }}
                 >
-                  <span className="fas fa-play"></span> {AnimToWatch.name}
+                  <span className="fas fa-play"></span>{" "}
+                  <span
+                    onClick={() =>
+                      this.updateValue(`${Pseudo}/film/${id}`, {
+                        finished: !AnimToWatch.finished,
+                      })
+                    }
+                    className="fas fa-undo-alt"
+                  ></span>{" "}
+                  {AnimToWatch.name}
                 </div>
               ) : (
                 <div className="accordionAnimEP">{MyAnimAccordeon}</div>

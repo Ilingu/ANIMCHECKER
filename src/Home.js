@@ -1028,6 +1028,8 @@ export default class Home extends Component {
             Object.keys(serieFirebase).concat(Object.keys(filmFireBase))[In]
         )
       );
+    } else {
+      if (SearchInAnimeList[1]) Error();
     }
 
     // NextAnime
@@ -1223,7 +1225,7 @@ export default class Home extends Component {
         Error();
       }
     } else {
-      Error();
+      if (!SearchInAnimeList[1]) Error();
     }
 
     function Error() {
@@ -2087,10 +2089,8 @@ export default class Home extends Component {
         Skeleton={false}
         Pseudo={Pseudo}
         Paused={
-          key.split("-")[0] === "serie"
-            ? serieFirebase[key].Paused
-              ? serieFirebase[key].Paused
-              : false
+          { ...serieFirebase, ...filmFireBase }[key].Paused
+            ? { ...serieFirebase, ...filmFireBase }[key].Paused
             : false
         }
         AddEpSeasonToAlleged={() => {
@@ -2113,10 +2113,8 @@ export default class Home extends Component {
           );
         }}
         Drop={
-          key.split("-")[0] === "serie"
-            ? serieFirebase[key].Drop
-              ? serieFirebase[key].Drop
-              : false
+          { ...serieFirebase, ...filmFireBase }[key].Drop
+            ? { ...serieFirebase, ...filmFireBase }[key].Drop
             : false
         }
         ChangeNote={() =>
