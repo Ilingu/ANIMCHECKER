@@ -55,6 +55,7 @@ const OneNotif = ({ name, day, time, paused, fn }) => {
   return (
     <div
       className="notif"
+      onDoubleClick={fn[2]}
       style={{
         border: `2px solid rgb(${Math.round(Math.random() * 255)}, ${Math.round(
           Math.random() * 255

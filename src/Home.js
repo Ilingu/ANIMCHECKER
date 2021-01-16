@@ -5,6 +5,7 @@ import axios from "axios";
 import { openDB } from "idb";
 import ObjectPath from "object-path";
 import ReactStars from "react-rating-stars-component";
+import TimePicker from "react-bootstrap-time-picker";
 // Components
 import Poster from "./components/dyna/PosterAnim";
 import NextAnimCO from "./components/dyna/NextAnim";
@@ -55,10 +56,12 @@ export default class Home extends Component {
     ShowModalChangeNote: false,
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
+    ShowModalAddNotifLier: false,
     ShowModalType: false,
     ShowModalVerification: false,
     PalmaresModal: false,
     SwitchMyAnim: true,
+    AddNotifWithAnim: false,
     animToDetails: [],
     NextAnimToDelete: null,
     SearchInAnimeList: [false, null],
@@ -86,7 +89,12 @@ export default class Home extends Component {
     type: "serie",
     Rate: 7.5,
     imageUrl: null,
+    SeasonAnimCheck: false,
     ModeCombinaisonSearch: "ET",
+    day: new Date().getDay().toString(),
+    time:
+      new Date().getHours() * 3600 +
+      Math.round(new Date().getMinutes() / 10) * 10 * 60,
     durer: 110,
     nbEP: "",
     NextAnim: "",
@@ -1270,7 +1278,7 @@ export default class Home extends Component {
   };
 
   AddEPToAlleged = () => {
-    const { Pseudo, nbEP, IdToAddEp } = this.state;
+    const { Pseudo, nbEP, IdToAddEp, SeasonAnimCheck } = this.state;
 
     if (typeof nbEP === "string" && nbEP.trim().length !== 0 && nbEP !== "") {
       const AnimSEP = nbEP.split(",").map((nbEpS, i) => {
@@ -1290,11 +1298,64 @@ export default class Home extends Component {
       this.updateValue(`${Pseudo}/serie/${IdToAddEp}`, {
         AnimEP: AnimSEP,
         finishedAnim: false,
+        AnimeSeason: !SeasonAnimCheck ? null : true,
         Drop: null,
         Paused: null,
       });
       this.setState({ RedirectPage: `/Watch/${Pseudo}/${IdToAddEp}` });
     }
+  };
+
+  AddNotifLier = async (IDSerie) => {
+    const { Pseudo, title, day, time, OfflineMode } = this.state;
+    const db = await openDB("AckDb", 1);
+    const Store = db
+      .transaction("NotifFirebase", "readwrite")
+      .objectStore("NotifFirebase");
+    const results = await Store.getAll();
+
+    const NotifFirebase = OfflineMode
+      ? results[0].data
+      : await base.fetch(`${this.state.Pseudo}/Notif`, {
+          context: this,
+        });
+
+    const IDNotif = `notif${Date.now()}`;
+    const NewNotifTemplate = {
+      ...NotifFirebase,
+      [IDNotif]: {
+        name: title,
+        Lier: IDSerie,
+        day,
+        time,
+        paused: false,
+        called: false,
+      },
+    };
+
+    if (!OfflineMode) {
+      this.addValue(`${Pseudo}/Notif`, NewNotifTemplate);
+    } else {
+      Store.put({
+        id: "NotifFirebase",
+        data: NewNotifTemplate,
+      })
+        .then(() => {
+          this.fnDbOffline("GET");
+          this.setState({
+            ResText: "Votre requête d'ajout a réussite.",
+            typeAlert: "success",
+          });
+        })
+        .catch(() =>
+          this.setState({
+            ResText: "Votre requête d'ajout à echoué.",
+            typeAlert: "danger",
+          })
+        );
+    }
+
+    return IDNotif;
   };
 
   TakeImgFromName = async (
@@ -1316,7 +1377,7 @@ export default class Home extends Component {
       return next(ImgUrlRes.data.results[0].image_url);
     } catch (err) {
       console.error(err);
-      return "PlaceHolderImg";
+      return next("PlaceHolderImg");
     }
   };
 
@@ -1324,6 +1385,8 @@ export default class Home extends Component {
     const {
       title,
       nbEP,
+      SeasonAnimCheck,
+      AddNotifWithAnim,
       type,
       durer,
       imageUrl,
@@ -1358,7 +1421,7 @@ export default class Home extends Component {
       });
     }
 
-    function next() {
+    async function next() {
       self.setState({ ModeFindAnime: [false, null] });
       let IsGood = false,
         IsGoodForPost = true;
@@ -1376,6 +1439,11 @@ export default class Home extends Component {
           nbEP !== ""
         ) {
           IsGood = true;
+          const IDSerie = `serie-${Date.now()}`;
+          let IDNotif = null;
+          if (AddNotifWithAnim) {
+            IDNotif = await self.AddNotifLier(IDSerie);
+          }
           let AnimSEP = nbEP.split(",").map((nbEpS, i) => {
             let EpObj = [];
 
@@ -1399,11 +1467,13 @@ export default class Home extends Component {
           if (IsGoodForPost) {
             self.addValue(`${self.state.Pseudo}/serie`, {
               ...self.state.serieFirebase,
-              [`serie-${Date.now()}`]: {
+              [IDSerie]: {
                 name: title,
                 imageUrl: imgUrl,
+                Lier: IDNotif,
                 finishedAnim: false,
                 AnimEP: AnimSEP,
+                AnimeSeason: !SeasonAnimCheck ? null : true,
               },
             });
             // reset
@@ -1509,6 +1579,9 @@ export default class Home extends Component {
           PalmaresModal: false,
           ShowModalVerification: false,
           palmares: null,
+          ShowModalAddNotifLier: false,
+          AddNotifWithAnim: false,
+
           SearchInAnimeList: [false, self.state.SearchInAnimeList[1]],
           animToDetails: [],
           // Form
@@ -1516,6 +1589,7 @@ export default class Home extends Component {
           ImportanceSearch: null,
           TagSearchAnime: "",
           DeletePathVerif: null,
+          SeasonAnimCheck: false,
           title: "",
           type: "serie",
           durer: 110,
@@ -1918,6 +1992,9 @@ export default class Home extends Component {
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
       ShowModalType: false,
+      ShowModalAddNotifLier: false,
+      AddNotifWithAnim: false,
+      SeasonAnimCheck: false,
       PalmaresModal: false,
       ShowModalVerification: false,
       palmares: null,
@@ -1972,6 +2049,7 @@ export default class Home extends Component {
       findAnim,
       animToDetails,
       ShowModalAddAnim,
+      ShowModalAddNotifLier,
       title,
       ResText,
       DeletePathVerif,
@@ -1992,11 +2070,14 @@ export default class Home extends Component {
       durer,
       FirstQuerie,
       SwitchMyAnim,
+      SeasonAnimCheck,
       ParamsOptn,
       NextAnim,
       LoadingMode,
       CodeNumber,
       JustDefined,
+      day,
+      time,
       ImportanceNA,
       ImportanceSearch,
       InfoAnimeToChangeNote,
@@ -2570,6 +2651,62 @@ export default class Home extends Component {
             </Modal.Footer>
           </Modal>
 
+          <Modal show={ShowModalAddNotifLier} onHide={this.addAnime}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Ajouter une notif à {title}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <Form id="AddNotif">
+                <Form.Text>
+                  Fermer cette pop-up si vous ne voulez pas de notif lié à{" "}
+                  {title}
+                </Form.Text>
+                <Form.Group controlId="calendar">
+                  <Form.Label>Jour de la notif</Form.Label>
+                  <Form.Control
+                    as="select"
+                    custom
+                    value={day}
+                    onChange={(event) =>
+                      this.setState({ day: event.target.value })
+                    }
+                    placeholder="Le jour de la notif hebdo"
+                  >
+                    <option value="1">Lundi</option>
+                    <option value="2">Mardi</option>
+                    <option value="3">Mercredi</option>
+                    <option value="4">Jeudi</option>
+                    <option value="5">Vendredi</option>
+                    <option value="6">Samedi</option>
+                    <option value="0">Dimanche</option>
+                  </Form.Control>
+                </Form.Group>
+                <Form.Group controlId="hour">
+                  <Form.Label>Heure de la notif</Form.Label>
+                  <TimePicker
+                    step={5}
+                    format={24}
+                    value={time}
+                    onChange={(time) => this.setState({ time })}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.addAnime}>
+                Annuler
+              </Button>
+              <Button
+                variant="success"
+                onClick={() =>
+                  this.setState({ AddNotifWithAnim: true }, this.addAnime)
+                }
+              >
+                <span className="fas fa-plus"></span> Créer la notif
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
           <Modal
             show={ShowModalVerification}
             size="lg"
@@ -2599,7 +2736,18 @@ export default class Home extends Component {
               </Button>
               <Button
                 variant="danger"
-                onClick={() => this.deleteValue(DeletePathVerif)}
+                onClick={() => {
+                  const IDPath = DeletePathVerif.split("/")[
+                      DeletePathVerif.split("/").length - 1
+                    ],
+                    AnimeObj = { ...serieFirebase, ...filmFireBase }[IDPath];
+
+                  if (AnimeObj.Lier) {
+                    this.deleteValue(`${Pseudo}/Notif/${AnimeObj.Lier}`);
+                  }
+
+                  this.deleteValue(DeletePathVerif);
+                }}
               >
                 Supprimer
               </Button>
@@ -2939,11 +3087,26 @@ export default class Home extends Component {
             </Modal.Header>
             <Modal.Body
               onKeyDown={(event) => {
+                if (SeasonAnimCheck) {
+                  this.setState({ ShowModalAddNotifLier: true });
+                  return;
+                }
                 if (event.key === "Enter") this.addAnime();
               }}
               id="ModalBody"
             >
-              <Form id="AddAnim" onSubmit={this.addAnime}>
+              <Form
+                id="AddAnim"
+                onSubmit={() => {
+                  if (SeasonAnimCheck) {
+                    this.setState({
+                      ShowModalAddNotifLier: true,
+                    });
+                    return;
+                  }
+                  this.addAnime();
+                }}
+              >
                 <Form.Group controlId="titre">
                   <Form.Label>Titre</Form.Label>
                   <Form.Control
@@ -2976,6 +3139,18 @@ export default class Home extends Component {
                     }
                   />
                 </Form.Group>
+                <Form.Group controlId="seasonAnime">
+                  <Form.Check
+                    type="checkbox"
+                    checked={SeasonAnimCheck}
+                    label={`Anime de saison: ${
+                      SeasonAnimCheck === true ? "Oui" : "Non"
+                    }`}
+                    onChange={(event) =>
+                      this.setState({ SeasonAnimCheck: event.target.checked })
+                    }
+                  />
+                </Form.Group>
               </Form>
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
@@ -2986,6 +3161,10 @@ export default class Home extends Component {
                 variant="success"
                 onClick={(event) => {
                   event.preventDefault();
+                  if (SeasonAnimCheck) {
+                    this.setState({ ShowModalAddNotifLier: true });
+                    return;
+                  }
                   if (addEPToAlleged) {
                     this.AddEPToAlleged();
                     return;

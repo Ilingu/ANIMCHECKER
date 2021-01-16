@@ -657,9 +657,13 @@ class Watch extends Component {
   };
 
   handleDelete = () => {
-    const { type, id } = this.state;
+    const { Pseudo, type, id, AnimToWatch } = this.state;
 
-    this.deleteValue(`${this.state.Pseudo}/${type}/${id}`);
+    if (AnimToWatch.Lier) {
+      this.deleteValue(`${Pseudo}/Notif/${AnimToWatch.Lier}`);
+    }
+
+    this.deleteValue(`${Pseudo}/${type}/${id}`);
     this.setState({ uid: null, RedirectHome: true });
   };
 
@@ -694,10 +698,20 @@ class Watch extends Component {
   };
 
   handleAlleger = () => {
-    const { type, id, PauseWithAlleged, DropWithAlleged } = this.state;
+    const {
+      Pseudo,
+      type,
+      id,
+      PauseWithAlleged,
+      DropWithAlleged,
+      AnimToWatch,
+    } = this.state;
 
-    if (type !== "film") {
-      this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+    if (type === "serie") {
+      if (AnimToWatch.Lier) {
+        this.deleteValue(`${Pseudo}/Notif/${AnimToWatch.Lier}`);
+      }
+      this.updateValue(`${Pseudo}/serie/${id}`, {
         AnimEP: null,
         Badge: null,
         AnimeSeason: null,

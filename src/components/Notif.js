@@ -16,6 +16,7 @@ export default class Notif extends Component {
     // Firebase
     Notif: {},
     Pseudo: this.props.match.params.pseudo,
+    AnimeList: null,
     // Auth
     uid: null,
     proprio: null,
@@ -23,13 +24,18 @@ export default class Notif extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
+    RefreshAnimListRenderer: true,
     isFirstTime: true,
+    UpdateNotif: null,
+    MyAnimNameStocked: null,
+    PickAnime: true,
     // Form
     name: "",
     day: new Date().getDay().toString(),
     time:
       new Date().getHours() * 3600 +
       Math.round(new Date().getMinutes() / 10) * 10 * 60,
+    Lier: null,
     // Modal
     ShowModalAddNotif: false,
     // Alerts
@@ -104,6 +110,23 @@ export default class Notif extends Component {
     });
   };
 
+  FetchAnime = async () => {
+    const { OfflineMode } = this.state;
+    const db = await openDB("AckDb", 1);
+    const StoreAnim = db
+      .transaction("serieFirebase")
+      .objectStore("serieFirebase");
+    const resultsAnim = await StoreAnim.getAll();
+    let AnimeList = this.state.AnimeList;
+    AnimeList = OfflineMode
+      ? resultsAnim[0].data
+      : await base.fetch(`${this.state.Pseudo}/serie`, {
+          context: this,
+        });
+
+    this.setState({ AnimeList, RefreshAnimListRenderer: true });
+  };
+
   refreshNotif = async () => {
     try {
       const { OfflineMode } = this.state;
@@ -119,44 +142,203 @@ export default class Notif extends Component {
             context: this,
           });
 
-      this.setState({ Notif });
+      if (this.state.PickAnime === true) {
+        this.FetchAnime();
+      }
+
+      this.setState({ Notif, PickAnime: false });
     } catch (err) {
       console.error(err);
     }
   };
 
   addNotif = async () => {
-    const { name, day, time, Notif, OfflineMode } = this.state;
+    const {
+      Pseudo,
+      name,
+      day,
+      time,
+      Lier,
+      Notif,
+      OfflineMode,
+      UpdateNotif,
+      AnimeList,
+    } = this.state;
+
+    const db = await openDB("AckDb", 1);
+    const Store = db
+      .transaction("NotifFirebase", "readwrite")
+      .objectStore("NotifFirebase");
 
     if (
       name !== undefined &&
       name !== null &&
       typeof name === "string" &&
       name.trim().length !== 0 &&
-      name !== ""
+      name !== "" &&
+      UpdateNotif !== null &&
+      typeof UpdateNotif === "string" &&
+      UpdateNotif.trim().length !== 0
     ) {
-      const NewNotifTemplate = {
-        ...Notif,
-        [`notif${Date.now()}`]: {
+      let CopyDataGlobal = null;
+      if (OfflineMode === true) {
+        const CopyData = [...(await Store.getAll())][0].data;
+        CopyData[UpdateNotif] = {
           name,
           day,
           time,
+          Lier,
+          called: false,
+          paused: false,
+        };
+        CopyDataGlobal = CopyData;
+      }
+
+      if (
+        Lier !== null &&
+        typeof Lier === "string" &&
+        Lier.trim().length !== 0
+      ) {
+        if (OfflineMode) {
+          const StoreAnime = db
+            .transaction("serieFirebase", "readwrite")
+            .objectStore("serieFirebase");
+          const CopyData = [...(await StoreAnime.getAll())][0].data;
+          const NotifObj = Notif[UpdateNotif];
+          if (NotifObj.Lier) {
+            delete CopyData[NotifObj.Lier].Lier;
+          }
+          CopyData[Lier] = {
+            ...CopyData[Lier],
+            Lier: UpdateNotif,
+          };
+          Store.put({
+            id: "serieFirebase",
+            data: CopyData,
+          });
+        } else {
+          const AnimeObj = AnimeList[Lier];
+          if (AnimeObj.Lier) {
+            base.remove(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
+          }
+          const NotifObj = Notif[UpdateNotif];
+          if (NotifObj.Lier) {
+            base.remove(`${Pseudo}/serie/${NotifObj.Lier}/Lier`);
+          }
+          base
+            .update(`${Pseudo}/serie/${Lier}`, {
+              data: { Lier: UpdateNotif },
+            })
+            .then(this.FetchAnime);
+        }
+      } else {
+        const NotifObj = Notif[UpdateNotif];
+        if (NotifObj.Lier) {
+          base.remove(`${Pseudo}/serie/${NotifObj.Lier}/Lier`);
+        }
+      }
+
+      (OfflineMode === true
+        ? Store.put({
+            id: "NotifFirebase",
+            data: CopyDataGlobal,
+          })
+        : base.update(`${Pseudo}/Notif/${UpdateNotif}`, {
+            data: { name, day, time, Lier },
+          })
+      ).then(this.refreshNotif);
+
+      this.setState({
+        ShowModalAddNotif: false,
+        UpdateNotif: null,
+        Lier: null,
+      });
+    } else if (
+      name !== undefined &&
+      name !== null &&
+      typeof name === "string" &&
+      name.trim().length !== 0 &&
+      name !== ""
+    ) {
+      const IDNotif = `notif${Date.now()}`;
+      let NewNotifTemplate = {
+        ...Notif,
+        [IDNotif]: {
+          name,
+          day,
+          time,
+          Lier,
           paused: false,
           called: false,
         },
       };
 
-      const db = await openDB("AckDb", 1);
-      const Store = db
-        .transaction("NotifFirebase", "readwrite")
-        .objectStore("NotifFirebase");
+      if (
+        Lier !== null &&
+        typeof Lier === "string" &&
+        Lier.trim().length !== 0
+      ) {
+        if (OfflineMode) {
+          const StoreAnime = db
+            .transaction("serieFirebase", "readwrite")
+            .objectStore("serieFirebase");
+          const CopyData = [...(await StoreAnime.getAll())][0].data;
+          const AnimeObj = AnimeList[Lier];
+          if (AnimeObj.Lier) {
+            const CopyNotif = { ...Notif };
+            delete CopyNotif[AnimeObj.Lier].Lier;
+            NewNotifTemplate = {
+              ...CopyNotif,
+              [IDNotif]: {
+                name,
+                day,
+                time,
+                Lier,
+                paused: false,
+                called: false,
+              },
+            };
+          }
+          CopyData[Lier] = {
+            ...CopyData[Lier],
+            Lier: IDNotif,
+          };
+          Store.put({
+            id: "serieFirebase",
+            data: CopyData,
+          });
+        } else {
+          const AnimeObj = AnimeList[Lier];
+          if (AnimeObj.Lier) {
+            const CopyNotif = { ...Notif };
+            delete CopyNotif[AnimeObj.Lier].Lier;
+            NewNotifTemplate = {
+              ...CopyNotif,
+              [IDNotif]: {
+                name,
+                day,
+                time,
+                Lier,
+                paused: false,
+                called: false,
+              },
+            };
+            base.remove(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
+          }
+          base
+            .update(`${Pseudo}/serie/${Lier}`, {
+              data: { Lier: IDNotif },
+            })
+            .then(this.FetchAnime);
+        }
+      }
 
       (OfflineMode === true
         ? Store.put({
             id: "NotifFirebase",
             data: NewNotifTemplate,
           })
-        : base.post(`${this.state.Pseudo}/Notif`, {
+        : base.post(`${Pseudo}/Notif`, {
             data: NewNotifTemplate,
           })
       )
@@ -165,7 +347,6 @@ export default class Notif extends Component {
           this.setState({
             ResText: "Notif ajouter",
             typeAlert: "success",
-            ShowModalAddNotif: false,
           });
         })
         .catch((err) => {
@@ -173,9 +354,13 @@ export default class Notif extends Component {
           this.setState({
             ResText: "Error: Impossible d'ajouter la notif",
             typeAlert: "danger",
-            ShowModalAddNotif: false,
           });
         });
+
+      this.setState({
+        ShowModalAddNotif: false,
+        Lier: null,
+      });
 
       setTimeout(() => {
         this.setState({
@@ -213,7 +398,7 @@ export default class Notif extends Component {
   };
 
   handleDelete = async (key) => {
-    const { OfflineMode } = this.state;
+    const { Pseudo, OfflineMode, Notif } = this.state;
     let CopyDataGlobal = null;
     const db = await openDB("AckDb", 1);
     const Store = db
@@ -224,15 +409,18 @@ export default class Notif extends Component {
       delete CopyData[key];
       CopyDataGlobal = CopyData;
     }
-
+    if (Notif[key].Lier) {
+      base.remove(`${Pseudo}/serie/${Notif[key].Lier}/Lier`);
+    }
     (OfflineMode === true
       ? Store.put({
           id: "NotifFirebase",
           data: CopyDataGlobal,
         })
-      : base.remove(`${this.state.Pseudo}/Notif/${key}`)
+      : base.remove(`${Pseudo}/Notif/${key}`)
     )
       .then(() => {
+        this.FetchAnime();
         this.refreshNotif();
         this.setState({
           ResText: "Notif Supprimer avec succès",
@@ -261,9 +449,13 @@ export default class Notif extends Component {
       proprio,
       isFirstTime,
       Notif,
+      Lier,
       OfflineMode,
+      RefreshAnimListRenderer,
       ShowModalAddNotif,
+      AnimeList,
       name,
+      MyAnimNameStocked,
       day,
       time,
       ResText,
@@ -293,7 +485,8 @@ export default class Notif extends Component {
 
     if (uid !== proprio) return <Redirect to="/notifuser/3" />;
 
-    let MyNotif = "Vous avez aucune notif d'anime rajoutez-en !";
+    let MyAnimName = "Vous n'avez pas d'anime, rajoutez-en !";
+    let MyNotif = "Vous avez aucune notif d'anime, rajoutez-en !";
 
     if (Object.keys(Notif).length !== 0) {
       MyNotif = Object.keys(Notif).map((key, i) => {
@@ -307,9 +500,47 @@ export default class Notif extends Component {
             fn={[
               () => this.updatePaused(key, !Notif[key].paused),
               () => this.handleDelete(key),
+              () =>
+                this.setState({
+                  UpdateNotif: key,
+                  ShowModalAddNotif: true,
+                  name: Notif[key].name,
+                  day: Notif[key].day,
+                  time: Notif[key].time,
+                  Lier: Notif[key].Lier,
+                }),
             ]}
           />
         );
+      });
+    }
+
+    if (AnimeList !== null && RefreshAnimListRenderer === true) {
+      let FirstKey = null;
+      MyAnimName = Object.keys(AnimeList).map((key, i) => {
+        if (i === 0) FirstKey = key;
+        return (
+          <option key={i} value={key}>
+            {AnimeList[key].name}
+          </option>
+        );
+      });
+      MyAnimName = [
+        <option
+          key={`${(Math.random() * 1000000000)
+            .toString()
+            .split(".")
+            .join("")}${Date.now()}`}
+          value={null}
+        >
+          Aucun
+        </option>,
+        ...MyAnimName,
+      ];
+      this.setState({
+        Lier: FirstKey,
+        RefreshAnimListRenderer: false,
+        MyAnimNameStocked: MyAnimName,
       });
     }
 
@@ -415,6 +646,24 @@ export default class Notif extends Component {
                   value={time}
                   onChange={(time) => this.setState({ time })}
                 />
+              </Form.Group>
+              <Form.Group controlId="nameLier">
+                <Form.Label>Nom de l'anime à lier</Form.Label>
+                <Form.Control
+                  as="select"
+                  custom
+                  value={Lier === null ? "Aucun" : Lier}
+                  onChange={(event) =>
+                    this.setState({
+                      Lier:
+                        event.target.value === "Aucun"
+                          ? null
+                          : event.target.value,
+                    })
+                  }
+                >
+                  {MyAnimNameStocked}
+                </Form.Control>
               </Form.Group>
             </Form>
           </Modal.Body>
