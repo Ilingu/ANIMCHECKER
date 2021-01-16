@@ -377,6 +377,7 @@ export default class Notif extends Component {
                 <Form.Label>Nom de l'anime</Form.Label>
                 <Form.Control
                   type="text"
+                  required
                   value={name}
                   min="1"
                   placeholder="Titre de l'anime à notifier"

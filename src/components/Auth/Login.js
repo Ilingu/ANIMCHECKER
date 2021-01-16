@@ -40,6 +40,7 @@ const Login = ({
               type="tel"
               placeholder="1. Ton Numéro de téléphone"
               autoComplete="off"
+              required
               value={NumTel}
               onChange={(event) => {
                 setNumTel(event.target.value);
@@ -61,6 +62,7 @@ const Login = ({
               type="tel"
               placeholder="3. Code reçu"
               autoComplete="off"
+              required
               value={forForm[0]}
               onChange={forForm[2]}
             />

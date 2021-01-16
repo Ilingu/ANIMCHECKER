@@ -148,6 +148,7 @@ const Header = () => {
             <Form.Group>
               <Form.Control
                 type="text"
+                required
                 placeholder="Search Anim To Watch"
                 value={Anim}
                 onChange={(event) => SetAnim(event.target.value)}

@@ -209,7 +209,8 @@ const MyAnim = ({
                     <Form.Label>Le nom ton prochain anime: </Form.Label>
                     <Form.Control
                       type="text"
-                      placeholder="Nom de cette anime"
+                      required
+                      placeholder="Nom de l'anime"
                       autoComplete="off"
                       value={NextAnim}
                       onChange={NextAnimChange}

@@ -1005,12 +1005,12 @@ export default class Home extends Component {
       GoodModeET++;
     if (ImportanceSearch !== null) GoodModeET++;
 
+    // My Anime
     if (
       SearchInAnimeList[1] &&
       typeof titleSearchAnime === "string" &&
       titleSearchAnime.trim().length !== 0
     ) {
-      // My Anime
       Mode = 1;
       Object.values(serieFirebase)
         .concat(Object.values(filmFireBase))
@@ -1028,7 +1028,13 @@ export default class Home extends Component {
             Object.keys(serieFirebase).concat(Object.keys(filmFireBase))[In]
         )
       );
-    } else if (ModeCombinaisonSearch === "OU" || GoodModeET === 1) {
+    }
+
+    // NextAnime
+    if (
+      !SearchInAnimeList[1] &&
+      (ModeCombinaisonSearch === "OU" || GoodModeET === 1)
+    ) {
       let GlobalSearchArr = [];
       if (
         !SearchInAnimeList[1] &&
@@ -1096,6 +1102,10 @@ export default class Home extends Component {
         index = [];
       }
 
+      if (GlobalSearchArr.length === 0) {
+        Error();
+        return;
+      }
       // Anti doublons
       GlobalSearchArr.forEach((SearchedAnim) => {
         let DoublonsIndex = null;
@@ -1113,7 +1123,7 @@ export default class Home extends Component {
 
       // Send
       next(GlobalSearchArr);
-    } else {
+    } else if (!SearchInAnimeList[1]) {
       if (
         typeof titleSearchAnime === "string" &&
         titleSearchAnime.trim().length !== 0 &&
@@ -1183,7 +1193,12 @@ export default class Home extends Component {
           return null;
         });
         next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
-      } else {
+      } else if (
+        typeof TagSearchAnime === "string" &&
+        TagSearchAnime.trim().length !== 0 &&
+        typeof titleSearchAnime === "string" &&
+        titleSearchAnime.trim().length !== 0
+      ) {
         const TagArr = TagSearchAnime.split(",");
         Object.values(NextAnimFireBase).forEach((NA, i) => {
           TagArr.forEach((Tag) => {
@@ -1204,7 +1219,25 @@ export default class Home extends Component {
           return null;
         });
         next(index.map((In) => Object.keys(NextAnimFireBase)[In]));
+      } else {
+        Error();
       }
+    } else {
+      Error();
+    }
+
+    function Error() {
+      self.setState({
+        ResText: "Veuillez remplir au minimum le(s) champs",
+        typeAlert: "danger",
+      });
+      self.cancelModal();
+      setTimeout(() => {
+        self.setState({
+          ResText: null,
+          typeAlert: null,
+        });
+      }, 4000);
     }
 
     function next(key) {
@@ -2697,6 +2730,7 @@ export default class Home extends Component {
                     className="searchInAnimeListInput"
                     placeholder="Titre de l'anime à rechercher"
                     autoComplete="off"
+                    required={SearchInAnimeList[1]}
                     value={titleSearchAnime}
                     onChange={(event) =>
                       this.setState({
@@ -2796,7 +2830,8 @@ export default class Home extends Component {
                         }
                       />
                       <Form.Label>
-                        Combinée en <b>OU</b> ou en <b>ET</b>
+                        Combinée en <b>OU</b> ou en <b>ET</b> (Par défault: en{" "}
+                        <b>ET</b>)
                       </Form.Label>
                       <br />
                       <Form.Check
@@ -2915,6 +2950,7 @@ export default class Home extends Component {
                   <Form.Label>Titre</Form.Label>
                   <Form.Control
                     type="text"
+                    required
                     disabled={addEPToAlleged}
                     placeholder="Titre de la série"
                     autoComplete="off"
@@ -2934,6 +2970,7 @@ export default class Home extends Component {
                   <Form.Control
                     type="text"
                     value={nbEP}
+                    required
                     placeholder="Nombre d'EP => S1NbEP,S2NbEP..."
                     autoComplete="off"
                     onChange={(event) =>
@@ -2979,6 +3016,7 @@ export default class Home extends Component {
                   <Form.Control
                     type="text"
                     placeholder="Titre du film"
+                    required
                     autoComplete="off"
                     value={title}
                     onChange={(event) =>

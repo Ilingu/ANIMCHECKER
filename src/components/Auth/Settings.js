@@ -462,6 +462,7 @@ class Settings extends Component {
                 </Form.Label>
                 <Form.Control
                   type="text"
+                  required
                   placeholder="Votre nouveau nom de compte"
                   autoComplete="off"
                   value={newPseudo}

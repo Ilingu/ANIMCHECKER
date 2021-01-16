@@ -25,7 +25,7 @@ const Pseudo = ({ Submit }) => {
         <Form.Group controlId="login">
           <Form.Control
             type="text"
-            className
+            required
             placeholder="0. Votre (nom de compte)"
             autoComplete="off"
             value={Pseudo}

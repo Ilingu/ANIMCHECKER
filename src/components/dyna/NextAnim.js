@@ -235,6 +235,7 @@ const NextAnim = ({
                   <Form onSubmit={addBadge}>
                     <Form.Control
                       type="text"
+                      required
                       suppressContentEditableWarning={true}
                       autoComplete="off"
                       id="InputNANbadgeReperage"

@@ -1112,6 +1112,7 @@ class Watch extends Component {
                 <Form onSubmit={this.ChangeTitle}>
                   <Form.Control
                     type="text"
+                    required
                     suppressContentEditableWarning={true}
                     id="InputNTitleReperage"
                     value={Newtitle}
@@ -1393,6 +1394,7 @@ class Watch extends Component {
                       type="text"
                       suppressContentEditableWarning={true}
                       autoComplete="off"
+                      required
                       id="InputNbadgeReperage"
                       value={NewBadgeName}
                       onChange={(event) =>
