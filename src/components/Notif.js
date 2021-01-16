@@ -204,6 +204,10 @@ export default class Notif extends Component {
             .transaction("serieFirebase", "readwrite")
             .objectStore("serieFirebase");
           const CopyData = [...(await StoreAnime.getAll())][0].data;
+          const AnimeObj = AnimeList[Lier];
+          if (AnimeObj.Lier) {
+            delete CopyDataGlobal[AnimeObj.Lier].Lier;
+          }
           const NotifObj = Notif[UpdateNotif];
           if (NotifObj.Lier) {
             delete CopyData[NotifObj.Lier].Lier;
@@ -251,6 +255,11 @@ export default class Notif extends Component {
       this.setState({
         ShowModalAddNotif: false,
         UpdateNotif: null,
+        name: "",
+        day: new Date().getDay().toString(),
+        time:
+          new Date().getHours() * 3600 +
+          Math.round(new Date().getMinutes() / 10) * 10 * 60,
         Lier: null,
       });
     } else if (
@@ -359,6 +368,11 @@ export default class Notif extends Component {
 
       this.setState({
         ShowModalAddNotif: false,
+        name: "",
+        day: new Date().getDay().toString(),
+        time:
+          new Date().getHours() * 3600 +
+          Math.round(new Date().getMinutes() / 10) * 10 * 60,
         Lier: null,
       });
 

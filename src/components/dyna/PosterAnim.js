@@ -1,4 +1,5 @@
 import React, { Fragment } from "react";
+import { Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
 // Img
 import PlaceHolderImg from "../../Assets/Img/PlaceHolderImg.png";
@@ -52,6 +53,7 @@ const PosterAnim = ({
   isFav,
   Paused,
   Drop,
+  NewEpMode,
   AnimeSeason,
   ModeFilter,
   isAlleged,
@@ -67,7 +69,7 @@ const PosterAnim = ({
         Skeleton
           ? "MyAnimPoster Skeleton"
           : AnimeSeason && !isFinished
-          ? `MyAnimPoster Season ${WhitchSeason()}`
+          ? `MyAnimPoster Season ${WhitchSeason()}${NewEpMode ? " NewEP" : ""}`
           : Paused
           ? "MyAnimPoster Paused"
           : Drop
@@ -105,7 +107,11 @@ const PosterAnim = ({
               ></span>
             </div>
           )}
-
+          {AnimeSeason && NewEpMode ? (
+            <h3 id="NEWEPBadge">
+              <Badge variant="danger">NEW</Badge>
+            </h3>
+          ) : null}
           {Rate ? (
             <span
               style={{ color: "gold" }}

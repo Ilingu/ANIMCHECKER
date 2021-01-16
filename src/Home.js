@@ -1683,6 +1683,14 @@ export default class Home extends Component {
             }),
           })
             .then((response) => {
+              if (NotifFirebase[notifKey].Lier) {
+                this.updateValue(
+                  `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
+                  {
+                    NewEpMode: true,
+                  }
+                );
+              }
               this.updateValue(`${this.state.Pseudo}/Notif/${notifKey}`, {
                 called: true,
               });
@@ -2169,6 +2177,13 @@ export default class Home extends Component {
         id={key}
         Skeleton={false}
         Pseudo={Pseudo}
+        NewEpMode={
+          key.split("-")[0] === "serie"
+            ? serieFirebase[key].NewEpMode
+              ? serieFirebase[key].NewEpMode
+              : false
+            : false
+        }
         Paused={
           { ...serieFirebase, ...filmFireBase }[key].Paused
             ? { ...serieFirebase, ...filmFireBase }[key].Paused

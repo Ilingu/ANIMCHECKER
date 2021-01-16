@@ -994,6 +994,34 @@ a:hover {
   color: #a77200;
 }
 
+#MyAnime .content .MyAnimPoster.Season.NewEP {
+  background-color: rgba(119, 0, 255, 0.25);
+  color: #7700ff;
+}
+
+#MyAnime .content .MyAnimPoster.Season.NewEP #NEWEPBadge {
+  position: absolute;
+  top: 2.5px;
+  right: -15px;
+  z-index: 1000;
+  -webkit-transform: rotateZ(45deg);
+          transform: rotateZ(45deg);
+}
+
+#MyAnime .content .MyAnimPoster.Season.NewEP .ImgInterract img {
+  -webkit-filter: brightness(1.05) hue-rotate(90deg);
+          filter: brightness(1.05) hue-rotate(90deg);
+}
+
+#MyAnime .content .MyAnimPoster.Season.NewEP .FvBtn {
+  background-color: rgba(0, 0, 0, 0.68);
+  color: #7700ff;
+}
+
+#MyAnime .content .MyAnimPoster.Season.NewEP h4 {
+  color: #7700ff;
+}
+
 #MyAnime .content .MyAnimPoster.Paused,
 #MyAnime .content .MyAnimPoster.Drop,
 #MyAnime .content .MyAnimPoster.finished {
@@ -1697,6 +1725,10 @@ a:hover {
   margin-bottom: 0;
 }
 
+#Watch .nonStartMod header h1.ModeNewEp {
+  color: #7700ff;
+}
+
 #Watch .nonStartMod section {
   margin-bottom: 15px;
 }
@@ -1825,6 +1857,15 @@ a:hover {
   background-color: rgba(0, 0, 0, 0.274);
   color: #ffc107;
   cursor: pointer;
+}
+
+#Watch .nonStartMod > header .img #NEWEPBadgeWatch {
+  position: absolute;
+  top: 2.5px;
+  right: -15px;
+  z-index: 1000;
+  -webkit-transform: rotateZ(45deg);
+          transform: rotateZ(45deg);
 }
 
 #Watch .nonStartMod > header .img .RatingStar {

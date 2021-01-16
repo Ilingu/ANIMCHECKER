@@ -541,6 +541,7 @@ class Watch extends Component {
 
   finishedEp = (Saison, EpFinishedID, verified = true, next = null) => {
     const {
+      Pseudo,
       id,
       AnimToWatch,
       repereEpisode,
@@ -551,10 +552,9 @@ class Watch extends Component {
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
     if (!AnimToWatch.AnimEP[idSaison].Episodes[EpFinishedID - 2].finished) {
+      this.updateValue(`${Pseudo}/serie/${id}`, { NewEpMode: null });
       this.updateValue(
-        `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
-          EpFinishedID - 2
-        }`,
+        `${Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${EpFinishedID - 2}`,
         { finished: true },
         () => {
           if (verified) this.verifiedEPRepere(Saison, false);
@@ -1120,7 +1120,11 @@ class Watch extends Component {
                 this.setState({ ModeEditTitle: true });
                 window.addEventListener("click", this.ChangeTitle, false);
               }}
-              className="title"
+              className={`title${
+                AnimToWatch.AnimeSeason && AnimToWatch.NewEpMode
+                  ? " ModeNewEp"
+                  : ""
+              }`}
             >
               {ModeEditTitle ? (
                 <Form onSubmit={this.ChangeTitle}>
@@ -1164,6 +1168,11 @@ class Watch extends Component {
                   }
                 ></span>
               )}
+              {AnimToWatch.AnimeSeason && AnimToWatch.NewEpMode ? (
+                <h3 id="NEWEPBadgeWatch">
+                  <Badge variant="danger">NEW</Badge>
+                </h3>
+              ) : null}
               {AnimToWatch.Rate ? (
                 <span
                   style={{ color: "gold" }}
@@ -1443,7 +1452,13 @@ class Watch extends Component {
               </Badge>
             </div>
             <header>
-              <h1>
+              <h1
+                className={`${
+                  AnimToWatch.AnimeSeason && AnimToWatch.NewEpMode
+                    ? " ModeNewEp"
+                    : ""
+                }`}
+              >
                 {type === "serie" ? (
                   "Anime:"
                 ) : AnimToWatch.finished ? (
