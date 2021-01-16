@@ -1320,7 +1320,7 @@ class Watch extends Component {
                               }
                             >
                               <span className="fas fa-window-close"></span>{" "}
-                              Alléger et Mettre en Pause {AnimToWatch.name}
+                              Alléger et Drop {AnimToWatch.name}
                             </Button>
                           </Dropdown.Item>
                         ) : null}
