@@ -741,7 +741,7 @@ class Watch extends Component {
   };
 
   RemoveAnimVal = (typeRemove, idSeason, idEP) => {
-    const { id, AnimToWatch } = this.state;
+    const { Pseudo, id, AnimToWatch } = this.state;
 
     if (typeRemove === "EP") {
       if (idEP === 1) {
@@ -750,18 +750,27 @@ class Watch extends Component {
           return;
         }
         if (idSeason === AnimToWatch.AnimEP.length - 1)
-          this.deleteValue(
-            `${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}`
-          );
+          this.deleteValue(`${Pseudo}/serie/${id}/AnimEP/${idSeason}`);
         return;
       }
 
-      if (idEP === AnimToWatch.AnimEP[idSeason].Episodes.length)
+      if (idEP === AnimToWatch.AnimEP[idSeason].Episodes.length) {
+        let IsSeasonFinished = true;
+        AnimToWatch.AnimEP[idSeason].Episodes.forEach((Ep) => {
+          if (Ep.id === idEP) return;
+          if (!Ep.finished) {
+            IsSeasonFinished = false;
+          }
+        });
+
+        if (IsSeasonFinished) this.endOfSaison(idSeason);
+        if (IsSeasonFinished && idSeason === AnimToWatch.AnimEP.length - 1)
+          this.endAnime();
+
         this.deleteValue(
-          `${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}/Episodes/${
-            idEP - 1
-          }`
+          `${Pseudo}/serie/${id}/AnimEP/${idSeason}/Episodes/${idEP - 1}`
         );
+      }
     } else {
       if (AnimToWatch.AnimEP.length === 1) {
         this.setState({ ShowModalVerification: [true, "supprimer"] });
@@ -769,7 +778,7 @@ class Watch extends Component {
       }
 
       if (idSeason === AnimToWatch.AnimEP.length - 1)
-        this.deleteValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSeason}`);
+        this.deleteValue(`${Pseudo}/serie/${id}/AnimEP/${idSeason}`);
     }
   };
 
@@ -955,13 +964,32 @@ class Watch extends Component {
             this.setState({ ShowModalAddEp: true, SeasonToAddEp: EpSaison })
           }
           ReverseFinished={(idSaison, idEP) => {
-            const AnimToWatchCopy = { ...this.state.AnimToWatch.AnimEP };
+            const AnimToWatchCopy = [...this.state.AnimToWatch.AnimEP];
+            let IsSeasonFinished = true;
             AnimToWatchCopy[idSaison].finished = false;
             AnimToWatchCopy[idSaison].Episodes[
               idEP - 1
             ].finished = !AnimToWatchCopy[idSaison].Episodes[idEP - 1].finished;
+
+            AnimToWatchCopy[idSaison].Episodes.forEach((Ep) => {
+              if (!Ep.finished) {
+                IsSeasonFinished = false;
+              }
+            });
+
+            if (IsSeasonFinished) AnimToWatchCopy[idSaison].finished = true;
+            else if (AnimToWatchCopy[idSaison].finished)
+              AnimToWatchCopy[idSaison].finished = false;
+
+            if (IsSeasonFinished && idSaison === AnimToWatchCopy.length - 1)
+              this.endAnime();
+            else if (idSaison === AnimToWatchCopy.length - 1) {
+              this.updateValue(`${Pseudo}/serie/${id}`, {
+                finishedAnim: false,
+              });
+            }
+
             this.updateValue(`${Pseudo}/serie/${id}`, {
-              finishedAnim: false,
               AnimEP: AnimToWatchCopy,
             });
           }}
