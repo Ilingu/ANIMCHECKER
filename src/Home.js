@@ -424,6 +424,8 @@ export default class Home extends Component {
   };
 
   deepEqualObj(object1, object2) {
+    if (typeof object1 !== "object" || typeof object2 !== "object")
+      return false;
     const keys1 = Object.keys(object1);
     const keys2 = Object.keys(object2);
 
@@ -485,17 +487,24 @@ export default class Home extends Component {
               : true,
           RefreshfromFnOffline: false,
           LoadingMode: [
-            Object.keys(GlobalInfoUser.serie).length !== 0 ||
-            Object.keys(GlobalInfoUser.film).length !== 0
-              ? false
-              : true,
-            Object.keys(GlobalInfoUser.NextAnim).length !== 0 ? false : true,
+            typeof GlobalInfoUser.serie === "object" &&
+            typeof GlobalInfoUser.film === "object"
+              ? Object.keys(GlobalInfoUser.serie).length !== 0 ||
+                Object.keys(GlobalInfoUser.film).length !== 0
+                ? false
+                : true
+              : false,
+            typeof GlobalInfoUser.NextAnim === "object"
+              ? Object.keys(GlobalInfoUser.NextAnim).length !== 0
+                ? false
+                : true
+              : false,
           ],
           ModeFilter:
             HomePage !== null
               ? HomePage
-              : GlobalInfoUser.ParamsOptn.TypeAnimeHomePage
-              ? GlobalInfoUser.ParamsOptn.TypeAnimeHomePage
+              : GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
+              ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
               : "NotFinished",
           FirstQuerie: true,
           NextAnimFireBase: GlobalInfoUser.NextAnim,
@@ -506,6 +515,59 @@ export default class Home extends Component {
         },
         after
       );
+      // Check If Data Lost
+      const AllDataIndexedDb = await this.fnDbOffline("GETReturn");
+      let IsLostData = false;
+      console.log(
+        AllDataIndexedDb[1][0]?.data,
+        AllDataIndexedDb[2][0]?.data,
+        AllDataIndexedDb
+      );
+      if (
+        (typeof GlobalInfoUser.serie !== "object" ||
+          Object.keys(GlobalInfoUser.serie).length === 0) &&
+        AllDataIndexedDb[0][0]?.data
+      ) {
+        console.warn(
+          "Perte des données séries, procedure de réparage enclenché."
+        );
+        IsLostData = true;
+        this.addValue(
+          `${this.state.Pseudo}/serie`,
+          AllDataIndexedDb[0][0]?.data
+        );
+      }
+      if (
+        (typeof GlobalInfoUser.film !== "object" ||
+          Object.keys(GlobalInfoUser.film).length === 0) &&
+        AllDataIndexedDb[1][0]?.data
+      ) {
+        console.warn(
+          "Perte des données film, procedure de réparage enclenché."
+        );
+        IsLostData = true;
+        this.addValue(
+          `${this.state.Pseudo}/film`,
+          AllDataIndexedDb[1][0]?.data
+        );
+      }
+      if (
+        (typeof GlobalInfoUser.NextAnim !== "object" ||
+          Object.keys(GlobalInfoUser.NextAnim).length === 0) &&
+        AllDataIndexedDb[2][0]?.data
+      ) {
+        console.warn(
+          "Perte des données prochain animes, procedure de réparage enclenché."
+        );
+        IsLostData = true;
+        this.addValue(
+          `${this.state.Pseudo}/NextAnim`,
+          AllDataIndexedDb[2][0]?.data
+        );
+      }
+
+      if (IsLostData) return;
+
       if (!this.state.UpdateDbFromIndexedDB) {
         // Add Data To IndexedDB
         const db = await openDB("AckDb", 1);
@@ -565,37 +627,49 @@ export default class Home extends Component {
           serieFirebase: results[0]
             ? results[0][0]
               ? results[0][0].data
+                ? results[0][0].data
+                : {}
               : {}
             : {},
           filmFireBase: results[1]
             ? results[1][0]
               ? results[1][0].data
+                ? results[1][0].data
+                : {}
               : {}
             : {},
           NextAnimFireBase: results[2]
             ? results[2][0]
               ? results[2][0].data
+                ? results[2][0].data
+                : {}
               : {}
             : {},
           ParamsOptn: results[3]
             ? results[3][0]
               ? results[3][0].data
+                ? results[3][0].data
+                : {}
               : {}
             : {},
           RefreshfromFnOffline: true,
           LoadingMode: [
             results[0] && results[1]
               ? results[0][0] && results[1][0]
-                ? Object.keys(results[0][0].data).length !== 0 ||
-                  Object.keys(results[1][0].data).length !== 0
-                  ? false
+                ? results[0][0].data && results[1][0].data
+                  ? Object.keys(results[0][0].data).length !== 0 ||
+                    Object.keys(results[1][0].data).length !== 0
+                    ? false
+                    : true
                   : true
                 : true
               : true,
             results[2]
               ? results[2][0]
-                ? Object.keys(results[2][0].data).length !== 0
-                  ? false
+                ? results[2][0].data
+                  ? Object.keys(results[2][0].data).length !== 0
+                    ? false
+                    : true
                   : true
                 : true
               : true,
@@ -608,6 +682,19 @@ export default class Home extends Component {
         },
         typeof next === "string" ? null : next
       );
+    } else if (type === "GETReturn") {
+      // Get Data IndexedDB
+      const Store = [
+        db.transaction("serieFirebase").objectStore("serieFirebase"),
+        db.transaction("filmFireBase").objectStore("filmFireBase"),
+        db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
+      ];
+
+      const results = await Promise.all(
+        Store.map(async (req) => await req.getAll())
+      );
+
+      return results;
     } else if (type === "POST") {
       const WayStr = path.split("/")[1];
       const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
@@ -1619,6 +1706,7 @@ export default class Home extends Component {
     if (window.Notification && ParamsOptn !== null) {
       if (
         Notification.permission === "granted" &&
+        typeof ParamsOptn === "object" &&
         ParamsOptn.NotifState !== false &&
         ParamsOptn.NotifState !== null &&
         ParamsOptn.NotifState !== undefined
@@ -2380,6 +2468,8 @@ export default class Home extends Component {
     }
 
     if (
+      typeof serieFirebase === "object" &&
+      typeof filmFireBase === "object" &&
       (Object.keys(filmFireBase).length !== 0 ||
         Object.keys(serieFirebase).length !== 0) &&
       SwitchMyAnim &&
@@ -2393,12 +2483,11 @@ export default class Home extends Component {
 
       this.setState({
         RefreshRandomizeAnime: false,
-        MyAnimListSaved:
-          ParamsOptn === null
-            ? this.shuffleArray(MyAnimListTemplate)
-            : ParamsOptn.MyAnimRandom === false
-            ? MyAnimListTemplate
-            : this.shuffleArray(MyAnimListTemplate),
+        MyAnimListSaved: !ParamsOptn
+          ? this.shuffleArray(MyAnimListTemplate)
+          : !ParamsOptn.MyAnimRandom
+          ? MyAnimListTemplate
+          : this.shuffleArray(MyAnimListTemplate),
       });
     } else if (
       !SwitchMyAnim &&
@@ -2420,6 +2509,9 @@ export default class Home extends Component {
             : this.shuffleArray(MyNextAnimListTemplate),
       });
     } else if (
+      typeof filmFireBase === "object" &&
+      typeof serieFirebase === "object" &&
+      typeof NextAnimFireBase === "object" &&
       Object.keys(filmFireBase).length === 0 &&
       Object.keys(serieFirebase).length === 0 &&
       Object.keys(NextAnimFireBase).length === 0 &&

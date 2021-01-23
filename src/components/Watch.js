@@ -1488,7 +1488,23 @@ class Watch extends Component {
                 }`}
               >
                 {type === "serie" ? (
-                  "Anime:"
+                  AnimToWatch.AnimeSeason && AnimToWatch.NewEpMode ? (
+                    <Fragment>
+                      <span
+                        className="fas fa-undo-alt"
+                        title='Annulé le mode "NEW"'
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          this.updateValue(`${Pseudo}/serie/${id}`, {
+                            NewEpMode: null,
+                          })
+                        }
+                      ></span>{" "}
+                      Anime :
+                    </Fragment>
+                  ) : (
+                    "Anime:"
+                  )
                 ) : AnimToWatch.finished ? (
                   <Fragment>
                     <span
