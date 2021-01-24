@@ -123,7 +123,10 @@ class Settings extends Component {
     if (this.state.OfflineMode === false) {
       base
         .remove(path)
-        .then(after)
+        .then(() => {
+          after();
+          this.refreshParamsOptn();
+        })
         .catch((err) => console.error(err));
     }
   };
@@ -511,10 +514,31 @@ class Settings extends Component {
             <Link to="/notifuser/6">
               <Button
                 variant="danger"
-                onClick={() => {
+                onClick={async () => {
                   this.cancelState();
                   if (OfflineMode) return;
                   this.deleteValue(`/${Pseudo}`);
+                  // IndexedDB
+                  const db = await openDB("AckDb", 1);
+                  const Store = [
+                    db
+                      .transaction("serieFirebase", "readwrite")
+                      .objectStore("serieFirebase"),
+                    db
+                      .transaction("filmFireBase", "readwrite")
+                      .objectStore("filmFireBase"),
+                    db
+                      .transaction("NextAnimFireBase", "readwrite")
+                      .objectStore("NextAnimFireBase"),
+                    db
+                      .transaction("ParamsOptn", "readwrite")
+                      .objectStore("ParamsOptn"),
+                    db
+                      .transaction("NotifFirebase", "readwrite")
+                      .objectStore("NotifFirebase"),
+                  ];
+
+                  Store.forEach((req) => req.delete(req.name));
                 }}
               >
                 Supprimer ce compte
@@ -543,17 +567,42 @@ class Settings extends Component {
             </Button>
             <Button
               variant="danger"
-              onClick={() => {
+              onClick={async () => {
                 this.cancelState();
                 if (OfflineMode) return;
 
-                this.deleteValue(`${Pseudo}/`, () =>
-                  this.setState({
-                    ResText: "Toutes vos données ont bien été réinitialisées",
-                    typeAlert: "success",
-                  })
-                );
-                this.refreshParamsOptn();
+                // FireBase
+                this.deleteValue(`${Pseudo}/serie`);
+                this.deleteValue(`${Pseudo}/film`);
+                this.deleteValue(`${Pseudo}/NextAnim`);
+                this.deleteValue(`${Pseudo}/Notif`);
+                this.deleteValue(`${Pseudo}/ParamsOptn`);
+
+                // IndexedDB
+                const db = await openDB("AckDb", 1);
+                const Store = [
+                  db
+                    .transaction("serieFirebase", "readwrite")
+                    .objectStore("serieFirebase"),
+                  db
+                    .transaction("filmFireBase", "readwrite")
+                    .objectStore("filmFireBase"),
+                  db
+                    .transaction("NextAnimFireBase", "readwrite")
+                    .objectStore("NextAnimFireBase"),
+                  db
+                    .transaction("ParamsOptn", "readwrite")
+                    .objectStore("ParamsOptn"),
+                  db
+                    .transaction("NotifFirebase", "readwrite")
+                    .objectStore("NotifFirebase"),
+                ];
+
+                Store.forEach((req) => req.delete(req.name));
+                this.setState({
+                  ResText: "Toutes vos données ont bien été réinitialisées",
+                  typeAlert: "success",
+                });
               }}
             >
               Supprimer les données

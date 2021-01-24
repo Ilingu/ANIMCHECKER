@@ -518,11 +518,7 @@ export default class Home extends Component {
       // Check If Data Lost
       const AllDataIndexedDb = await this.fnDbOffline("GETReturn");
       let IsLostData = false;
-      console.log(
-        AllDataIndexedDb[1][0]?.data,
-        AllDataIndexedDb[2][0]?.data,
-        AllDataIndexedDb
-      );
+
       if (
         (typeof GlobalInfoUser.serie !== "object" ||
           Object.keys(GlobalInfoUser.serie).length === 0) &&
