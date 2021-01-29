@@ -191,7 +191,6 @@ class Watch extends Component {
           : db.transaction("filmFireBase").objectStore("filmFireBase"),
         db.transaction("ParamsOptn").objectStore("ParamsOptn"),
       ];
-
       const results = await Promise.all(
         Store.map(async (req) => await req.getAll())
       );
@@ -587,6 +586,17 @@ class Watch extends Component {
         },
         true
       );
+
+      if (!this.state.OfflineMode) {
+        this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, { NewEpMode: null });
+        this.fnDbOffline(
+          "PUT",
+          `${Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
+            EpFinishedID - 2
+          }`,
+          { finished: true }
+        );
+      }
     } else {
       this.setState({
         SecondMessage: AlreadyClicked ? true : false,
@@ -714,6 +724,7 @@ class Watch extends Component {
       this.updateValue(`${Pseudo}/serie/${id}`, {
         AnimEP: null,
         Badge: null,
+        Lier: null,
         AnimeSeason: null,
         Paused: PauseWithAlleged ? true : null,
         Drop: DropWithAlleged ? true : null,

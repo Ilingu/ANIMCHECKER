@@ -1382,8 +1382,10 @@ export default class Home extends Component {
         AnimEP: AnimSEP,
         finishedAnim: false,
         AnimeSeason: !SeasonAnimCheck ? null : true,
+        Lier: null,
         Drop: null,
         Paused: null,
+        Rate: null,
       });
       this.setState({ RedirectPage: `/Watch/${Pseudo}/${IdToAddEp}` });
     }
@@ -1965,8 +1967,13 @@ export default class Home extends Component {
       },
       0
     );
+    let AllegedTotalFinished = 0;
     const AllegedTotal = Object.values(CopyState.serieFirebase).reduce(
       (acc, currentVal) => {
+        if (!currentVal.AnimEP && currentVal.finishedAnim) {
+          AllegedTotalFinished++;
+        }
+
         const add = currentVal.AnimEP ? 0 : 1;
         return acc + add;
       },
@@ -2003,7 +2010,8 @@ export default class Home extends Component {
       Finished: FinishedTotalSerie + FinishedTotalFilm,
       alleged: [
         AllegedTotal,
-        parseInt((AllegedTotal / FinishedTotalSerie) * 100),
+        AllegedTotalFinished,
+        parseInt((AllegedTotalFinished / FinishedTotalSerie) * 100),
       ],
     };
   };
@@ -2321,6 +2329,7 @@ export default class Home extends Component {
           this.updateValue(`${Pseudo}/${key.split("-")[0]}/${key}`, {
             Paused: null,
             Drop: null,
+            Rate: null,
           });
 
           this.setState({ RedirectPage: `/Watch/${Pseudo}/${key}` });
@@ -2887,16 +2896,17 @@ export default class Home extends Component {
                   </li>
                   <li>
                     <span className="palma">Nombres Anime Allégé:</span>{" "}
-                    {palmares.alleged[0]} ={">"}{" "}
-                    {palmares.alleged[1] <= 25
-                      ? `Il y a que ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, c'est pas sympa pour la planète (en allegant tu libère de la place sur le serveur faisant consommer moins d'énergie: 1 serie sur le serveur pendant 1H = 1 amploue allumée 24H) vise les 50%!`
-                      : palmares.alleged[1] <= 50 && palmares.alleged[1] > 25
-                      ? `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, ils faut encore plus les allégé pour économisé plus de place sur le serveur ce qui le fera moins consommer d'énergie (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
-                      : palmares.alleged[1] <= 75 && palmares.alleged[1] > 50
-                      ? `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, c'est bien malgré que tu pourrais encore plus en allégé (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
-                      : palmares.alleged[1] < 100 && palmares.alleged[1] > 75
-                      ? `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, c'est très bien malgré que tu pourrais encore plus en allégé (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
-                      : `Il y a ${palmares.alleged[1]}% de tous tes animes fini qui sont allégé, Merci enormémant pour les avoir tous allégé continue comme ça ! (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`}
+                    {palmares.alleged[0]} dont {palmares.alleged[1]} qui sont
+                    finis ={">"}{" "}
+                    {palmares.alleged[2] <= 25
+                      ? `Il y a que ${palmares.alleged[2]}% de tes animes qui sont fini et allégé, c'est pas sympa pour la planète (en allegant tu libère de la place sur le serveur faisant consommer moins d'énergie: 1 serie sur le serveur pendant 1H = 1 amploue allumée 24H) vise les 50%!`
+                      : palmares.alleged[2] <= 50 && palmares.alleged[2] > 25
+                      ? `Il y a ${palmares.alleged[2]}% de tes animes qui sont fini et allégé, ils faut encore plus les allégé pour économisé plus de place sur le serveur ce qui le fera moins consommer d'énergie (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
+                      : palmares.alleged[2] <= 75 && palmares.alleged[2] > 50
+                      ? `Il y a ${palmares.alleged[2]}% de tes animes qui sont fini et allégé, c'est bien malgré que tu pourrais encore plus en allégé (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
+                      : palmares.alleged[2] < 100 && palmares.alleged[2] > 75
+                      ? `Il y a ${palmares.alleged[2]}% de tes animes qui sont fini et allégé, c'est très bien malgré que tu pourrais encore plus en allégé (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`
+                      : `Il y a ${palmares.alleged[2]}% de tes animes qui sont fini et allégé, Merci enormémant pour les avoir tous allégé continue comme ça ! (1 serie sur le serveur pendant 1H = 1 amploue allumée 24H)`}
                   </li>
                   <li>
                     <span className="palma">
