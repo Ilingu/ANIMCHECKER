@@ -98,15 +98,6 @@ const MyAnim = ({
                           En Cours
                         </Dropdown.Item>
                         <Dropdown.Item
-                          active={ModeFilter === "seasonAnim" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "seasonAnim") return;
-                            NewFilter("seasonAnim");
-                          }}
-                        >
-                          Anime de saison
-                        </Dropdown.Item>
-                        <Dropdown.Item
                           active={ModeFilter === "Finished" ? true : false}
                           onClick={() => {
                             if (ModeFilter === "Finished") return;
@@ -114,6 +105,15 @@ const MyAnim = ({
                           }}
                         >
                           Finis
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          active={ModeFilter === "seasonAnim" ? true : false}
+                          onClick={() => {
+                            if (ModeFilter === "seasonAnim") return;
+                            NewFilter("seasonAnim");
+                          }}
+                        >
+                          Anime de saison
                         </Dropdown.Item>
                         <Dropdown.Item
                           active={ModeFilter === "Paused" ? true : false}
@@ -132,6 +132,15 @@ const MyAnim = ({
                           }}
                         >
                           Drop
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          active={ModeFilter === "WaitAnim" ? true : false}
+                          onClick={() => {
+                            if (ModeFilter === "WaitAnim") return;
+                            NewFilter("WaitAnim");
+                          }}
+                        >
+                          Anime en attente
                         </Dropdown.Item>
                         <Dropdown.Divider />
                         <Dropdown.Item

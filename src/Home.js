@@ -1822,6 +1822,26 @@ export default class Home extends Component {
     }
   };
 
+  compareValues = (key, order = "asc") => {
+    return function innerSort(a, b) {
+      if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+        // property doesn't exist on either object
+        return 0;
+      }
+
+      const varA = typeof a[key] === "string" ? a[key].toUpperCase() : a[key];
+      const varB = typeof b[key] === "string" ? b[key].toUpperCase() : b[key];
+
+      let comparison = 0;
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
+      return order === "desc" ? comparison * -1 : comparison;
+    };
+  };
+
   newNextAnim = (event) => {
     event.preventDefault();
 
@@ -2481,18 +2501,48 @@ export default class Home extends Component {
       !LoadingMode[0] &&
       RefreshRandomizeAnime
     ) {
-      const MyAnimListTemplate = Object.keys({
-        ...serieFirebase,
-        ...filmFireBase,
-      }).map((key) => TemplateGAnime(key));
+      let AnimeKeySort = [];
+      if (ModeFilter === "Rate") {
+        // Sort Anime Rate
+        let AnimeArrRateSort = [];
+
+        const AnimeWithRate = Object.fromEntries(
+          Object.entries({
+            ...serieFirebase,
+            ...filmFireBase,
+          }).filter(([key, value]) => value.Rate !== undefined)
+        );
+        Object.keys(AnimeWithRate).forEach((AnimeKey) => {
+          AnimeArrRateSort = [
+            ...AnimeArrRateSort,
+            { ...AnimeWithRate[AnimeKey], key: AnimeKey },
+          ];
+        });
+        AnimeArrRateSort.sort(this.compareValues("Rate", "desc"));
+        AnimeArrRateSort.forEach((ObjAnime) => {
+          AnimeKeySort = [...AnimeKeySort, ObjAnime.key];
+        });
+      }
+
+      // Render Components
+      const MyAnimListTemplate = (ModeFilter === "Rate"
+        ? AnimeKeySort
+        : Object.keys({
+            ...serieFirebase,
+            ...filmFireBase,
+          })
+      ).map((key) => TemplateGAnime(key));
 
       this.setState({
         RefreshRandomizeAnime: false,
-        MyAnimListSaved: !ParamsOptn
-          ? this.shuffleArray(MyAnimListTemplate)
-          : !ParamsOptn.MyAnimRandom
-          ? MyAnimListTemplate
-          : this.shuffleArray(MyAnimListTemplate),
+        MyAnimListSaved:
+          ModeFilter === "Rate"
+            ? MyAnimListTemplate
+            : !ParamsOptn
+            ? this.shuffleArray(MyAnimListTemplate)
+            : !ParamsOptn.MyAnimRandom
+            ? MyAnimListTemplate
+            : this.shuffleArray(MyAnimListTemplate),
       });
     } else if (
       !SwitchMyAnim &&

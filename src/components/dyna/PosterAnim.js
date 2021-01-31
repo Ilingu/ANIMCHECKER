@@ -233,8 +233,12 @@ const PosterAnim = ({
     return isFav ? templatePoster : null;
   } else if (ModeFilter === "seasonAnim") {
     return AnimeSeason ? templatePoster : null;
-  } else {
+  } else if (ModeFilter === "Drop") {
     return Drop ? templatePoster : null;
+  } else if (ModeFilter === "WaitAnim") {
+    return templatePoster;
+  } else {
+    return templatePoster;
   }
 };
 
