@@ -603,7 +603,7 @@ export default class Home extends Component {
     }
   };
 
-  fnDbOffline = async (type, path, value, next = null) => {
+  fnDbOffline = async (type, path, value, next = null, next2 = null) => {
     const db = await openDB("AckDb", 1);
     if (type === "GET") {
       // Get Data IndexedDB
@@ -676,7 +676,10 @@ export default class Home extends Component {
           ModeFilter: typeof next === "string" ? next : "NotFinished",
           FirstQuerie: true,
         },
-        typeof next === "string" ? null : next
+        () => {
+          if (typeof next === "string" && next !== null) next();
+          if (next2 !== null) next2();
+        }
       );
     } else if (type === "GETReturn") {
       // Get Data IndexedDB
@@ -750,7 +753,7 @@ export default class Home extends Component {
         id: Store[WayIndex].name,
         data: CopyData,
       })
-        .then(() => this.fnDbOffline("GET", null, null, next))
+        .then(() => this.fnDbOffline("GET", null, null, next, next2))
         .catch(console.error);
     } else if (type === "DELETE") {
       const WayStr = path.split("/")[1];
@@ -833,10 +836,16 @@ export default class Home extends Component {
     }, 2500);
   };
 
-  updateValue = (path, value, HomePage = null) => {
+  updateValue = (path, value, HomePage = null, Next = null) => {
     const { OfflineMode } = this.state;
     if (OfflineMode === true) {
-      this.fnDbOffline("PUT", path, value, HomePage !== null ? HomePage : null);
+      this.fnDbOffline(
+        "PUT",
+        path,
+        value,
+        HomePage !== null ? HomePage : null,
+        Next !== null ? Next : null
+      );
       return;
     }
 
@@ -844,11 +853,13 @@ export default class Home extends Component {
       .update(path, {
         data: value,
       })
-      .then(
+      .then(() => {
         HomePage !== null
-          ? () => this.refreshValueFirebase(null, HomePage)
-          : this.refreshValueFirebase
-      )
+          ? this.refreshValueFirebase(null, HomePage)
+          : this.refreshValueFirebase();
+
+        if (Next !== null) Next();
+      })
       .catch((err) => {
         this.OfflineMode();
         console.error(err);
@@ -2346,13 +2357,23 @@ export default class Home extends Component {
           );
         }}
         UnPaused={() => {
-          this.updateValue(`${Pseudo}/${key.split("-")[0]}/${key}`, {
-            Paused: null,
-            Drop: null,
-            Rate: null,
-          });
-
-          this.setState({ RedirectPage: `/Watch/${Pseudo}/${key}` });
+          if (!OfflineMode) {
+            this.fnDbOffline("PUT", `${Pseudo}/${key.split("-")[0]}/${key}`, {
+              Paused: null,
+              Drop: null,
+              Rate: null,
+            });
+          }
+          this.updateValue(
+            `${Pseudo}/${key.split("-")[0]}/${key}`,
+            {
+              Paused: null,
+              Drop: null,
+              Rate: null,
+            },
+            null,
+            () => this.setState({ RedirectPage: `/Watch/${Pseudo}/${key}` })
+          );
         }}
         AnimeSeason={
           key.split("-")[0] === "serie"
