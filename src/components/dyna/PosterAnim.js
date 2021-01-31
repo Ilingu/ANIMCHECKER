@@ -57,6 +57,7 @@ const PosterAnim = ({
   AnimeSeason,
   ModeFilter,
   isAlleged,
+  InWait,
   Skeleton,
   ReTakeImgFromName,
 }) => {
@@ -68,6 +69,8 @@ const PosterAnim = ({
       className={
         Skeleton
           ? "MyAnimPoster Skeleton"
+          : InWait
+          ? "MyAnimPoster InWait"
           : AnimeSeason && !isFinished
           ? `MyAnimPoster Season ${WhitchSeason()}${NewEpMode ? " NewEP" : ""}`
           : Paused
@@ -88,7 +91,7 @@ const PosterAnim = ({
         <div className="MiniPoster"></div>
       ) : (
         <Fragment>
-          {isFinished || Paused || Drop ? <h4>{title}</h4> : null}
+          {isFinished || Paused || Drop || InWait ? <h4>{title}</h4> : null}
           {Drop ? null : (
             <div
               id="FavBtns"
@@ -97,12 +100,12 @@ const PosterAnim = ({
             >
               <span
                 className={`FvBtn fas fa-heart ${Fav ? "show" : "hide"}${
-                  isFinished || Paused || Drop ? " bottom" : ""
+                  isFinished || Paused || Drop || InWait ? " bottom" : ""
                 }`}
               ></span>
               <span
                 className={`FvBtn far fa-heart ${!Fav ? "show" : "hide"}${
-                  isFinished || Paused || Drop ? " bottom" : ""
+                  isFinished || Paused || Drop || InWait ? " bottom" : ""
                 }`}
               ></span>
             </div>
@@ -134,7 +137,9 @@ const PosterAnim = ({
             />
           </div>
           <div className="action">
-            {(Paused && !isAlleged) || (Drop && !isAlleged) ? (
+            {(Paused && !isAlleged) ||
+            (Drop && !isAlleged) ||
+            (InWait && !isAlleged) ? (
               <div
                 className="watch paused"
                 onClick={UnPaused}
@@ -165,11 +170,15 @@ const PosterAnim = ({
               <span className="fas fa-trash-alt"></span>
             </div>
           </div>
-          {Paused || Drop ? (
+          {Paused || Drop || InWait ? (
             <h5>
               {Drop ? (
                 <Fragment>
                   <span className="fas fa-stop"></span> Arrêté
+                </Fragment>
+              ) : InWait ? (
+                <Fragment>
+                  <span className="fas fa-hourglass-half"></span> En Attente
                 </Fragment>
               ) : (
                 <Fragment>
@@ -222,7 +231,15 @@ const PosterAnim = ({
   } else if (ModeFilter === "All") {
     return templatePoster;
   } else if (ModeFilter === "NotFinished") {
-    return isFinished ? null : Paused ? null : Drop ? null : templatePoster;
+    return isFinished
+      ? null
+      : Paused
+      ? null
+      : Drop
+      ? null
+      : InWait
+      ? null
+      : templatePoster;
   } else if (ModeFilter === "Finished") {
     return isFinished ? templatePoster : null;
   } else if (ModeFilter === "Paused") {
@@ -236,7 +253,7 @@ const PosterAnim = ({
   } else if (ModeFilter === "Drop") {
     return Drop ? templatePoster : null;
   } else if (ModeFilter === "WaitAnim") {
-    return templatePoster;
+    return InWait ? templatePoster : null;
   } else {
     return templatePoster;
   }

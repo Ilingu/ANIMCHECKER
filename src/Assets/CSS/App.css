@@ -1024,6 +1024,7 @@ a:hover {
 
 #MyAnime .content .MyAnimPoster.Paused,
 #MyAnime .content .MyAnimPoster.Drop,
+#MyAnime .content .MyAnimPoster.InWait,
 #MyAnime .content .MyAnimPoster.finished {
   -webkit-transform: scale(0.95);
           transform: scale(0.95);
@@ -1031,6 +1032,7 @@ a:hover {
 
 #MyAnime .content .MyAnimPoster.Paused h4,
 #MyAnime .content .MyAnimPoster.Drop h4,
+#MyAnime .content .MyAnimPoster.InWait h4,
 #MyAnime .content .MyAnimPoster.finished h4 {
   position: absolute;
   opacity: 0;
@@ -1055,6 +1057,7 @@ a:hover {
 
 #MyAnime .content .MyAnimPoster.finished:hover h4,
 #MyAnime .content .MyAnimPoster.Drop:hover h4,
+#MyAnime .content .MyAnimPoster.InWait:hover h4,
 #MyAnime .content .MyAnimPoster.Paused:hover h4 {
   opacity: 1;
 }
@@ -1065,7 +1068,8 @@ a:hover {
 }
 
 #MyAnime .content .MyAnimPoster.Paused,
-#MyAnime .content .MyAnimPoster.Drop {
+#MyAnime .content .MyAnimPoster.Drop,
+#MyAnime .content .MyAnimPoster.InWait {
   position: relative;
   color: rgba(23, 163, 184, 0.746);
   border-radius: 7px;
@@ -1073,24 +1077,28 @@ a:hover {
 }
 
 #MyAnime .content .MyAnimPoster.Paused .FvBtn,
-#MyAnime .content .MyAnimPoster.Drop .FvBtn {
+#MyAnime .content .MyAnimPoster.Drop .FvBtn,
+#MyAnime .content .MyAnimPoster.InWait .FvBtn {
   background-color: rgba(0, 0, 0, 0.274);
   color: #21e0fd;
 }
 
 #MyAnime .content .MyAnimPoster.Paused h4,
-#MyAnime .content .MyAnimPoster.Drop h4 {
+#MyAnime .content .MyAnimPoster.Drop h4,
+#MyAnime .content .MyAnimPoster.InWait h4 {
   color: #21e0fd;
 }
 
 #MyAnime .content .MyAnimPoster.Paused h5,
-#MyAnime .content .MyAnimPoster.Drop h5 {
+#MyAnime .content .MyAnimPoster.Drop h5,
+#MyAnime .content .MyAnimPoster.InWait h5 {
   text-align: center;
   margin-top: 12px;
 }
 
 #MyAnime .content .MyAnimPoster.Paused .ImgInterract,
-#MyAnime .content .MyAnimPoster.Drop .ImgInterract {
+#MyAnime .content .MyAnimPoster.Drop .ImgInterract,
+#MyAnime .content .MyAnimPoster.InWait .ImgInterract {
   opacity: 0.3;
   -webkit-filter: grayscale(0.3) blur(0.8px);
           filter: grayscale(0.3) blur(0.8px);
@@ -1109,15 +1117,31 @@ a:hover {
   color: #fb401f;
 }
 
+#MyAnime .content .MyAnimPoster.InWait {
+  color: #6c757d;
+  background-color: rgba(108, 117, 125, 0.2);
+}
+
+#MyAnime .content .MyAnimPoster.InWait .FvBtn {
+  color: #161616;
+}
+
+#MyAnime .content .MyAnimPoster.InWait h4 {
+  color: #161616 !important;
+  font-weight: bold;
+}
+
 #MyAnime .content .MyAnimPoster.Paused:hover,
-#MyAnime .content .MyAnimPoster.Drop:hover {
+#MyAnime .content .MyAnimPoster.Drop:hover,
+#MyAnime .content .MyAnimPoster.InWait:hover {
   -webkit-transform: scale(1.05);
           transform: scale(1.05);
   background-color: #525252;
 }
 
 #MyAnime .content .MyAnimPoster.Paused:hover .ImgInterract,
-#MyAnime .content .MyAnimPoster.Drop:hover .ImgInterract {
+#MyAnime .content .MyAnimPoster.Drop:hover .ImgInterract,
+#MyAnime .content .MyAnimPoster.InWait:hover .ImgInterract {
   opacity: 0.4;
   -webkit-filter: grayscale(0.4) blur(0px);
           filter: grayscale(0.4) blur(0px);
@@ -1125,6 +1149,10 @@ a:hover {
 
 #MyAnime .content .MyAnimPoster.Drop:hover {
   background-color: rgba(251, 64, 31, 0.2);
+}
+
+#MyAnime .content .MyAnimPoster.InWait:hover {
+  background-color: rgba(108, 117, 125, 0.4);
 }
 
 #MyAnime .content.none {

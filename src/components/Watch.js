@@ -923,6 +923,7 @@ class Watch extends Component {
       return <Redirect to="/notifuser/2" />;
     if (AnimToWatch.Paused) return <Redirect to="/notifuser/1" />;
     if (AnimToWatch.Drop) return <Redirect to="/notifuser/7" />;
+    if (AnimToWatch.InWait) return <Redirect to="/notifuser/8" />;
     if (RedirectHome) return <Redirect to="/notifuser/5" />;
 
     if (LoadingMode) {
@@ -1304,41 +1305,7 @@ class Watch extends Component {
                           : "Anime de saison"}
                       </Button>
                     </Dropdown.Item>
-                    {!AnimToWatch.finishedAnim ? (
-                      <Dropdown.Item>
-                        <Button
-                          variant="primary"
-                          block
-                          onClick={() => {
-                            this.updateValue(
-                              `${this.state.Pseudo}/${type}/${id}`,
-                              {
-                                Drop: true,
-                                Paused: null,
-                              }
-                            );
-                            this.setState({ uid: null, RedirectHome: true });
-                          }}
-                        >
-                          <span className="fas fa-stop"></span> Drop{" "}
-                          {AnimToWatch.name}
-                        </Button>
-                      </Dropdown.Item>
-                    ) : null}
-                    <Dropdown.Item>
-                      <Button
-                        variant="warning"
-                        block
-                        onClick={() =>
-                          this.setState({
-                            ShowModalVerification: [true, "alleger"],
-                          })
-                        }
-                      >
-                        <span className="fas fa-window-close"></span> Alléger{" "}
-                        {AnimToWatch.name}
-                      </Button>
-                    </Dropdown.Item>
+                    <Dropdown.Divider />
                     <Dropdown className="FakeDropDownItem">
                       <Dropdown.Toggle
                         variant="outline-primary"
@@ -1384,13 +1351,55 @@ class Watch extends Component {
                       </Dropdown.Menu>
                     </Dropdown>
                   </Fragment>
-                ) : !AnimToWatch.finished ? (
+                ) : null}
+                {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
+                  <Fragment>
+                    <Dropdown.Divider />
+                    <Dropdown.Item>
+                      <Button
+                        style={{
+                          backgroundColor: "gold",
+                          color: "#212121",
+                          border: "none",
+                        }}
+                        block
+                        onClick={() =>
+                          this.setState({
+                            ShowModalRateAnime: true,
+                          })
+                        }
+                      >
+                        <span className="fas fa-star"></span> Changer la note
+                      </Button>
+                    </Dropdown.Item>
+                  </Fragment>
+                ) : null}
+                <Dropdown.Divider />
+                {type === "serie" ? (
+                  <Dropdown.Item>
+                    <Button
+                      variant="secondary"
+                      block
+                      onClick={() => {
+                        this.updateValue(`${Pseudo}/serie/${id}`, {
+                          InWait: true,
+                        });
+                        this.setState({ uid: null, RedirectHome: true });
+                      }}
+                    >
+                      <span className="fas fa-hourglass-half"></span> Mettre en
+                      attente {AnimToWatch.name}
+                    </Button>
+                  </Dropdown.Item>
+                ) : null}
+                {AnimToWatch.finished === false ||
+                !AnimToWatch.finishedAnim === false ? (
                   <Dropdown.Item>
                     <Button
                       variant="primary"
                       block
                       onClick={() => {
-                        this.updateValue(`${this.state.Pseudo}/film/${id}`, {
+                        this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                           Drop: true,
                           Paused: null,
                         });
@@ -1399,25 +1408,6 @@ class Watch extends Component {
                     >
                       <span className="fas fa-stop"></span> Drop{" "}
                       {AnimToWatch.name}
-                    </Button>
-                  </Dropdown.Item>
-                ) : null}
-                {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
-                  <Dropdown.Item>
-                    <Button
-                      style={{
-                        backgroundColor: "gold",
-                        color: "#212121",
-                        border: "none",
-                      }}
-                      block
-                      onClick={() =>
-                        this.setState({
-                          ShowModalRateAnime: true,
-                        })
-                      }
-                    >
-                      <span className="fas fa-star"></span> Changer la note
                     </Button>
                   </Dropdown.Item>
                 ) : null}
@@ -1438,6 +1428,22 @@ class Watch extends Component {
                   </Button>
                 </Dropdown.Item>
                 <Dropdown.Divider />
+                {type === "serie" ? (
+                  <Dropdown.Item>
+                    <Button
+                      variant="warning"
+                      block
+                      onClick={() =>
+                        this.setState({
+                          ShowModalVerification: [true, "alleger"],
+                        })
+                      }
+                    >
+                      <span className="fas fa-window-close"></span> Alléger{" "}
+                      {AnimToWatch.name}
+                    </Button>
+                  </Dropdown.Item>
+                ) : null}
                 <Dropdown.Item>
                   <Button
                     variant="danger"

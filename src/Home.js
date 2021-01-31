@@ -90,6 +90,7 @@ export default class Home extends Component {
     Rate: 7.5,
     imageUrl: null,
     SeasonAnimCheck: false,
+    WaitAnimCheck: false,
     ModeCombinaisonSearch: "ET",
     day: new Date().getDay().toString(),
     time:
@@ -258,6 +259,11 @@ export default class Home extends Component {
         case "7":
           ResText =
             "Impossible d'accéder à cette page car vous avez drop (laisser tombé) cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+          typeAlert = "danger";
+          break;
+        case "8":
+          ResText =
+            "Impossible d'accéder à cette page car vous avez mis en attente cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
           typeAlert = "danger";
           break;
         default:
@@ -1372,7 +1378,13 @@ export default class Home extends Component {
   };
 
   AddEPToAlleged = () => {
-    const { Pseudo, nbEP, IdToAddEp, SeasonAnimCheck } = this.state;
+    const {
+      Pseudo,
+      nbEP,
+      IdToAddEp,
+      SeasonAnimCheck,
+      WaitAnimCheck,
+    } = this.state;
 
     if (typeof nbEP === "string" && nbEP.trim().length !== 0 && nbEP !== "") {
       const AnimSEP = nbEP.split(",").map((nbEpS, i) => {
@@ -1393,6 +1405,7 @@ export default class Home extends Component {
         AnimEP: AnimSEP,
         finishedAnim: false,
         AnimeSeason: !SeasonAnimCheck ? null : true,
+        InWait: !WaitAnimCheck ? null : true,
         Lier: null,
         Drop: null,
         Paused: null,
@@ -1482,6 +1495,7 @@ export default class Home extends Component {
       title,
       nbEP,
       SeasonAnimCheck,
+      WaitAnimCheck,
       AddNotifWithAnim,
       type,
       durer,
@@ -1570,6 +1584,7 @@ export default class Home extends Component {
                 finishedAnim: false,
                 AnimEP: AnimSEP,
                 AnimeSeason: !SeasonAnimCheck ? null : true,
+                InWait: !WaitAnimCheck ? null : true,
               },
             });
             // reset
@@ -1686,6 +1701,7 @@ export default class Home extends Component {
           TagSearchAnime: "",
           DeletePathVerif: null,
           SeasonAnimCheck: false,
+          WaitAnimCheck: false,
           title: "",
           type: "serie",
           durer: 110,
@@ -2126,6 +2142,7 @@ export default class Home extends Component {
       ShowModalAddNotifLier: false,
       AddNotifWithAnim: false,
       SeasonAnimCheck: false,
+      WaitAnimCheck: false,
       PalmaresModal: false,
       ShowModalVerification: false,
       palmares: null,
@@ -2214,6 +2231,7 @@ export default class Home extends Component {
       InfoAnimeToChangeNote,
       nbEP,
       SearchInAnimeList,
+      WaitAnimCheck,
       ShowModalChangeNote,
       RefreshRandomizeAnime,
       RefreshRandomizeAnime2,
@@ -2360,6 +2378,7 @@ export default class Home extends Component {
           if (!OfflineMode) {
             this.fnDbOffline("PUT", `${Pseudo}/${key.split("-")[0]}/${key}`, {
               Paused: null,
+              InWait: null,
               Drop: null,
               Rate: null,
             });
@@ -2368,6 +2387,7 @@ export default class Home extends Component {
             `${Pseudo}/${key.split("-")[0]}/${key}`,
             {
               Paused: null,
+              InWait: null,
               Drop: null,
               Rate: null,
             },
@@ -2379,6 +2399,13 @@ export default class Home extends Component {
           key.split("-")[0] === "serie"
             ? serieFirebase[key].AnimeSeason
               ? serieFirebase[key].AnimeSeason
+              : false
+            : false
+        }
+        InWait={
+          key.split("-")[0] === "serie"
+            ? serieFirebase[key].InWait
+              ? serieFirebase[key].InWait
               : false
             : false
         }
@@ -3332,6 +3359,18 @@ export default class Home extends Component {
                     }`}
                     onChange={(event) =>
                       this.setState({ SeasonAnimCheck: event.target.checked })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId="WaitAnim">
+                  <Form.Check
+                    type="checkbox"
+                    checked={WaitAnimCheck}
+                    label={`Anime en attente de visionnage: ${
+                      WaitAnimCheck === true ? "Oui" : "Non"
+                    }`}
+                    onChange={(event) =>
+                      this.setState({ WaitAnimCheck: event.target.checked })
                     }
                   />
                 </Form.Group>
