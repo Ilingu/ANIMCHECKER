@@ -1035,6 +1035,7 @@ a:hover {
 #MyAnime .content .MyAnimPoster.InWait h4,
 #MyAnime .content .MyAnimPoster.finished h4 {
   position: absolute;
+  z-index: 10;
   opacity: 0;
   -webkit-transition: 0.5s;
   transition: 0.5s;
@@ -1114,7 +1115,7 @@ a:hover {
 }
 
 #MyAnime .content .MyAnimPoster.Drop h4 {
-  color: #fb401f;
+  color: #ff2600;
 }
 
 #MyAnime .content .MyAnimPoster.InWait {
@@ -1127,7 +1128,7 @@ a:hover {
 }
 
 #MyAnime .content .MyAnimPoster.InWait h4 {
-  color: #161616 !important;
+  color: #fff !important;
   font-weight: bold;
 }
 
