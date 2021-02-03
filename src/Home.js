@@ -78,6 +78,7 @@ export default class Home extends Component {
     ModeFindAnime: [false, null],
     LoadingMode: [true, true],
     palmares: null,
+    ToReSearchAfterRefresh: false,
     MicOn: false,
     DeleteTemplateAnim: null,
     addEPToAlleged: false,
@@ -149,25 +150,12 @@ export default class Home extends Component {
         .then((reg) => {
           reg.showNotification(
             message.data["firebase-messaging-msg-data"] === undefined
-              ? message.data.notification.title.split(" ")[0] === "Sortie"
-                ? message.data.notification.title
-                : `Sortie Anime: ${message.data.notification.title} !`
-              : message.data[
-                  "firebase-messaging-msg-data"
-                ].notification.title.split(" ")[0] === "Sortie"
-              ? message.data["firebase-messaging-msg-data"].notification.title
+              ? `Sortie Anime: ${message.data.notification.title} !`
               : `Sortie Anime: ${message.data["firebase-messaging-msg-data"].notification.title} !`,
             {
               body:
                 message.data["firebase-messaging-msg-data"] === undefined
-                  ? message.data.notification.body.split(" ")[0] === "Nouvel"
-                    ? message.data.notification.body
-                    : `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`
-                  : message.data[
-                      "firebase-messaging-msg-data"
-                    ].notification.body.split(" ")[0] === "Nouvel"
-                  ? message.data["firebase-messaging-msg-data"].notification
-                      .body
+                  ? `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`
                   : `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
               icon: "https://myanimchecker.netlify.app/Img/Icon.png",
               vibrate: [100, 50, 100],
@@ -177,25 +165,12 @@ export default class Home extends Component {
         .catch(() => {
           new Notification(
             message.data["firebase-messaging-msg-data"] === undefined
-              ? message.data.notification.title.split(" ")[0] === "Sortie"
-                ? message.data.notification.title
-                : `Sortie Anime: ${message.data.notification.title} !`
-              : message.data[
-                  "firebase-messaging-msg-data"
-                ].notification.title.split(" ")[0] === "Sortie"
-              ? message.data["firebase-messaging-msg-data"].notification.title
+              ? `Sortie Anime: ${message.data.notification.title} !`
               : `Sortie Anime: ${message.data["firebase-messaging-msg-data"].notification.title} !`,
             {
               body:
                 message.data["firebase-messaging-msg-data"] === undefined
-                  ? message.data.notification.body.split(" ")[0] === "Nouvel"
-                    ? message.data.notification.body
-                    : `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`
-                  : message.data[
-                      "firebase-messaging-msg-data"
-                    ].notification.body.split(" ")[0] === "Nouvel"
-                  ? message.data["firebase-messaging-msg-data"].notification
-                      .body
+                  ? `Nouvel Épisode de ${message.data.notification.body}, ne le rate pas !`
                   : `Nouvel Épisode de ${message.data["firebase-messaging-msg-data"].notification.body}, ne le rate pas !`,
               icon: "https://myanimchecker.netlify.app/Img/Icon.png",
             }
@@ -470,6 +445,7 @@ export default class Home extends Component {
         serieFirebase,
         filmFireBase,
         SwitchMyAnim,
+        ToReSearchAfterRefresh,
       } = this.state;
 
       this.setState(
@@ -519,7 +495,10 @@ export default class Home extends Component {
           PhoneNumFireBase: GlobalInfoUser.PhoneNum,
           ParamsOptn: GlobalInfoUser.ParamsOptn,
         },
-        after
+        () => {
+          if (after !== null) after();
+          if (ToReSearchAfterRefresh) this.SearchAnimInList();
+        }
       );
       // Check If Data Lost
       const AllDataIndexedDb = await this.fnDbOffline("GETReturn");
@@ -1083,8 +1062,8 @@ export default class Home extends Component {
       .catch((err) => console.error(err));
   };
 
-  SearchAnimInList = (event) => {
-    event.preventDefault();
+  SearchAnimInList = (event = null) => {
+    if (event !== null) event.preventDefault();
     const {
         SearchInAnimeList,
         titleSearchAnime,
@@ -2152,11 +2131,7 @@ export default class Home extends Component {
       ShowModalChangeNote: false,
       findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
-      ModeCombinaisonSearch: "ET",
       NextAnimToDelete: null,
-      titleSearchAnime: "",
-      ImportanceSearch: null,
-      TagSearchAnime: "",
       addEPToAlleged: false,
       DeletePathVerif: null,
       title: "",
@@ -2170,6 +2145,10 @@ export default class Home extends Component {
   durerStrToIntMin = (str) => {
     const hour = parseInt(str.split(" ")[0]),
       minute = parseInt(str.split(" ")[2]);
+
+    if (isNaN(minute)) {
+      return hour;
+    }
 
     return hour * 60 + minute;
   };
@@ -2767,7 +2746,14 @@ export default class Home extends Component {
               }
               handleSubmit={this.newNextAnim}
               SearchInAnimeListFn={(type) =>
-                this.setState({ SearchInAnimeList: [true, type] })
+                this.setState({
+                  SearchInAnimeList: [true, type],
+                  ModeCombinaisonSearch: "ET",
+                  titleSearchAnime: "",
+                  ImportanceSearch: null,
+                  TagSearchAnime: "",
+                  ToReSearchAfterRefresh: false,
+                })
               }
               onClose={() =>
                 this.setState({
@@ -3067,11 +3053,25 @@ export default class Home extends Component {
               id="ModalBody"
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
-                  this.SearchAnimInList(event);
+                  this.setState(
+                    {
+                      ToReSearchAfterRefresh: true,
+                    },
+                    () => this.SearchAnimInList(event)
+                  );
                 }
               }}
             >
-              <Form onSubmit={this.SearchAnimInList}>
+              <Form
+                onSubmit={(event) =>
+                  this.setState(
+                    {
+                      ToReSearchAfterRefresh: true,
+                    },
+                    () => this.SearchAnimInList(event)
+                  )
+                }
+              >
                 {!SearchInAnimeList[1] ? (
                   <Form.Text>
                     Au moins un critère dois être rempli les autres sont
@@ -3230,7 +3230,17 @@ export default class Home extends Component {
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
               </Button>
-              <Button variant="info" onClick={this.SearchAnimInList}>
+              <Button
+                variant="info"
+                onClick={(event) =>
+                  this.setState(
+                    {
+                      ToReSearchAfterRefresh: true,
+                    },
+                    () => this.SearchAnimInList(event)
+                  )
+                }
+              >
                 <span className="fas fa-search"></span> Chercher
               </Button>
             </Modal.Footer>
