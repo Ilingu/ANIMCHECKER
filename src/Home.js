@@ -1062,8 +1062,7 @@ export default class Home extends Component {
       .catch((err) => console.error(err));
   };
 
-  SearchAnimInList = (event = null) => {
-    if (event !== null) event.preventDefault();
+  SearchAnimInList = () => {
     const {
         SearchInAnimeList,
         titleSearchAnime,
@@ -3053,24 +3052,26 @@ export default class Home extends Component {
               id="ModalBody"
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
+                  event.preventDefault();
                   this.setState(
                     {
                       ToReSearchAfterRefresh: true,
                     },
-                    () => this.SearchAnimInList(event)
+                    this.SearchAnimInList
                   );
                 }
               }}
             >
               <Form
-                onSubmit={(event) =>
+                onSubmit={(event) => {
+                  event.preventDefault();
                   this.setState(
                     {
                       ToReSearchAfterRefresh: true,
                     },
-                    () => this.SearchAnimInList(event)
-                  )
-                }
+                    this.SearchAnimInList
+                  );
+                }}
               >
                 {!SearchInAnimeList[1] ? (
                   <Form.Text>
@@ -3232,14 +3233,15 @@ export default class Home extends Component {
               </Button>
               <Button
                 variant="info"
-                onClick={(event) =>
+                onClick={(event) => {
+                  event.preventDefault();
                   this.setState(
                     {
                       ToReSearchAfterRefresh: true,
                     },
-                    () => this.SearchAnimInList(event)
-                  )
-                }
+                    this.SearchAnimInList
+                  );
+                }}
               >
                 <span className="fas fa-search"></span> Chercher
               </Button>
