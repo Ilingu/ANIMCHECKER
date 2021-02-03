@@ -2047,25 +2047,29 @@ a:hover {
 }
 
 #Watch .StartMod.active {
-  position: absolute;
-  top: 50vh;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
 }
 
 #Watch .StartMod.active header {
   position: absolute;
-  top: -25vh;
-  left: calc(50vw - 250px / 3);
+  top: 29vh;
+  left: calc(50% - 250px);
   width: 500px;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
 }
 
 #Watch .StartMod.active header h2 {
+  line-height: 30px;
+  text-align: center;
   font-size: 2.5rem;
+}
+
+#Watch .StartMod.active header h2 #TotalEP {
+  font-size: 16px;
+  font-weight: bold;
 }
 
 #Watch .StartMod.active footer {
@@ -2073,9 +2077,11 @@ a:hover {
   display: -ms-flexbox;
   display: flex;
   position: absolute;
-  top: 25vh;
-  left: calc(50vw - 246px);
+  bottom: 19vh;
+  left: calc(50% - 246px);
   width: 500px;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
 }
 
 #Watch .StartMod.active footer .previousEp {
@@ -2112,17 +2118,34 @@ a:hover {
   background-color: #ddd;
 }
 
+@media screen and (max-height: 600px) {
+  #Watch .StartMod.active header {
+    top: 17vh;
+  }
+}
+
+@media screen and (max-height: 440px) {
+  #Watch .StartMod.active header {
+    top: 15vh;
+  }
+  #Watch .StartMod.active footer {
+    left: calc(50% - 124px) !important;
+  }
+  #Watch .StartMod.active footer .blockNextAction {
+    height: 50px;
+    width: 250px;
+  }
+}
+
 @media screen and (max-width: 510px) {
   #Watch .StartMod.active footer {
     display: block;
     width: 300px !important;
-    left: calc(50vw - 146px);
+    left: calc(50% - 146px);
+    bottom: 5vh;
   }
   #Watch .StartMod.active footer .previousEp {
     margin-right: 0px;
-  }
-  #Watch .StartMod.active footer .blockNextAction {
-    background-color: #ddd;
   }
 }
 
@@ -2154,11 +2177,11 @@ a:hover {
 
 #Watch .StartMod.active .next,
 #Watch .StartMod.active .finished {
-  left: calc(50vw + 13px);
+  left: calc(50% - 66px / 2 + 66px / 2 + 10px);
 }
 
 #Watch .StartMod.active .cancel {
-  left: calc(50vw - 35px - 40px);
+  left: calc(50% - 66px / 2 - 66px / 2 - 10px);
 }
 
 #Watch .StartMod.active .finished {

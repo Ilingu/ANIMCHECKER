@@ -793,6 +793,19 @@ class Watch extends Component {
     }
   };
 
+  derterminateEpTotal = () => {
+    const { AnimToWatch, repereEpisode, repereSaison } = this.state;
+    const IDSaison = parseInt(repereSaison.name.split(" ")[1]);
+    let NbEpTotal = AnimToWatch.AnimEP.reduce((acc, currentValue) => {
+      if (parseInt(currentValue.name.split(" ")[1]) < IDSaison) {
+        return acc + currentValue.Episodes.length;
+      }
+      return acc + 0;
+    }, repereEpisode[1].id);
+
+    return NbEpTotal;
+  };
+
   ShareFinishedAnime = () => {
     if (this.state.OfflineMode === false) {
       try {
@@ -1574,13 +1587,22 @@ class Watch extends Component {
             <Fragment>
               <header>
                 <h2>
-                  Episode{" "}
+                  Épisode{" "}
                   {repereEpisode[1] === undefined ? null : repereEpisode[1].id}{" "}
                   (S
                   {Object.keys(repereSaison).length === 0
                     ? null
                     : repereSaison.name.split(" ")[1]}
                   )
+                  <br />
+                  <span id="TotalEP">
+                    (
+                    {repereEpisode[1] === undefined ||
+                    Object.keys(repereSaison).length === 0
+                      ? null
+                      : this.derterminateEpTotal()}{" "}
+                    épisode au total)
+                  </span>
                 </h2>
               </header>
               <div
