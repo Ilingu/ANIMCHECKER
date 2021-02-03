@@ -26,6 +26,7 @@
     }
   ],
   "gcm_sender_id": "103953800507",
+  "offline_enabled": true,
   "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",
