@@ -1362,6 +1362,7 @@ export default class Home extends Component {
       IdToAddEp,
       SeasonAnimCheck,
       WaitAnimCheck,
+      OfflineMode,
     } = this.state;
 
     if (typeof nbEP === "string" && nbEP.trim().length !== 0 && nbEP !== "") {
@@ -1379,16 +1380,32 @@ export default class Home extends Component {
         };
       });
 
-      this.updateValue(`${Pseudo}/serie/${IdToAddEp}`, {
-        AnimEP: AnimSEP,
-        finishedAnim: false,
-        AnimeSeason: !SeasonAnimCheck ? null : true,
-        InWait: !WaitAnimCheck ? null : true,
-        Lier: null,
-        Drop: null,
-        Paused: null,
-        Rate: null,
-      });
+      if (!OfflineMode) {
+        this.fnDbOffline("PUT", `${Pseudo}/serie/${IdToAddEp}`, {
+          AnimEP: AnimSEP,
+          finishedAnim: false,
+          AnimeSeason: !SeasonAnimCheck ? null : true,
+          InWait: !WaitAnimCheck ? null : true,
+          Lier: null,
+          Drop: null,
+          Paused: null,
+          Rate: null,
+        });
+      }
+      this.updateValue(
+        `${Pseudo}/serie/${IdToAddEp}`,
+        {
+          AnimEP: AnimSEP,
+          finishedAnim: false,
+          AnimeSeason: !SeasonAnimCheck ? null : true,
+          InWait: !WaitAnimCheck ? null : true,
+          Lier: null,
+          Drop: null,
+          Paused: null,
+          Rate: null,
+        },
+        null
+      );
       this.setState({ RedirectPage: `/Watch/${Pseudo}/${IdToAddEp}` });
     }
   };
@@ -1457,11 +1474,15 @@ export default class Home extends Component {
       );
       if (ModeRetake === true) {
         this.updateValue(`${this.state.Pseudo}/${id.split("-")[0]}/${id}`, {
-          imageUrl: ImgUrlRes.data.results[0].image_url,
+          imageUrl: this.handleDeleteImageURLParameter(
+            ImgUrlRes.data.results[0].image_url
+          ),
         });
         return;
       }
-      return next(ImgUrlRes.data.results[0].image_url);
+      return next(
+        this.handleDeleteImageURLParameter(ImgUrlRes.data.results[0].image_url)
+      );
     } catch (err) {
       console.error(err);
       return next("PlaceHolderImg");
@@ -2041,6 +2062,23 @@ export default class Home extends Component {
     };
   };
 
+  handleDeleteImageURLParameter = (URL, IfurlParamUpdateInDB = null) => {
+    const UrlSplit = URL.split("?s=");
+
+    if (UrlSplit.length > 1 && IfurlParamUpdateInDB !== null)
+      this.updateValue(
+        `${this.state.Pseudo}/${
+          IfurlParamUpdateInDB.split("-")[0]
+        }/${IfurlParamUpdateInDB}`,
+        {
+          imageUrl: UrlSplit[0],
+        }
+      );
+    else if (UrlSplit.length > 1) return UrlSplit[0];
+
+    return URL;
+  };
+
   StartSpeechRecognition = () => {
     const { SecondMessage } = this.state;
     try {
@@ -2327,6 +2365,9 @@ export default class Home extends Component {
             key
           );
         }}
+        CheckNotUrlParams={(URL) =>
+          this.handleDeleteImageURLParameter(URL, key)
+        }
         Drop={
           { ...serieFirebase, ...filmFireBase }[key].Drop
             ? { ...serieFirebase, ...filmFireBase }[key].Drop
@@ -2361,17 +2402,13 @@ export default class Home extends Component {
               Rate: null,
             });
           }
-          this.updateValue(
-            `${Pseudo}/${key.split("-")[0]}/${key}`,
-            {
-              Paused: null,
-              InWait: null,
-              Drop: null,
-              Rate: null,
-            },
-            null,
-            () => this.setState({ RedirectPage: `/Watch/${Pseudo}/${key}` })
-          );
+          this.updateValue(`${Pseudo}/${key.split("-")[0]}/${key}`, {
+            Paused: null,
+            InWait: null,
+            Drop: null,
+            Rate: null,
+          });
+          this.setState({ RedirectPage: `/Watch/${Pseudo}/${key}` });
         }}
         AnimeSeason={
           key.split("-")[0] === "serie"
@@ -2622,7 +2659,9 @@ export default class Home extends Component {
                 animToDetails[1].type === "Movie"
                   ? ""
                   : animToDetails[0].episodes.length.toString(),
-              imageUrl: animToDetails[1].image_url,
+              imageUrl: this.handleDeleteImageURLParameter(
+                animToDetails[1].image_url
+              ),
             });
             this.openNext(animToDetails[1].type === "Movie" ? "film" : "serie");
           }}
@@ -3310,23 +3349,34 @@ export default class Home extends Component {
             </Modal.Header>
             <Modal.Body
               onKeyDown={(event) => {
-                if (SeasonAnimCheck) {
-                  this.setState({ ShowModalAddNotifLier: true });
-                  return;
+                if (event.key === "Enter") {
+                  if (addEPToAlleged) {
+                    this.AddEPToAlleged();
+                    return;
+                  }
+                  if (SeasonAnimCheck) {
+                    this.setState({ ShowModalAddNotifLier: true });
+                    return;
+                  }
+                  this.addAnime();
                 }
-                if (event.key === "Enter") this.addAnime();
               }}
               id="ModalBody"
             >
               <Form
                 id="AddAnim"
                 onSubmit={() => {
+                  if (addEPToAlleged) {
+                    this.AddEPToAlleged();
+                    return;
+                  }
                   if (SeasonAnimCheck) {
                     this.setState({
                       ShowModalAddNotifLier: true,
                     });
                     return;
                   }
+
                   this.addAnime();
                 }}
               >
@@ -3396,14 +3446,15 @@ export default class Home extends Component {
                 variant="success"
                 onClick={(event) => {
                   event.preventDefault();
-                  if (SeasonAnimCheck) {
-                    this.setState({ ShowModalAddNotifLier: true });
-                    return;
-                  }
                   if (addEPToAlleged) {
                     this.AddEPToAlleged();
                     return;
                   }
+                  if (SeasonAnimCheck) {
+                    this.setState({ ShowModalAddNotifLier: true });
+                    return;
+                  }
+
                   this.addAnime();
                 }}
               >

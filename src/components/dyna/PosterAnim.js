@@ -58,11 +58,14 @@ const PosterAnim = ({
   ModeFilter,
   isAlleged,
   InWait,
+  CheckNotUrlParams,
   Skeleton,
   ReTakeImgFromName,
 }) => {
   let Fav = isFav;
+
   if (url === "PlaceHolderImg") ReTakeImgFromName();
+  else if (url) CheckNotUrlParams(url);
 
   const templatePoster = (
     <div
@@ -96,7 +99,7 @@ const PosterAnim = ({
             <div
               id="FavBtns"
               title={isFav ? "Retirer des Fav" : "Ajouter au Fav"}
-              onClick={() => fnFav(id, !isFav)}
+              onClick={() => fnFav(id, !isFav ? true : null)}
             >
               <span
                 className={`FvBtn fas fa-heart ${Fav ? "show" : "hide"}${
