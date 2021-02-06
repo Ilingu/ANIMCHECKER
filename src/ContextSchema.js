@@ -9,4 +9,6 @@ export default createContext({
   LoadingMode: Boolean,
   addToHome: Function,
   openPalmares: Function,
+  ExportDB: Function,
+  ImportDB: Function,
 });

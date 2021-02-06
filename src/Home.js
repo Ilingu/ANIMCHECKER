@@ -2721,6 +2721,37 @@ export default class Home extends Component {
                   PalmaresModal: true,
                   palmares: this.findPalmares(),
                 }),
+              ExportDB: async () => {
+                const db = await openDB("AckDb", 1);
+                const Store = db
+                  .transaction("NotifFirebase")
+                  .objectStore("NotifFirebase");
+                const results = await Store.getAll();
+
+                const JsonExport = {
+                  serie: serieFirebase,
+                  film: filmFireBase,
+                  NextAnim: NextAnimFireBase,
+                  Notif: results[0].data,
+                };
+                const filename = `ACKSnapshot-${Date.now()}.json`;
+                const jsonStr = JSON.stringify(JsonExport);
+
+                let element = document.createElement("a");
+                element.setAttribute(
+                  "href",
+                  "data:text/plain;charset=utf-8," + encodeURIComponent(jsonStr)
+                );
+                element.setAttribute("download", filename);
+
+                element.style.display = "none";
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+              },
+              ImportDB: () => {},
             }}
           >
             <MyAnim

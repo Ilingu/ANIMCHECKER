@@ -191,6 +191,20 @@ const Header = () => {
                   ></span>{" "}
                   Palmarès
                 </Dropdown.Item>{" "}
+                <Dropdown.Divider />
+                <Dropdown.Item
+                  disabled={Context.LoadingMode}
+                  onClick={Context.ExportDB}
+                >
+                  <span className="fas fa-file-upload"></span> Exporter Ton ACK
+                </Dropdown.Item>{" "}
+                <Dropdown.Item
+                  disabled={Context.LoadingMode}
+                  onClick={Context.ImportDB}
+                >
+                  <span className="fas fa-file-download"></span> Imorter un ACK
+                </Dropdown.Item>{" "}
+                <Dropdown.Divider />
                 <div id="FakeDropdownItem">
                   <Link push="true" to={`/Settings/${Context.Pseudo}`}>
                     <span
