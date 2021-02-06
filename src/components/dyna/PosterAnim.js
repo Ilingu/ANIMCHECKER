@@ -65,7 +65,7 @@ const PosterAnim = ({
   let Fav = isFav;
 
   if (url === "PlaceHolderImg") ReTakeImgFromName();
-  else if (url) CheckNotUrlParams(url);
+  else if (url && inMyAnim) CheckNotUrlParams(url);
 
   const templatePoster = (
     <div
