@@ -124,7 +124,7 @@ class Settings extends Component {
       base
         .remove(path)
         .then(() => {
-          after();
+          if (after !== null) after();
           this.refreshParamsOptn();
         })
         .catch((err) => console.error(err));

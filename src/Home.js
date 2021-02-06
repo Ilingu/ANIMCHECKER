@@ -57,6 +57,7 @@ export default class Home extends Component {
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
     ShowModalAddNotifLier: false,
+    ShowModalImportFile: false,
     ShowModalType: false,
     ShowModalVerification: false,
     PalmaresModal: false,
@@ -89,7 +90,9 @@ export default class Home extends Component {
     title: "",
     type: "serie",
     Rate: 7.5,
+    FileToImport: null,
     imageUrl: null,
+    AntiLostData: true,
     SeasonAnimCheck: false,
     WaitAnimCheck: false,
     ModeCombinaisonSearch: "ET",
@@ -245,6 +248,10 @@ export default class Home extends Component {
           break;
       }
       this.setState({ ResText, typeAlert, RedirectPage: "/" });
+
+      setTimeout(() => {
+        this.setState({ ResText: null, typeAlert: null });
+      }, 10000);
     }
     // A2HS
     window.addEventListener("beforeinstallprompt", (e) => {
@@ -1870,6 +1877,140 @@ export default class Home extends Component {
     };
   };
 
+  ImportFile = () => {
+    const {
+      Pseudo,
+      FileToImport,
+      AntiLostData,
+      serieFirebase,
+      filmFireBase,
+      NextAnimFireBase,
+    } = this.state;
+    let NotAutoCloseAlert = false;
+
+    if (!FileToImport) {
+      this.setState({
+        ShowMessage: true,
+        ShowMessageHtml: true,
+        ResText: "Auncun fichier selectionné.",
+      });
+      setTimeout(() => {
+        this.setState({ ShowMessage: false });
+
+        setTimeout(() => {
+          this.setState({ ShowMessageHtml: false, ResText: null });
+        }, 900);
+      }, 5000);
+      return;
+    }
+
+    const fr = new FileReader();
+    fr.onload = async () => {
+      this.setState({ ResText: "Fichier Importer !", typeAlert: "success" });
+      const fileContent = JSON.parse(fr.result);
+
+      if (typeof fileContent !== "object" || !fileContent) {
+        NotAutoCloseAlert = true;
+        this.setState({
+          ResText:
+            "Danger: Le fichier n'est pas d'ACK. Opération annulée automatiquement",
+          typeAlert: "danger",
+        });
+        return;
+      }
+      if (
+        !fileContent.serie &&
+        !fileContent.film &&
+        !fileContent.NextAnim &&
+        !fileContent.Notif
+      ) {
+        NotAutoCloseAlert = true;
+        this.setState({
+          ResText:
+            "Danger: Le fichier ne contient aucune données (il aurait supprimer TOUTES vos données). Opération annulée automatiquement",
+          typeAlert: "danger",
+        });
+        return;
+      }
+      if (
+        (!fileContent.serie ||
+          !fileContent.film ||
+          !fileContent.NextAnim ||
+          !fileContent.Notif) &&
+        !AntiLostData
+      ) {
+        if (
+          !window.confirm(
+            `ATTENTION !!! Le système de sécurité a détecté un problème, les entrers suivantes sont introuvables:
+            ${!fileContent.serie ? "- Les séries\n" : ""}${
+              !fileContent.film ? "- Les films\n" : ""
+            }${!fileContent.NextAnim ? "- Les prochains animes\n" : ""}${
+              !fileContent.Notif ? "- Les notifications\n" : ""
+            }Cela supprimera de votre liste ces/cette entrer(s). Imaginons qu'il manque les films et les séries alors en validant vos séries et films seront supprimer et remplacé par... RIEN (donc seront supprimer). Si vous voulez que ces entrers vide soit ignorer et que ACK remplisse uniquement les entrers non vide, veuillez cochez l'option "Anti perte de données" dans importer (cette option aura pour effet d'empêcher tous ce que je viens de vous dire).
+
+            Voulez vous continué ? Si oui les données annoncés seront supprimer.
+            `
+          )
+        ) {
+          NotAutoCloseAlert = true;
+          this.setState({
+            ResText: "Opération annulée par l'utilisateur",
+            typeAlert: "success",
+          });
+          return;
+        }
+      }
+
+      const GetNotifIndexedDB = async () => {
+        const db = await openDB("AckDb", 1);
+        const Store = db
+          .transaction("NotifFirebase")
+          .objectStore("NotifFirebase");
+        const results = await Store.getAll();
+        return results[0].data;
+      };
+
+      this.updateValue(`${Pseudo}`, {
+        serie: AntiLostData
+          ? !fileContent.serie
+            ? serieFirebase
+            : fileContent.serie
+          : fileContent.serie,
+        film: AntiLostData
+          ? !fileContent.film
+            ? filmFireBase
+            : fileContent.film
+          : fileContent.film,
+        NextAnim: AntiLostData
+          ? !fileContent.NextAnim
+            ? NextAnimFireBase
+            : fileContent.NextAnim
+          : fileContent.NextAnim,
+        Notif: AntiLostData
+          ? !fileContent.Notif
+            ? await GetNotifIndexedDB()
+            : fileContent.Notif
+          : fileContent.Notif,
+      });
+    };
+
+    fr.onerror = () =>
+      this.setState({
+        ResText: "Impossible d'importé le fichier",
+        typeAlert: "danger",
+      });
+
+    fr.readAsText(FileToImport);
+    this.cancelModal();
+    setTimeout(() => {
+      if (!NotAutoCloseAlert)
+        this.setState({
+          ResText: null,
+          typeAlert: null,
+        });
+    }, 4000);
+  };
+
   newNextAnim = (event) => {
     event.preventDefault();
 
@@ -2158,6 +2299,9 @@ export default class Home extends Component {
       ShowModalAddFilm: false,
       ShowModalType: false,
       ShowModalAddNotifLier: false,
+      ShowModalImportFile: false,
+      FileToImport: null,
+      AntiLostData: true,
       AddNotifWithAnim: false,
       SeasonAnimCheck: false,
       WaitAnimCheck: false,
@@ -2229,6 +2373,7 @@ export default class Home extends Component {
       ShowModalVerification,
       ShowModalType,
       MicOn,
+      ShowModalImportFile,
       ShowMessage,
       ShowMessageHtml,
       TagNA,
@@ -2245,6 +2390,7 @@ export default class Home extends Component {
       day,
       time,
       ImportanceNA,
+      AntiLostData,
       ImportanceSearch,
       InfoAnimeToChangeNote,
       nbEP,
@@ -2621,12 +2767,11 @@ export default class Home extends Component {
       );
       this.setState({
         RefreshRandomizeAnime2: false,
-        MyNextAnimListSaved:
-          ParamsOptn === null
-            ? this.shuffleArray(MyNextAnimListTemplate)
-            : ParamsOptn.MyAnimRandom === false
-            ? MyNextAnimListTemplate
-            : this.shuffleArray(MyNextAnimListTemplate),
+        MyNextAnimListSaved: !ParamsOptn
+          ? this.shuffleArray(MyNextAnimListTemplate)
+          : ParamsOptn.MyAnimRandom === false
+          ? MyNextAnimListTemplate
+          : this.shuffleArray(MyNextAnimListTemplate),
       });
     } else if (
       typeof filmFireBase === "object" &&
@@ -2751,7 +2896,7 @@ export default class Home extends Component {
 
                 document.body.removeChild(element);
               },
-              ImportDB: () => {},
+              ImportDB: () => this.setState({ ShowModalImportFile: true }),
             }}
           >
             <MyAnim
@@ -2844,6 +2989,89 @@ export default class Home extends Component {
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={ShowModalImportFile} size="lg" onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Choisir un fichier</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <h2>Règles :</h2>
+              <Form>
+                <Form.Text
+                  style={{
+                    color: "#f00",
+                    fontSize: "14px",
+                    textAlign: "justify",
+                  }}
+                >
+                  <span className="fas fa-exclamation-triangle"></span>
+                  <b style={{ textDecoration: "underline" }}>
+                    - Quand le fichier sera importé toute votre liste sera
+                    supprimer puis remplacer par le contenu du fichier.
+                  </b>
+                  <br />
+                  -Ce fichier doit <b>OBLIGATOIREMENT</b> être un fichier
+                  exporter de ACK.
+                  <br />
+                  -Les fichiers ne venant pas de ACK ne marcherons pas et
+                  pourrons détruire toute vos donnéees...
+                  <br />
+                  -Pour finir attention à Internet, ne faites pas confiance à
+                  n'importe qui. Si le fichier s'avère détruire votre magnifique
+                  liste d'anime malgré les <b>multiples</b> protections,{" "}
+                  <b style={{ textDecoration: "underline" }}>
+                    le site ACK ne sera en aucun cas responsable.
+                  </b>
+                  <span className="fas fa-exclamation-triangle"></span>
+                </Form.Text>
+                <Form.Text>
+                  PS: La dernière phrase du diclaimer s'applique uniquement si
+                  vous décidez d'importer un fichier d'autres personnes
+                  (téléchargé sur internet ou autre...). Si c'est votre fichier
+                  que vous avez exporter depuis votre compte il n'y a aucun
+                  problème que votre liste soit détruite{" "}
+                  <span role="img" aria-label="Emoji Ok">
+                    👌
+                  </span>{" "}
+                  .
+                </Form.Text>
+                <br />
+
+                <Form.Group controlId="FetchFile">
+                  <Form.Label>Votre fichier :</Form.Label>{" "}
+                  <input
+                    type="file"
+                    id="attachment"
+                    accept=".json"
+                    onChange={(event) =>
+                      this.setState({ FileToImport: event.target.files[0] })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId="AntiLostData">
+                  <Form.Check
+                    type="checkbox"
+                    checked={AntiLostData}
+                    label={`Anti perte de données: ${
+                      AntiLostData === true ? "Oui" : "Non"
+                    }`}
+                    onChange={(event) =>
+                      this.setState({ AntiLostData: event.target.checked })
+                    }
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button variant="danger" onClick={this.ImportFile}>
+                <span className="fas fa-file-download"></span> ⚠Importer
+                (Risqué)⚠
               </Button>
             </Modal.Footer>
           </Modal>
