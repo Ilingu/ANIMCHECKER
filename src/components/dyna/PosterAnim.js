@@ -137,6 +137,7 @@ const PosterAnim = ({
             <img
               src={url === "PlaceHolderImg" ? PlaceHolderImg : url}
               alt="Img of Anim"
+              onError={ReTakeImgFromName}
             />
           </div>
           <div className="action">

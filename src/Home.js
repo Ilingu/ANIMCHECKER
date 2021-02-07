@@ -46,6 +46,13 @@ export default class Home extends Component {
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
     UpdateDbFromIndexedDB: false,
+    LastAntiLostData:
+      JSON.parse(window.localStorage.getItem("LastSecurityAntiLostData")) !==
+        false &&
+      JSON.parse(window.localStorage.getItem("LastSecurityAntiLostData")) !==
+        true
+        ? true
+        : JSON.parse(window.localStorage.getItem("LastSecurityAntiLostData")),
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
@@ -128,6 +135,16 @@ export default class Home extends Component {
       window.localStorage.setItem("OfflineMode", JSON.stringify(false));
     else if (JSON.parse(window.localStorage.getItem("OfflineMode")) === true)
       this.OfflineMode();
+    // AntiLostData
+    const VarAntiLostData = JSON.parse(
+      window.localStorage.getItem("LastSecurityAntiLostData")
+    );
+    if (VarAntiLostData !== false && VarAntiLostData !== true) {
+      window.localStorage.setItem(
+        "LastSecurityAntiLostData",
+        JSON.stringify(false)
+      );
+    }
     // Push Message
     messaging
       .getToken()
@@ -496,9 +513,11 @@ export default class Home extends Component {
               ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
               : "NotFinished",
           FirstQuerie: true,
-          NextAnimFireBase: GlobalInfoUser.NextAnim,
-          serieFirebase: GlobalInfoUser.serie,
-          filmFireBase: GlobalInfoUser.film,
+          NextAnimFireBase: !GlobalInfoUser.NextAnim
+            ? {}
+            : GlobalInfoUser.NextAnim,
+          serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
+          filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
           PhoneNumFireBase: GlobalInfoUser.PhoneNum,
           ParamsOptn: GlobalInfoUser.ParamsOptn,
         },
@@ -510,50 +529,91 @@ export default class Home extends Component {
       // Check If Data Lost
       const AllDataIndexedDb = await this.fnDbOffline("GETReturn");
       let IsLostData = false;
+      let UserNo = false;
+
+      const CheckLastAntiLostData = (type) => {
+        if (
+          JSON.parse(
+            window.localStorage.getItem("LastSecurityAntiLostData")
+          ) === true &&
+          window.confirm(
+            `DERNIER AVERTISSMENT !
+          Si vous continué (en appuyant sur "ok") vos ${type} seront supprimées.
+          Si vous ne souhaitez pas la disparition de vos ${type} alors appuyer sur "Annulé".`
+          )
+        ) {
+          UserNo = true;
+        }
+      };
 
       if (
         (typeof GlobalInfoUser.serie !== "object" ||
           Object.keys(GlobalInfoUser.serie).length === 0) &&
         AllDataIndexedDb[0][0]?.data
       ) {
-        console.warn(
-          "Perte des données séries, procedure de réparage enclenché."
-        );
-        IsLostData = true;
-        this.addValue(
-          `${this.state.Pseudo}/serie`,
-          AllDataIndexedDb[0][0]?.data
-        );
+        CheckLastAntiLostData("séries");
+        if (!UserNo) {
+          console.warn(
+            "Perte des données séries, procedure de réparage enclenché."
+          );
+          IsLostData = true;
+          this.addValue(
+            `${this.state.Pseudo}/serie`,
+            AllDataIndexedDb[0][0]?.data
+          );
+        } else {
+          UserNo = false;
+        }
       }
       if (
         (typeof GlobalInfoUser.film !== "object" ||
           Object.keys(GlobalInfoUser.film).length === 0) &&
         AllDataIndexedDb[1][0]?.data
       ) {
-        console.warn(
-          "Perte des données film, procedure de réparage enclenché."
-        );
-        IsLostData = true;
-        this.addValue(
-          `${this.state.Pseudo}/film`,
-          AllDataIndexedDb[1][0]?.data
-        );
+        CheckLastAntiLostData("films");
+        if (!UserNo) {
+          console.warn(
+            "Perte des données film, procedure de réparage enclenché."
+          );
+          IsLostData = true;
+          this.addValue(
+            `${this.state.Pseudo}/film`,
+            AllDataIndexedDb[1][0]?.data
+          );
+        } else {
+          UserNo = false;
+        }
       }
       if (
         (typeof GlobalInfoUser.NextAnim !== "object" ||
           Object.keys(GlobalInfoUser.NextAnim).length === 0) &&
         AllDataIndexedDb[2][0]?.data
       ) {
-        console.warn(
-          "Perte des données prochain animes, procedure de réparage enclenché."
-        );
-        IsLostData = true;
-        this.addValue(
-          `${this.state.Pseudo}/NextAnim`,
-          AllDataIndexedDb[2][0]?.data
-        );
+        CheckLastAntiLostData("prochains animes");
+        if (!UserNo) {
+          console.warn(
+            "Perte des données prochain animes, procedure de réparage enclenché."
+          );
+          IsLostData = true;
+          UserNo = false;
+          this.addValue(
+            `${this.state.Pseudo}/NextAnim`,
+            AllDataIndexedDb[2][0]?.data
+          );
+        } else {
+          UserNo = false;
+        }
       }
 
+      if (
+        JSON.parse(window.localStorage.getItem("LastSecurityAntiLostData")) ===
+        true
+      ) {
+        window.localStorage.setItem(
+          "LastSecurityAntiLostData",
+          JSON.stringify(false)
+        );
+      }
       if (IsLostData) return;
 
       if (!this.state.UpdateDbFromIndexedDB) {
@@ -1958,6 +2018,11 @@ export default class Home extends Component {
             typeAlert: "success",
           });
           return;
+        } else {
+          window.localStorage.setItem(
+            "LastSecurityAntiLostData",
+            JSON.stringify(true)
+          );
         }
       }
 
@@ -1973,23 +2038,39 @@ export default class Home extends Component {
       this.updateValue(`${Pseudo}`, {
         serie: AntiLostData
           ? !fileContent.serie
-            ? serieFirebase
+            ? !serieFirebase
+              ? null
+              : serieFirebase
             : fileContent.serie
+          : !fileContent.serie
+          ? null
           : fileContent.serie,
         film: AntiLostData
           ? !fileContent.film
-            ? filmFireBase
+            ? !filmFireBase
+              ? null
+              : filmFireBase
             : fileContent.film
+          : !fileContent.film
+          ? null
           : fileContent.film,
         NextAnim: AntiLostData
           ? !fileContent.NextAnim
-            ? NextAnimFireBase
+            ? !NextAnimFireBase
+              ? null
+              : NextAnimFireBase
             : fileContent.NextAnim
+          : !fileContent.NextAnim
+          ? null
           : fileContent.NextAnim,
         Notif: AntiLostData
           ? !fileContent.Notif
-            ? await GetNotifIndexedDB()
+            ? !(await GetNotifIndexedDB())
+              ? null
+              : await GetNotifIndexedDB()
             : fileContent.Notif
+          : !fileContent.Notif
+          ? null
           : fileContent.Notif,
       });
     };
@@ -2777,9 +2858,10 @@ export default class Home extends Component {
       typeof filmFireBase === "object" &&
       typeof serieFirebase === "object" &&
       typeof NextAnimFireBase === "object" &&
-      Object.keys(filmFireBase).length === 0 &&
-      Object.keys(serieFirebase).length === 0 &&
-      Object.keys(NextAnimFireBase).length === 0 &&
+      ((Object.keys(filmFireBase).length === 0 && MyAnimListSaved === null) ||
+        (Object.keys(serieFirebase).length === 0 && MyAnimListSaved === null) ||
+        (Object.keys(NextAnimFireBase).length === 0 &&
+          MyNextAnimListSaved === null)) &&
       Pseudo &&
       FirstQuerie
     ) {
