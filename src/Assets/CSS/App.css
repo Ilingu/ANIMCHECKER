@@ -80,6 +80,7 @@ a:hover {
   position: absolute;
   right: 10px;
   top: 5px;
+  z-index: 2000;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -741,7 +742,8 @@ a:hover {
 }
 
 #MyAnime .content .MyAnimPoster .RatingStar,
-#MyAnime .content .MyAnimPoster .FvBtn {
+#MyAnime .content .MyAnimPoster .FvBtn,
+#MyAnime .content .MyAnimPoster .ReTakeImgBtn {
   position: absolute;
   z-index: 10;
   padding: 5px;
@@ -752,6 +754,13 @@ a:hover {
 #MyAnime .content .MyAnimPoster .RatingStar {
   right: 0;
   background-color: rgba(0, 0, 0, 0.609);
+}
+
+#MyAnime .content .MyAnimPoster .ReTakeImgBtn {
+  bottom: 31px;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.274);
+  color: #ddd;
 }
 
 #MyAnime .content .MyAnimPoster .FvBtn {
@@ -2199,6 +2208,35 @@ a:hover {
 #Watch .StartMod.active .finished:hover {
   color: royalblue;
   border: 3px solid royalblue;
+}
+
+#Preview {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  background-color: #000;
+}
+
+#Preview img {
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
+}
+
+#Preview img:hover {
+  cursor: -webkit-zoom-in;
+  cursor: zoom-in;
+  -webkit-transform: scale(2);
+          transform: scale(2);
 }
 
 #Notif,

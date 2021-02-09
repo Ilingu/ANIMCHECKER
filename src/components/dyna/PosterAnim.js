@@ -59,12 +59,13 @@ const PosterAnim = ({
   isAlleged,
   InWait,
   CheckNotUrlParams,
+  NotAskAgain,
   Skeleton,
   ReTakeImgFromName,
 }) => {
   let Fav = isFav;
 
-  if (url === "PlaceHolderImg") ReTakeImgFromName();
+  if (url === "PlaceHolderImg" && !NotAskAgain) ReTakeImgFromName();
   else if (url && inMyAnim) CheckNotUrlParams(url);
 
   const templatePoster = (
@@ -131,6 +132,12 @@ const PosterAnim = ({
               style={{ color: "gold" }}
               onClick={ChangeNote}
               className="RatingStar fas fa-plus"
+            ></span>
+          ) : null}
+          {url === "PlaceHolderImg" ? (
+            <span
+              className="ReTakeImgBtn fas fa-undo-alt"
+              onClick={ReTakeImgFromName}
             ></span>
           ) : null}
           <div className="ImgInterract">

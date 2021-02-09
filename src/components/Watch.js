@@ -1792,8 +1792,8 @@ class Watch extends Component {
                     {repereEpisode[1] === undefined ||
                     Object.keys(repereSaison).length === 0
                       ? null
-                      : this.derterminateEpTotal()}{" "}
-                    épisode au total)
+                      : this.derterminateEpTotal()}
+                    <sup>ème</sup> épisode au total)
                   </span>
                 </h2>
               </header>

@@ -56,18 +56,23 @@ export default class Home extends Component {
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
-    ShowModalSearch: false,
     IdToAddEp: null,
     InfoAnimeToChangeNote: null,
     RefreshfromFnOffline: false,
+    //// Modal
+    ShowModalSearch: false,
     ShowModalChangeNote: false,
     ShowModalAddAnim: false,
     ShowModalAddFilm: false,
     ShowModalAddNotifLier: false,
+    ShowModalChooseImgURL: [false, null],
     ShowModalImportFile: false,
     ShowModalType: false,
     ShowModalVerification: false,
+    ////
     PalmaresModal: false,
+    NotAskAgain: true,
+    ModePreview: false,
     SwitchMyAnim: true,
     AddNotifWithAnim: false,
     animToDetails: [],
@@ -97,6 +102,7 @@ export default class Home extends Component {
     title: "",
     type: "serie",
     Rate: 7.5,
+    UrlUserImg: "",
     FileToImport: null,
     imageUrl: null,
     AntiLostData: true,
@@ -134,7 +140,7 @@ export default class Home extends Component {
     if (!JSON.parse(window.localStorage.getItem("OfflineMode")))
       window.localStorage.setItem("OfflineMode", JSON.stringify(false));
     else if (JSON.parse(window.localStorage.getItem("OfflineMode")) === true)
-      this.OfflineMode();
+      this.OfflineMode(null, true);
     // AntiLostData
     const VarAntiLostData = JSON.parse(
       window.localStorage.getItem("LastSecurityAntiLostData")
@@ -160,9 +166,9 @@ export default class Home extends Component {
           );
         }
       })
-      .catch((err) => {
-        console.error("An error occurred while retrieving token. ", err);
-      });
+      .catch((err) =>
+        console.error("An error occurred while retrieving token. ", err)
+      );
 
     navigator.serviceWorker.addEventListener("message", (message) => {
       navigator.serviceWorker
@@ -293,37 +299,28 @@ export default class Home extends Component {
     this.AllowVpn();
   }
 
-  OfflineMode = (forced) => {
+  OfflineMode = (forced, auto = false) => {
     const self = this;
     if (forced === true) {
       next();
     } else {
       axios
-        .get("https://tytoux-api.herokuapp.com/v1/site/Actu/AllActuSite")
+        .get("https://rest.ensembl.org/info/ping?content-type=application/json")
         .then(() => {
-          this.setState({
-            ShowMessage: true,
-            ShowMessageHtml: true,
-            ResText: "Impossible d'activé le mode hors ligne",
-          });
-          setTimeout(() => {
-            this.setState({ ShowMessage: false });
-
-            setTimeout(() => {
-              this.setState({ ShowMessageHtml: false, ResText: null });
-            }, 900);
-          }, 7000);
+          if (!auto)
+            this.ShowMessageInfo(
+              "Impossible d'activé le mode hors ligne",
+              7000
+            );
+          else
+            this.ShowMessageInfo("Connexion internet faible/instable.", 7000);
         })
         .catch(next);
     }
 
     async function next() {
-      self.setState({
-        OfflineMode: true,
-        ShowMessage: true,
-        ShowMessageHtml: true,
-        ResText: "Mode hors ligne activé",
-      });
+      self.setState({ OfflineMode: true });
+      self.ShowMessageInfo("Mode hors ligne activé", 6000);
 
       if (self.setIntervalVar !== null) {
         clearInterval(self.setIntervalVar);
@@ -332,13 +329,6 @@ export default class Home extends Component {
       window.localStorage.setItem("OfflineMode", JSON.stringify(true));
       // Get Data IndexedDB
       self.fnDbOffline("GET", null, null, self.notifyMe);
-      setTimeout(() => {
-        self.setState({ ShowMessage: false });
-
-        setTimeout(() => {
-          self.setState({ ShowMessageHtml: false, ResText: null });
-        }, 900);
-      }, 6000);
     }
   };
 
@@ -361,7 +351,7 @@ export default class Home extends Component {
     let i = 0;
     this.setIntervalVar = setInterval(() => {
       if (i === 5) this.reAuth();
-      if (i === 10) this.OfflineMode();
+      if (i === 10) this.OfflineMode(null, true);
       // Allow Vpn
       window.localStorage.removeItem("firebase:previous_websocket_failure");
       i++;
@@ -373,7 +363,7 @@ export default class Home extends Component {
     let i = 0;
     this.setIntervalVar = setInterval(() => {
       if (i === 5) this.reAuth();
-      if (i === 10) this.OfflineMode();
+      if (i === 10) this.OfflineMode(null, true);
       if (this.state.uid === null && this.state.proprio === null) {
         // Allow Vpn
         window.localStorage.removeItem("firebase:previous_websocket_failure");
@@ -873,7 +863,7 @@ export default class Home extends Component {
       })
       .catch((err) => {
         console.error(err);
-        this.OfflineMode();
+        this.OfflineMode(null, true);
         this.setState({
           ResText: "Votre requête d'ajout à echoué.",
           typeAlert: "danger",
@@ -913,7 +903,7 @@ export default class Home extends Component {
         if (Next !== null) Next();
       })
       .catch((err) => {
-        this.OfflineMode();
+        this.OfflineMode(null, true);
         console.error(err);
       });
   };
@@ -937,7 +927,7 @@ export default class Home extends Component {
       })
       .catch((err) => {
         console.error(err);
-        this.OfflineMode();
+        this.OfflineMode(null, true);
         this.cancelModal();
         this.setState({
           ResText: "Votre requête de suppression a échoué.",
@@ -1032,9 +1022,7 @@ export default class Home extends Component {
         console.log("Connected");
         this.setState({ NewLogin: true, JustDefined: false });
       })
-      .catch((err) => {
-        console.error(err);
-      });
+      .catch(console.error);
   };
 
   verificateNum = () => {
@@ -1126,7 +1114,7 @@ export default class Home extends Component {
           window.location.reload();
         }
       })
-      .catch((err) => console.error(err));
+      .catch(console.error);
   };
 
   SearchAnimInList = () => {
@@ -1552,6 +1540,8 @@ export default class Home extends Component {
       );
     } catch (err) {
       console.error(err);
+      this.setState({ ShowModalChooseImgURL: [true, id] });
+      if (ModeRetake === true) return;
       return next("PlaceHolderImg");
     }
   };
@@ -1912,7 +1902,7 @@ export default class Home extends Component {
         }
       });
     } catch (err) {
-      this.OfflineMode();
+      this.OfflineMode(null, true);
       console.error(err);
     }
   };
@@ -1949,18 +1939,7 @@ export default class Home extends Component {
     let NotAutoCloseAlert = false;
 
     if (!FileToImport) {
-      this.setState({
-        ShowMessage: true,
-        ShowMessageHtml: true,
-        ResText: "Auncun fichier selectionné.",
-      });
-      setTimeout(() => {
-        this.setState({ ShowMessage: false });
-
-        setTimeout(() => {
-          this.setState({ ShowMessageHtml: false, ResText: null });
-        }, 900);
-      }, 5000);
+      this.ShowMessageInfo("Auncun fichier selectionné.", 5000);
       return;
     }
 
@@ -2175,10 +2154,23 @@ export default class Home extends Component {
       .then((result) => {
         this.setState({ findAnim: result.data.results });
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        this.cancelModal();
+        this.setState({
+          ResText: `Je n'ai pas réussi un anime ayant pour nom: ${name}. Veuillez réessayer avec un notre nom.`,
+          typeAlert: "danger",
+        });
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 8000);
+      });
   };
 
-  handleClick = (id) => {
+  SeeInDetails = (id) => {
     this.setState({ ShowModalSearch: false });
 
     axios
@@ -2189,7 +2181,7 @@ export default class Home extends Component {
           findAnim: [],
         });
       })
-      .catch((err) => console.error(err));
+      .catch(console.error);
     axios
       .get(`https://api.jikan.moe/v3/anime/${id}/episodes`)
       .then((result) => {
@@ -2198,7 +2190,7 @@ export default class Home extends Component {
           findAnim: [],
         });
       })
-      .catch((err) => console.error(err));
+      .catch(console.error);
   };
 
   openNext = (onDefault = null) => {
@@ -2354,23 +2346,28 @@ export default class Home extends Component {
         const transcript = event.results[current][0].transcript;
         this.setState({ titleSearchAnime: transcript });
       };
-    } catch (e) {
-      this.setState({
-        ShowMessage: true,
-        ShowMessageHtml: true,
-        ResText:
-          "Une erreur est survenue lors du traitement de votre requête. Il semblerait que votre naviguateur ne puisse pas ou veut pas démarrez cette fonction (veuillez verifier la version de votre navigateur ainsi que sa mordernité ou tout simplement les autorisations pour ce site).",
-      });
+    } catch (err) {
+      this.ShowMessageInfo(
+        "Une erreur est survenue lors du traitement de votre requête. Il semblerait que votre naviguateur ne puisse pas ou veut pas démarrez cette fonction (veuillez verifier la version de votre navigateur ainsi que sa mordernité ou tout simplement les autorisations pour ce site).",
+        15000
+      );
+      console.error(err);
+    }
+  };
+
+  ShowMessageInfo = (text, time) => {
+    this.setState({
+      ShowMessage: true,
+      ShowMessageHtml: true,
+      ResText: text,
+    });
+    setTimeout(() => {
+      this.setState({ ShowMessage: false });
 
       setTimeout(() => {
-        this.setState({ ShowMessage: false });
-
-        setTimeout(() => {
-          this.setState({ ShowMessageHtml: false, ResText: null });
-        }, 900);
-      }, 7000);
-      console.error(e);
-    }
+        this.setState({ ShowMessageHtml: false, ResText: null });
+      }, 900);
+    }, time);
   };
 
   cancelModal = () => {
@@ -2378,6 +2375,7 @@ export default class Home extends Component {
       ShowModalSearch: false,
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
+      ShowModalChooseImgURL: [false, null],
       ShowModalType: false,
       ShowModalAddNotifLier: false,
       ShowModalImportFile: false,
@@ -2392,6 +2390,7 @@ export default class Home extends Component {
       IdToAddEp: null,
       InfoAnimeToChangeNote: null,
       Rate: 7.5,
+      UrlUserImg: "",
       ShowModalChangeNote: false,
       findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
@@ -2434,6 +2433,7 @@ export default class Home extends Component {
       AuthenticateMethod,
       ModeDisplayNextAnim,
       AllowUseReAuth,
+      ShowModalChooseImgURL,
       RedirectPage,
       ShowModalSearch,
       addEPToAlleged,
@@ -2456,7 +2456,9 @@ export default class Home extends Component {
       MicOn,
       ShowModalImportFile,
       ShowMessage,
+      UrlUserImg,
       ShowMessageHtml,
+      NotAskAgain,
       TagNA,
       TagSearchAnime,
       durer,
@@ -2475,6 +2477,7 @@ export default class Home extends Component {
       ImportanceSearch,
       InfoAnimeToChangeNote,
       nbEP,
+      ModePreview,
       SearchInAnimeList,
       WaitAnimCheck,
       ShowModalChangeNote,
@@ -2622,6 +2625,11 @@ export default class Home extends Component {
             ModeFilter
           );
         }}
+        NotAskAgain={
+          { ...serieFirebase, ...filmFireBase }[key].NotAskAgain
+            ? { ...serieFirebase, ...filmFireBase }[key].NotAskAgain
+            : false
+        }
         UnPaused={() => {
           if (!OfflineMode) {
             this.fnDbOffline("PUT", `${Pseudo}/${key.split("-")[0]}/${key}`, {
@@ -2742,19 +2750,11 @@ export default class Home extends Component {
           score={anim.score}
           title={anim.title}
           SeeInDetails={(id) => {
-            this.handleClick(id);
-            this.setState({
-              ShowMessage: true,
-              ShowMessageHtml: true,
-              ResText: "Chargement de la page... Veuillez patienté...",
-            });
-            setTimeout(() => {
-              this.setState({ ShowMessage: false });
-
-              setTimeout(() => {
-                this.setState({ ShowMessageHtml: false, ResText: null });
-              }, 900);
-            }, 5000);
+            this.SeeInDetails(id);
+            this.ShowMessageInfo(
+              "Chargement de la page... Veuillez patienté...",
+              5000
+            );
           }}
           type={anim.type}
           id={anim.mal_id}
@@ -2895,6 +2895,19 @@ export default class Home extends Component {
             this.openNext(animToDetails[1].type === "Movie" ? "film" : "serie");
           }}
         />
+      );
+    } else if (ModePreview === true) {
+      return (
+        <section id="Preview">
+          <Button
+            onClick={() => this.setState({ ModePreview: false })}
+            variant="primary"
+            className="btnBackDesing"
+          >
+            <span className="fas fa-arrow-left"></span> Retour
+          </Button>
+          <img src={UrlUserImg} alt="Ton poster" />
+        </section>
       );
     } else {
       let SkeletonListAnime = [],
@@ -3075,6 +3088,123 @@ export default class Home extends Component {
             </Modal.Footer>
           </Modal>
 
+          <Modal show={ShowModalChooseImgURL[0]} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Choisie l'image de l'anime</Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <Form>
+                <Form.Text>
+                  Si tu est tombé ici ça veut dire que je n'ai pas réussi à
+                  trouvé l'image correspondant à ton anime. <br />
+                  Je te laisse alors la possibilité de mettre ta propre{" "}
+                  <b>URL</b> menant à l'image/poster de l'anime. Vous pourrez
+                  revenir ici ultérieurement.
+                </Form.Text>
+                <Form.Group controlId="GiveURL">
+                  <Form.Label>
+                    URL de l'image/poster de l'anime (facultatif)
+                  </Form.Label>
+                  <Form.Control
+                    type="url"
+                    placeholder="http(s)://exemple.com"
+                    autoComplete="off"
+                    required
+                    value={UrlUserImg}
+                    onChange={(event) =>
+                      this.setState({
+                        UrlUserImg: event.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId="NotAsk">
+                  <Form.Check
+                    type="checkbox"
+                    disabled={UrlUserImg !== ""}
+                    checked={NotAskAgain}
+                    label={`Ne plus demander: ${
+                      NotAskAgain === true && UrlUserImg === "" ? "Oui" : "Non"
+                    }`}
+                    onChange={(event) =>
+                      this.setState({ NotAskAgain: event.target.checked })
+                    }
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button
+                disabled={UrlUserImg === ""}
+                onClick={() => {
+                  try {
+                    new URL(UrlUserImg);
+                  } catch (err) {
+                    console.error(err);
+                    this.ShowMessageInfo(
+                      "Veuillez donner un URL valide: http://exemple.com OU https://exemple.com",
+                      7000
+                    );
+                    return;
+                  }
+                  this.setState({ ModePreview: true });
+                }}
+                variant="info"
+              >
+                <span className="fas fa-eye"></span> Prévisualiser
+              </Button>
+              {NotAskAgain && UrlUserImg === "" ? (
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    this.updateValue(
+                      `${Pseudo}/${ShowModalChooseImgURL[1].split("-")[0]}/${
+                        ShowModalChooseImgURL[1]
+                      }`,
+                      {
+                        NotAskAgain: true,
+                      }
+                    );
+                    this.cancelModal();
+                  }}
+                >
+                  <span className="fas fa-check"></span> Validez
+                </Button>
+              ) : null}
+              {UrlUserImg !== "" ? (
+                <Button
+                  variant="success"
+                  onClick={() => {
+                    try {
+                      new URL(UrlUserImg);
+                    } catch (err) {
+                      console.error(err);
+                      this.ShowMessageInfo(
+                        "Veuillez donner un URL valide: http://exemple.com OU https://exemple.com",
+                        7000
+                      );
+                      return;
+                    }
+                    this.updateValue(
+                      `${Pseudo}/${ShowModalChooseImgURL[1].split("-")[0]}/${
+                        ShowModalChooseImgURL[1]
+                      }`,
+                      {
+                        imageUrl: UrlUserImg,
+                      }
+                    );
+                    this.cancelModal();
+                  }}
+                >
+                  <span className="fas fa-plus"></span> Mettre cette URL
+                </Button>
+              ) : null}
+            </Modal.Footer>
+          </Modal>
+
           <Modal show={ShowModalImportFile} size="lg" onHide={this.cancelModal}>
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Choisir un fichier</Modal.Title>
@@ -3138,7 +3268,7 @@ export default class Home extends Component {
                     type="checkbox"
                     checked={AntiLostData}
                     label={`Anti perte de données: ${
-                      AntiLostData === true ? "Oui" : "Non"
+                      AntiLostData === true ? "✅ Oui" : "⚠ Non"
                     }`}
                     onChange={(event) =>
                       this.setState({ AntiLostData: event.target.checked })
@@ -3151,9 +3281,12 @@ export default class Home extends Component {
               <Button variant="secondary" onClick={this.cancelModal}>
                 Annuler
               </Button>
-              <Button variant="danger" onClick={this.ImportFile}>
-                <span className="fas fa-file-download"></span> ⚠Importer
-                (Risqué)⚠
+              <Button
+                variant={AntiLostData ? "primary" : "danger"}
+                onClick={this.ImportFile}
+              >
+                <span className="fas fa-file-download"></span>{" "}
+                {AntiLostData ? "Importer" : "⚠Importer (Risqué)⚠"}
               </Button>
             </Modal.Footer>
           </Modal>
