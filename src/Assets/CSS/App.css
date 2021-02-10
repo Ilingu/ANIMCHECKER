@@ -1848,6 +1848,7 @@ a:hover {
   display: block;
   position: absolute;
   left: calc(50% - 8px / 2);
+  top: calc(50% - 7px);
 }
 
 #Watch .nonStartMod section #badgeStreaming .BadgesME.badge-pill:active {

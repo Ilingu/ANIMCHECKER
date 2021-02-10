@@ -103,7 +103,7 @@ const PosterAnim = ({
                     <span
                       style={{ color: "yellowgreen" }}
                       className="fas fa-play"
-                    ></span>
+                    ></span>{" "}
                     S
                     <b>
                       {InfoTooltip.WhereStop !== undefined

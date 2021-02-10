@@ -2688,6 +2688,13 @@ export default class Home extends Component {
             serieFirebase[key].InWait ? (
               <Fragment>
                 <span
+                  style={{
+                    color: serieFirebase[key].Paused
+                      ? "rgba(23, 163, 184, 0.746)"
+                      : serieFirebase[key].Drop
+                      ? "#fb401f"
+                      : "#6c757d",
+                  }}
                   className={`fas fa-${
                     serieFirebase[key].Paused
                       ? "pause"
@@ -2721,7 +2728,11 @@ export default class Home extends Component {
             "✅ Fini !"
           ) : (
             <Fragment>
-              <span className="fas fa-play"></span> {filmFireBase[key].durer}min
+              <span
+                style={{ color: "yellowgreen" }}
+                className="fas fa-play"
+              ></span>{" "}
+              <b>{filmFireBase[key].durer}</b>min
             </Fragment>
           )
         }

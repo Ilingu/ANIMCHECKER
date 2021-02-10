@@ -1191,10 +1191,16 @@ class Watch extends Component {
               variant="primary"
               onClick={() => this.handleDeleteBadge(i)}
             >
-              <img src={ADNLogo} alt="ADNLogo" />
-              <div id="CancelBadge">
-                <span className="fas fa-times"></span>
-              </div>
+              <a
+                href="https://animedigitalnetwork.fr/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={ADNLogo} alt="ADNLogo" />
+                <div id="CancelBadge">
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
             </Badge>
           );
         } else if (
@@ -1208,10 +1214,16 @@ class Watch extends Component {
               variant="light"
               onClick={() => this.handleDeleteBadge(i)}
             >
-              <img src={CrunchyrollLogo} alt="CrunchyrollLogo" />
-              <div id="CancelBadge">
-                <span className="fas fa-times"></span>
-              </div>
+              <a
+                href="https://www.crunchyroll.com/fr"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={CrunchyrollLogo} alt="CrunchyrollLogo" />
+                <div id="CancelBadge">
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
             </Badge>
           );
         } else if (
@@ -1231,10 +1243,16 @@ class Watch extends Component {
               style={{ background: "#101010" }}
               onClick={() => this.handleDeleteBadge(i)}
             >
-              <img src={MavLogo} alt="MavLogo" />
-              <div id="CancelBadge">
-                <span className="fas fa-times"></span>
-              </div>
+              <a
+                href="http://www.mavanimes.co/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={MavLogo} alt="MavLogo" />
+                <div id="CancelBadge">
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
             </Badge>
           );
         } else if (
@@ -1252,10 +1270,16 @@ class Watch extends Component {
               variant="primary"
               onClick={() => this.handleDeleteBadge(i)}
             >
-              <img src={NekoSamaLogo} alt="NekoSamaLogo" />
-              <div id="CancelBadge">
-                <span className="fas fa-times"></span>
-              </div>
+              <a
+                href="https://neko-sama.fr/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={NekoSamaLogo} alt="NekoSamaLogo" />
+                <div id="CancelBadge">
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
             </Badge>
           );
         } else if (value.toLowerCase() === "netflix") {
@@ -1266,10 +1290,16 @@ class Watch extends Component {
               variant="dark"
               onClick={() => this.handleDeleteBadge(i)}
             >
-              <img src={NetflixLogo} alt="NetflixLogo" />
-              <div id="CancelBadge">
-                <span className="fas fa-times"></span>
-              </div>
+              <a
+                href="https://www.netflix.com/fr/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={NetflixLogo} alt="NetflixLogo" />
+                <div id="CancelBadge">
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
             </Badge>
           );
         } else if (value.toLowerCase() === "wakanim") {
@@ -1280,10 +1310,16 @@ class Watch extends Component {
               variant="dark"
               onClick={() => this.handleDeleteBadge(i)}
             >
-              <img src={WakanimLogo} alt="WakanimLogo" />
-              <div id="CancelBadge">
-                <span className="fas fa-times"></span>
-              </div>
+              <a
+                href="https://www.wakanim.tv/fr/v2"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={WakanimLogo} alt="WakanimLogo" />
+                <div id="CancelBadge">
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
             </Badge>
           );
         }
@@ -1307,10 +1343,12 @@ class Watch extends Component {
               color: grayScaleRdaColor < 128 ? "#fff" : "#212529",
             }}
           >
-            <div id="ValueBadge">{value}</div>
-            <div id="CancelBadge">
-              <span className="fas fa-times"></span>
-            </div>
+            <a href={value} target="_blank" rel="noopener noreferrer">
+              <div id="ValueBadge">{value}</div>
+              <div id="CancelBadge">
+                <span className="fas fa-times"></span>
+              </div>
+            </a>
           </Badge>
         );
       });
