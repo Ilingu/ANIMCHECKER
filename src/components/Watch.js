@@ -1900,6 +1900,41 @@ class Watch extends Component {
                 <div className="accordionAnimEP">{MyAnimAccordeon}</div>
               )}
             </div>
+            {ShowDataAnime && type === "serie" ? (
+              <div id="DataAnim">
+                <aside id="ProgressCircle">
+                  <div className="percent">
+                    <svg>
+                      <circle cx="70" cy="70" r="70"></circle>
+                      <circle
+                        style={{ "--value": this.CalculateProgressionAnime() }}
+                        cx="70"
+                        cy="70"
+                        r="70"
+                      ></circle>
+                    </svg>
+                    <div className="number">
+                      <h2>
+                        {this.CalculateProgressionAnime()}
+                        <span>%</span>
+                      </h2>
+                    </div>
+                  </div>
+                </aside>
+                <aside id="continuedAnim" onClick={this.StartNextEP}>
+                  <span
+                    style={{ color: "yellowgreen" }}
+                    className="fas fa-play"
+                  ></span>{" "}
+                  S<b>{this.CalculateWhereStop()[0]}</b> EP
+                  <b>
+                    {this.CalculateWhereStop()[1] + 1 < 10
+                      ? `0${this.CalculateWhereStop()[1] + 1}`
+                      : this.CalculateWhereStop()[1] + 1}
+                  </b>
+                </aside>
+              </div>
+            ) : null}
           </section>
         </div>
         <div className={modeStart ? "StartMod active" : "StartMod"}>
@@ -2354,41 +2389,6 @@ class Watch extends Component {
         {ShowMessageHtml ? (
           <div className={`ackmessage${ShowMessage ? " show" : " hide"} green`}>
             <span className="fas fa-check-circle"></span> {ResText}
-          </div>
-        ) : null}
-        {ShowDataAnime && type === "serie" ? (
-          <div id="DataAnim">
-            <aside id="ProgressCircle">
-              <div className="percent">
-                <svg>
-                  <circle cx="70" cy="70" r="70"></circle>
-                  <circle
-                    style={{ "--value": this.CalculateProgressionAnime() }}
-                    cx="70"
-                    cy="70"
-                    r="70"
-                  ></circle>
-                </svg>
-                <div className="number">
-                  <h2>
-                    {this.CalculateProgressionAnime()}
-                    <span>%</span>
-                  </h2>
-                </div>
-              </div>
-            </aside>
-            <aside id="continuedAnim" onClick={this.StartNextEP}>
-              <span
-                style={{ color: "yellowgreen" }}
-                className="fas fa-play"
-              ></span>{" "}
-              S<b>{this.CalculateWhereStop()[0]}</b> EP
-              <b>
-                {this.CalculateWhereStop()[1] + 1 < 10
-                  ? `0${this.CalculateWhereStop()[1] + 1}`
-                  : this.CalculateWhereStop()[1] + 1}
-              </b>
-            </aside>
           </div>
         ) : null}
       </section>
