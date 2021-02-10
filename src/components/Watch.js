@@ -37,6 +37,7 @@ class Watch extends Component {
     type: "",
     LoadingMode: true,
     isFirstTime: true,
+    WatchModeNow: null,
     RedirectHome: false,
     ToOpen: "",
     ModeEditTitle: false,
@@ -72,6 +73,16 @@ class Watch extends Component {
 
   componentDidMount() {
     const self = this;
+
+    if (
+      this.state.Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo"))
+    ) {
+      this.setState({ uid: null, RedirectHome: true });
+      return;
+    }
+
+    if (this.props.match.params.watchmode !== undefined)
+      this.setState({ WatchModeNow: this.props.match.params.watchmode });
 
     if (this.props.match.params.id !== undefined) {
       this.setState(
@@ -162,19 +173,27 @@ class Watch extends Component {
       const AnimToWatch = AllDataPseudo[type][id];
 
       document.title = `ACK:${AnimToWatch.name}`;
-      this.setState({
-        AnimToWatch,
-        Newtitle: AnimToWatch.name,
-        SmartRepere:
-          AllDataPseudo.ParamsOptn === undefined
-            ? true
-            : AllDataPseudo.ParamsOptn.SmartRepere === undefined
-            ? true
-            : AllDataPseudo.ParamsOptn.SmartRepere,
-        Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
-        LoadingMode: false,
-      });
-      if (next !== null) next();
+      this.setState(
+        {
+          AnimToWatch,
+          Newtitle: AnimToWatch.name,
+          SmartRepere:
+            AllDataPseudo.ParamsOptn === undefined
+              ? true
+              : AllDataPseudo.ParamsOptn.SmartRepere === undefined
+              ? true
+              : AllDataPseudo.ParamsOptn.SmartRepere,
+          Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
+          LoadingMode: false,
+        },
+        () => {
+          if (this.state.WatchModeNow === "true") {
+            this.StartNextEP();
+            this.setState({ WatchModeNow: null });
+          }
+          if (next !== null) next();
+        }
+      );
     } catch (err) {
       console.error(err);
     }
@@ -222,7 +241,10 @@ class Watch extends Component {
               : [],
           LoadingMode: false,
         },
-        next
+        () => {
+          if (this.state.WatchModeNow === "true") this.StartNextEP();
+          if (next !== null) next();
+        }
       );
     } else if (type === "POST") {
       const Store = db

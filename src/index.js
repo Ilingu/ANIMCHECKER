@@ -33,6 +33,7 @@ const Root = () => (
     <Switch>
       <Route exact path="/" component={Home} />
       <Route exact path={`/Watch/:pseudo/:id`} component={Watch} />
+      <Route exact path={`/Watch/:pseudo/:id/:watchmode`} component={Watch} />
       <Route exact path="/Watch" component={Watch} />
       <Route exact path="/Settings" component={Settings} />
       <Route exact path={`/Settings/:pseudo`} component={Settings} />

@@ -76,6 +76,11 @@ a:hover {
   display: none;
 }
 
+.popover {
+  min-width: 200px;
+  max-width: 200px;
+}
+
 .ackmessage {
   position: absolute;
   right: 10px;
@@ -1063,6 +1068,11 @@ a:hover {
   text-align: center;
   color: greenyellow;
   font-size: 1.4rem;
+}
+
+#MyAnime .content .MyAnimPoster.alleged {
+  background-color: rgba(172, 255, 47, 0.06);
+  border-radius: 7px;
 }
 
 #MyAnime .content .MyAnimPoster.finished:hover h4,

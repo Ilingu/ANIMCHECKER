@@ -1517,6 +1517,32 @@ export default class Home extends Component {
     return IDNotif;
   };
 
+  CalculateWhereStop = (AnimEP) => {
+    let RepereStop = [];
+    AnimEP.forEach((Saison) => {
+      Saison.Episodes.forEach((Ep) => {
+        if (Ep.finished) RepereStop = [Saison.name.split(" ")[1], Ep.id];
+      });
+    });
+    return RepereStop;
+  };
+
+  CalculateProgressionAnime = (AnimEP) => {
+    const TotalEP = AnimEP.reduce((acc, currentValue) => {
+      return acc + currentValue.Episodes.length;
+    }, 0);
+    const WhereStop = this.CalculateWhereStop(AnimEP);
+
+    const TotalEpWhereStop = AnimEP.reduce((acc, currentValue) => {
+      if (parseInt(currentValue.name.split(" ")[1]) < parseInt(WhereStop[0])) {
+        return acc + currentValue.Episodes.length;
+      }
+      return acc + 0;
+    }, WhereStop[1]);
+
+    return Math.round((TotalEpWhereStop / TotalEP) * 100);
+  };
+
   TakeImgFromName = async (
     title,
     ModeRetake = false,
@@ -2564,6 +2590,7 @@ export default class Home extends Component {
       <Poster
         key={key}
         id={key}
+        type={key.split("-")[0]}
         Skeleton={false}
         Pseudo={Pseudo}
         NewEpMode={
@@ -2653,6 +2680,50 @@ export default class Home extends Component {
               ? serieFirebase[key].AnimeSeason
               : false
             : false
+        }
+        InfoTooltip={
+          key.split("-")[0] === "serie" ? (
+            serieFirebase[key].Paused ||
+            serieFirebase[key].Drop ||
+            serieFirebase[key].InWait ? (
+              <Fragment>
+                <span
+                  className={`fas fa-${
+                    serieFirebase[key].Paused
+                      ? "pause"
+                      : serieFirebase[key].Drop
+                      ? "stop"
+                      : "hourglass-half"
+                  }`}
+                ></span>{" "}
+                {serieFirebase[key].Paused
+                  ? "En Pause"
+                  : serieFirebase[key].Drop
+                  ? "Arrêté"
+                  : "En attente"}
+              </Fragment>
+            ) : serieFirebase[key].finishedAnim &&
+              !serieFirebase[key].AnimEP ? (
+              ["✅ Fini et 💯 Allégé !"]
+            ) : serieFirebase[key].finishedAnim ? (
+              ["✅ Fini !"]
+            ) : !serieFirebase[key].AnimEP ? (
+              ["💯 Allégé."]
+            ) : (
+              {
+                Progress: this.CalculateProgressionAnime(
+                  serieFirebase[key].AnimEP
+                ),
+                WhereStop: this.CalculateWhereStop(serieFirebase[key].AnimEP),
+              }
+            )
+          ) : filmFireBase[key].finished ? (
+            "✅ Fini !"
+          ) : (
+            <Fragment>
+              <span className="fas fa-play"></span> {filmFireBase[key].durer}min
+            </Fragment>
+          )
         }
         InWait={
           key.split("-")[0] === "serie"

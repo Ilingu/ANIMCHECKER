@@ -241,7 +241,7 @@ const NextAnim = ({
                       id="InputNANbadgeReperage"
                       value={NewBadgeName}
                       onChange={(event) => SetNewBadgeName(event.target.value)}
-                      placeholder="Nom du site"
+                      placeholder="Nom du Tag"
                     />
                   </Form>
                 </Badge>
