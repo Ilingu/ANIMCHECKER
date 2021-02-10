@@ -33,6 +33,9 @@ class Watch extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
+    ShowDataAnime: !JSON.parse(window.localStorage.getItem("ShowDataAnime"))
+      ? true
+      : JSON.parse(window.localStorage.getItem("ShowDataAnime")),
     modeStart: false,
     type: "",
     LoadingMode: true,
@@ -943,6 +946,34 @@ class Watch extends Component {
     }, repereEpisode[1].id);
   };
 
+  CalculateWhereStop = () => {
+    const { AnimToWatch } = this.state;
+    let RepereStop = [];
+    AnimToWatch.AnimEP.forEach((Saison) => {
+      Saison.Episodes.forEach((Ep) => {
+        if (Ep.finished) RepereStop = [Saison.name.split(" ")[1], Ep.id];
+      });
+    });
+    return RepereStop;
+  };
+
+  CalculateProgressionAnime = () => {
+    const { AnimToWatch } = this.state;
+    const TotalEP = AnimToWatch.AnimEP.reduce((acc, currentValue) => {
+      return acc + currentValue.Episodes.length;
+    }, 0);
+    const WhereStop = this.CalculateWhereStop();
+
+    const TotalEpWhereStop = AnimToWatch.AnimEP.reduce((acc, currentValue) => {
+      if (parseInt(currentValue.name.split(" ")[1]) < parseInt(WhereStop[0])) {
+        return acc + currentValue.Episodes.length;
+      }
+      return acc + 0;
+    }, WhereStop[1]);
+
+    return Math.round((TotalEpWhereStop / TotalEP) * 100);
+  };
+
   ShareFinishedAnime = () => {
     if (this.state.OfflineMode === false) {
       try {
@@ -1060,6 +1091,7 @@ class Watch extends Component {
       ActionEndAnime,
       repereEpisode,
       Newtitle,
+      ShowDataAnime,
       repereSaison,
       ToOpen,
       LoadingMode,
@@ -1601,27 +1633,47 @@ class Watch extends Component {
                     </Dropdown>
                   </Fragment>
                 ) : null}
+                <Dropdown.Divider />
+                <Dropdown.Item>
+                  <Button
+                    style={{
+                      backgroundColor: "#301c4d",
+                      color: "#ddd",
+                      border: "none",
+                    }}
+                    block
+                    onClick={() => {
+                      window.localStorage.setItem(
+                        "ShowDataAnime",
+                        JSON.stringify(true)
+                      );
+                      this.setState({
+                        ShowDataAnime: true,
+                      });
+                    }}
+                  >
+                    <span className="fas fa-chart-bar"></span> Afficher les
+                    données
+                  </Button>
+                </Dropdown.Item>
                 {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
-                  <Fragment>
-                    <Dropdown.Divider />
-                    <Dropdown.Item>
-                      <Button
-                        style={{
-                          backgroundColor: "gold",
-                          color: "#212121",
-                          border: "none",
-                        }}
-                        block
-                        onClick={() =>
-                          this.setState({
-                            ShowModalRateAnime: true,
-                          })
-                        }
-                      >
-                        <span className="fas fa-star"></span> Changer la note
-                      </Button>
-                    </Dropdown.Item>
-                  </Fragment>
+                  <Dropdown.Item>
+                    <Button
+                      style={{
+                        backgroundColor: "gold",
+                        color: "#212121",
+                        border: "none",
+                      }}
+                      block
+                      onClick={() =>
+                        this.setState({
+                          ShowModalRateAnime: true,
+                        })
+                      }
+                    >
+                      <span className="fas fa-star"></span> Changer la note
+                    </Button>
+                  </Dropdown.Item>
                 ) : null}
                 <Dropdown.Divider />
                 {type === "serie" ? (
@@ -2302,6 +2354,41 @@ class Watch extends Component {
         {ShowMessageHtml ? (
           <div className={`ackmessage${ShowMessage ? " show" : " hide"} green`}>
             <span className="fas fa-check-circle"></span> {ResText}
+          </div>
+        ) : null}
+        {ShowDataAnime && type === "serie" ? (
+          <div id="DataAnim">
+            <aside id="ProgressCircle">
+              <div className="percent">
+                <svg>
+                  <circle cx="70" cy="70" r="70"></circle>
+                  <circle
+                    style={{ "--value": this.CalculateProgressionAnime() }}
+                    cx="70"
+                    cy="70"
+                    r="70"
+                  ></circle>
+                </svg>
+                <div className="number">
+                  <h2>
+                    {this.CalculateProgressionAnime()}
+                    <span>%</span>
+                  </h2>
+                </div>
+              </div>
+            </aside>
+            <aside id="continuedAnim" onClick={this.StartNextEP}>
+              <span
+                style={{ color: "yellowgreen" }}
+                className="fas fa-play"
+              ></span>{" "}
+              S<b>{this.CalculateWhereStop()[0]}</b> EP
+              <b>
+                {this.CalculateWhereStop()[1] + 1 < 10
+                  ? `0${this.CalculateWhereStop()[1] + 1}`
+                  : this.CalculateWhereStop()[1] + 1}
+              </b>
+            </aside>
           </div>
         ) : null}
       </section>
