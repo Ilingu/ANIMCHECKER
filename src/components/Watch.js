@@ -1185,19 +1185,20 @@ class Watch extends Component {
       BadgesHtml = Badges.map((value, i) => {
         if (value.toLowerCase() === "adn") {
           return (
-            <Badge
-              key={i}
-              className="BadgesME"
-              variant="primary"
-              onClick={() => this.handleDeleteBadge(i)}
-            >
+            <Badge key={i} className="BadgesME" variant="primary">
               <a
                 href="https://animedigitalnetwork.fr/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <img src={ADNLogo} alt="ADNLogo" />
-                <div id="CancelBadge">
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
                   <span className="fas fa-times"></span>
                 </div>
               </a>
@@ -1208,19 +1209,20 @@ class Watch extends Component {
           value.toLowerCase() === "crunchyrol"
         ) {
           return (
-            <Badge
-              key={i}
-              className="BadgesME"
-              variant="light"
-              onClick={() => this.handleDeleteBadge(i)}
-            >
+            <Badge key={i} className="BadgesME" variant="light">
               <a
                 href="https://www.crunchyroll.com/fr"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <img src={CrunchyrollLogo} alt="CrunchyrollLogo" />
-                <div id="CancelBadge">
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
                   <span className="fas fa-times"></span>
                 </div>
               </a>
@@ -1241,7 +1243,6 @@ class Watch extends Component {
               className="BadgesME"
               variant="dark"
               style={{ background: "#101010" }}
-              onClick={() => this.handleDeleteBadge(i)}
             >
               <a
                 href="http://www.mavanimes.co/"
@@ -1249,7 +1250,13 @@ class Watch extends Component {
                 rel="noopener noreferrer"
               >
                 <img src={MavLogo} alt="MavLogo" />
-                <div id="CancelBadge">
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
                   <span className="fas fa-times"></span>
                 </div>
               </a>
@@ -1264,19 +1271,20 @@ class Watch extends Component {
           value.toLowerCase() === "nekosamafr"
         ) {
           return (
-            <Badge
-              key={i}
-              className="BadgesME"
-              variant="primary"
-              onClick={() => this.handleDeleteBadge(i)}
-            >
+            <Badge key={i} className="BadgesME" variant="primary">
               <a
                 href="https://neko-sama.fr/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <img src={NekoSamaLogo} alt="NekoSamaLogo" />
-                <div id="CancelBadge">
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
                   <span className="fas fa-times"></span>
                 </div>
               </a>
@@ -1284,19 +1292,20 @@ class Watch extends Component {
           );
         } else if (value.toLowerCase() === "netflix") {
           return (
-            <Badge
-              key={i}
-              className="BadgesME"
-              variant="dark"
-              onClick={() => this.handleDeleteBadge(i)}
-            >
+            <Badge key={i} className="BadgesME" variant="dark">
               <a
                 href="https://www.netflix.com/fr/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <img src={NetflixLogo} alt="NetflixLogo" />
-                <div id="CancelBadge">
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
                   <span className="fas fa-times"></span>
                 </div>
               </a>
@@ -1304,19 +1313,20 @@ class Watch extends Component {
           );
         } else if (value.toLowerCase() === "wakanim") {
           return (
-            <Badge
-              key={i}
-              className="BadgesME"
-              variant="dark"
-              onClick={() => this.handleDeleteBadge(i)}
-            >
+            <Badge key={i} className="BadgesME" variant="dark">
               <a
                 href="https://www.wakanim.tv/fr/v2"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <img src={WakanimLogo} alt="WakanimLogo" />
-                <div id="CancelBadge">
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
                   <span className="fas fa-times"></span>
                 </div>
               </a>
@@ -1337,15 +1347,24 @@ class Watch extends Component {
             key={i}
             className="BadgesME"
             variant="primary"
-            onClick={() => this.handleDeleteBadge(i)}
             style={{
               background: `rgb(${rdaColor[0]},${rdaColor[1]},${rdaColor[2]})`,
               color: grayScaleRdaColor < 128 ? "#fff" : "#212529",
             }}
           >
-            <a href={value} target="_blank" rel="noopener noreferrer">
+            <a
+              href={`http://${value}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <div id="ValueBadge">{value}</div>
-              <div id="CancelBadge">
+              <div
+                id="CancelBadge"
+                onClick={(event) => {
+                  event.preventDefault();
+                  this.handleDeleteBadge(i);
+                }}
+              >
                 <span className="fas fa-times"></span>
               </div>
             </a>
