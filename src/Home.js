@@ -1186,8 +1186,23 @@ export default class Home extends Component {
       ) {
         // NextAnime By Title
         Mode = 1;
+        let AlreadyFind = false;
         Object.values(NextAnimFireBase).forEach((NA, i) => {
-          if (
+          if (NA.AlternativeTitle !== undefined) {
+            NA.AlternativeTitle.forEach((ATitle) => {
+              if (
+                NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+                NA.name
+                  .toLowerCase()
+                  .includes(titleSearchAnime.toLowerCase()) ||
+                ATitle.toLowerCase() === titleSearchAnime.toLowerCase() ||
+                ATitle.toLowerCase().includes(titleSearchAnime.toLowerCase())
+              ) {
+                if (!AlreadyFind) index = [...index, i];
+                AlreadyFind = true;
+              }
+            });
+          } else if (
             NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
             NA.name.toLowerCase().includes(titleSearchAnime.toLowerCase())
           )
@@ -1267,6 +1282,7 @@ export default class Home extends Component {
       // Send
       next(GlobalSearchArr);
     } else if (!SearchInAnimeList[1]) {
+      let AlreadyFind = false;
       if (
         typeof titleSearchAnime === "string" &&
         titleSearchAnime.trim().length !== 0 &&
@@ -1279,7 +1295,29 @@ export default class Home extends Component {
           TagArr.forEach((Tag) => {
             if (NA.Badges)
               NA.Badges.forEach((Bdg) => {
-                if (
+                if (NA.AlternativeTitle !== undefined) {
+                  NA.AlternativeTitle.forEach((ATitle) => {
+                    if (
+                      (Tag.toLowerCase() === Bdg.toLowerCase() ||
+                        Bdg.toLowerCase().includes(Tag.toLowerCase())) &&
+                      (NA.Importance === ImportanceSearch ||
+                        (ImportanceSearch === 0 && !NA.Importance)) &&
+                      (NA.name.toLowerCase() ===
+                        titleSearchAnime.toLowerCase() ||
+                        NA.name
+                          .toLowerCase()
+                          .includes(titleSearchAnime.toLowerCase()) ||
+                        ATitle.toLowerCase() ===
+                          titleSearchAnime.toLowerCase() ||
+                        ATitle.toLowerCase().includes(
+                          titleSearchAnime.toLowerCase()
+                        ))
+                    ) {
+                      if (!AlreadyFind) index = [...index, i];
+                      AlreadyFind = true;
+                    }
+                  });
+                } else if (
                   (Tag.toLowerCase() === Bdg.toLowerCase() ||
                     Bdg.toLowerCase().includes(Tag.toLowerCase())) &&
                   (NA.Importance === ImportanceSearch ||
@@ -1325,7 +1363,23 @@ export default class Home extends Component {
         titleSearchAnime.trim().length !== 0
       ) {
         Object.values(NextAnimFireBase).forEach((NA, i) => {
-          if (
+          if (NA.AlternativeTitle !== undefined) {
+            NA.AlternativeTitle.forEach((ATitle) => {
+              if (
+                (NA.Importance === ImportanceSearch ||
+                  (ImportanceSearch === 0 && !NA.Importance)) &&
+                (NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
+                  NA.name
+                    .toLowerCase()
+                    .includes(titleSearchAnime.toLowerCase()) ||
+                  ATitle.toLowerCase() === titleSearchAnime.toLowerCase() ||
+                  ATitle.toLowerCase().includes(titleSearchAnime.toLowerCase()))
+              ) {
+                if (!AlreadyFind) index = [...index, i];
+                AlreadyFind = true;
+              }
+            });
+          } else if (
             (NA.Importance === ImportanceSearch ||
               (ImportanceSearch === 0 && !NA.Importance)) &&
             (NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
@@ -1347,7 +1401,28 @@ export default class Home extends Component {
           TagArr.forEach((Tag) => {
             if (NA.Badges)
               NA.Badges.forEach((Bdg) => {
-                if (
+                if (NA.AlternativeTitle !== undefined) {
+                  NA.AlternativeTitle.forEach((ATitle) => {
+                    if (
+                      (Tag.toLowerCase() === Bdg.toLowerCase() ||
+                        Bdg.toLowerCase().includes(Tag.toLowerCase())) &&
+                      (NA.name.toLowerCase() ===
+                        titleSearchAnime.toLowerCase() ||
+                        NA.name
+                          .toLowerCase()
+                          .includes(titleSearchAnime.toLowerCase()) ||
+                        ATitle.toLowerCase() ===
+                          titleSearchAnime.toLowerCase() ||
+                        ATitle.toLowerCase().includes(
+                          titleSearchAnime.toLowerCase()
+                        ))
+                    )
+                       {
+                         if (!AlreadyFind) index = [...index, i];
+                         AlreadyFind = true;
+                       }
+                  });
+                } else if (
                   (Tag.toLowerCase() === Bdg.toLowerCase() ||
                     Bdg.toLowerCase().includes(Tag.toLowerCase())) &&
                   (NA.name.toLowerCase() === titleSearchAnime.toLowerCase() ||
@@ -2097,7 +2172,7 @@ export default class Home extends Component {
     }, 4000);
   };
 
-  newNextAnim = (event) => {
+  newNextAnim = async (event) => {
     event.preventDefault();
 
     const { NextAnim, ImportanceNA, TagNA, NextAnimFireBase } = this.state;
@@ -2120,8 +2195,26 @@ export default class Home extends Component {
     ) {
       this.setState({ ModeFindAnime: [false, null] });
 
+      // GET Title Alternative
+      const AnimeID = (await this.SearchAnim(NextAnim, true)).data.results[0]
+        .mal_id;
+      const { title, title_english, title_synonyms } = (
+        await this.SeeInDetails(AnimeID, true)
+      ).data;
+      console.log(title, title_english, title_synonyms);
+
       Object.keys(NextAnimFireBase).forEach((key) => {
-        if (
+        if (NextAnimFireBase[key].AlternativeTitle !== undefined) {
+          NextAnimFireBase[key].AlternativeTitle.forEach((ATitle) => {
+            if (
+              NextAnimFireBase[key].name.toLowerCase() ===
+                NextAnim.toLowerCase() ||
+              ATitle.toLowerCase() === NextAnim.toLowerCase()
+            ) {
+              IsGoodForPost = false;
+            }
+          });
+        } else if (
           NextAnimFireBase[key].name.toLowerCase() === NextAnim.toLowerCase()
         ) {
           IsGoodForPost = false;
@@ -2135,6 +2228,7 @@ export default class Home extends Component {
             name: NextAnim,
             Importance: !ImportanceNA ? null : ImportanceNA,
             Badges: BadgeStrToArr(),
+            AlternativeTitle: [...title_synonyms, title, title_english],
           },
         });
       } else {
@@ -2167,7 +2261,12 @@ export default class Home extends Component {
       .join("");
   };
 
-  SearchAnim = (name) => {
+  SearchAnim = async (name, toReturn = false) => {
+    if (toReturn === true) {
+      return await axios.get(
+        `https://api.jikan.moe/v3/search/anime?q=${name}&limit=1`
+      );
+    }
     let NameToSend = name;
     this.setState({ ShowModalSearch: true });
 
@@ -2177,9 +2276,7 @@ export default class Home extends Component {
 
     axios
       .get(`https://api.jikan.moe/v3/search/anime?q=${NameToSend}&limit=16`)
-      .then((result) => {
-        this.setState({ findAnim: result.data.results });
-      })
+      .then((result) => this.setState({ findAnim: result.data.results }))
       .catch((err) => {
         console.error(err);
         this.cancelModal();
@@ -2196,15 +2293,16 @@ export default class Home extends Component {
       });
   };
 
-  SeeInDetails = async (id) => {
+  SeeInDetails = async (id, toReturn = false) => {
+    if (toReturn === true) {
+      return await axios.get(`https://api.jikan.moe/v3/anime/${id}`);
+    }
     this.setState({ ShowModalSearch: false });
     try {
       const result = await Promise.all([
         await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
         await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`),
       ]);
-
-      console.log(result);
 
       this.setState({
         animToDetails: [result[1].data, result[0].data],
@@ -2959,7 +3057,9 @@ export default class Home extends Component {
               this.setState({
                 SwitchMyAnim: false,
                 NextAnim: animToDetails[1].title,
-                TagNA: "",
+                TagNA: animToDetails[1].genres
+                  .map((genre) => genre.name)
+                  .join(","),
                 animToDetails: [],
               });
               return;
