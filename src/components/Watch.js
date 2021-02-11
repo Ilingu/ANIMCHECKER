@@ -33,9 +33,6 @@ class Watch extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
-    ShowDataAnime: !JSON.parse(window.localStorage.getItem("ShowDataAnime"))
-      ? true
-      : JSON.parse(window.localStorage.getItem("ShowDataAnime")),
     modeStart: false,
     type: "",
     LoadingMode: true,
@@ -1091,7 +1088,6 @@ class Watch extends Component {
       ActionEndAnime,
       repereEpisode,
       Newtitle,
-      ShowDataAnime,
       repereSaison,
       ToOpen,
       LoadingMode,
@@ -1633,47 +1629,27 @@ class Watch extends Component {
                     </Dropdown>
                   </Fragment>
                 ) : null}
-                <Dropdown.Divider />
-                <Dropdown.Item>
-                  <Button
-                    style={{
-                      backgroundColor: "#301c4d",
-                      color: "#ddd",
-                      border: "none",
-                    }}
-                    block
-                    onClick={() => {
-                      window.localStorage.setItem(
-                        "ShowDataAnime",
-                        JSON.stringify(true)
-                      );
-                      this.setState({
-                        ShowDataAnime: true,
-                      });
-                    }}
-                  >
-                    <span className="fas fa-chart-bar"></span> Afficher les
-                    données
-                  </Button>
-                </Dropdown.Item>
                 {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
-                  <Dropdown.Item>
-                    <Button
-                      style={{
-                        backgroundColor: "gold",
-                        color: "#212121",
-                        border: "none",
-                      }}
-                      block
-                      onClick={() =>
-                        this.setState({
-                          ShowModalRateAnime: true,
-                        })
-                      }
-                    >
-                      <span className="fas fa-star"></span> Changer la note
-                    </Button>
-                  </Dropdown.Item>
+                  <Fragment>
+                    <Dropdown.Divider />
+                    <Dropdown.Item>
+                      <Button
+                        style={{
+                          backgroundColor: "gold",
+                          color: "#212121",
+                          border: "none",
+                        }}
+                        block
+                        onClick={() =>
+                          this.setState({
+                            ShowModalRateAnime: true,
+                          })
+                        }
+                      >
+                        <span className="fas fa-star"></span> Changer la note
+                      </Button>
+                    </Dropdown.Item>
+                  </Fragment>
                 ) : null}
                 <Dropdown.Divider />
                 {type === "serie" ? (
@@ -1900,7 +1876,7 @@ class Watch extends Component {
                 <div className="accordionAnimEP">{MyAnimAccordeon}</div>
               )}
             </div>
-            {ShowDataAnime && type === "serie" ? (
+            {type === "serie" ? (
               <div id="DataAnim">
                 <aside id="ProgressCircle">
                   <div className="percent">

@@ -2196,27 +2196,23 @@ export default class Home extends Component {
       });
   };
 
-  SeeInDetails = (id) => {
+  SeeInDetails = async (id) => {
     this.setState({ ShowModalSearch: false });
+    try {
+      const result = await Promise.all([
+        await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
+        await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`),
+      ]);
 
-    axios
-      .get(`https://api.jikan.moe/v3/anime/${id}`)
-      .then((result) => {
-        this.setState({
-          animToDetails: [result.data],
-          findAnim: [],
-        });
-      })
-      .catch(console.error);
-    axios
-      .get(`https://api.jikan.moe/v3/anime/${id}/episodes`)
-      .then((result) => {
-        this.setState({
-          animToDetails: [result.data, ...this.state.animToDetails],
-          findAnim: [],
-        });
-      })
-      .catch(console.error);
+      console.log(result);
+
+      this.setState({
+        animToDetails: [result[1].data, result[0].data],
+        findAnim: [],
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   openNext = (onDefault = null) => {
@@ -2958,7 +2954,16 @@ export default class Home extends Component {
           ShowMessage={ShowMessage}
           ShowMessageHtml={ShowMessageHtml}
           ResText={ResText}
-          handleAdd={() => {
+          handleAdd={(typePage) => {
+            if (typePage === "NA") {
+              this.setState({
+                SwitchMyAnim: false,
+                NextAnim: animToDetails[1].title,
+                TagNA: "",
+                animToDetails: [],
+              });
+              return;
+            }
             this.setState({
               title: animToDetails[1].title,
               type: animToDetails[1].type === "Movie" ? "film" : "serie",
@@ -2969,7 +2974,7 @@ export default class Home extends Component {
               nbEP:
                 animToDetails[1].type === "Movie"
                   ? ""
-                  : animToDetails[0].episodes.length.toString(),
+                  : animToDetails[0].episodes.length,
               imageUrl: this.handleDeleteImageURLParameter(
                 animToDetails[1].image_url
               ),

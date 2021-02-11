@@ -12,7 +12,8 @@ const OneAnim = ({
   ShowMessage,
   ResText,
 }) => {
-  let Episodes = details[0].episodes.map((EP) => (
+  console.log(details);
+  const Episodes = details[0].episodes.map((EP) => (
     <Episode
       key={EP.episode_id}
       imgUrl={details[1].image_url}
@@ -21,7 +22,10 @@ const OneAnim = ({
       title={EP.title}
     />
   ));
-
+  // Extra render
+  const Genres = details[1].genres.map((genre) => genre.name).join(", ");
+  const Studios = details[1].studios.map((studio) => studio.name).join(", ");
+  // Render
   return (
     <Fragment>
       <div className="container" id="oneAnim">
@@ -57,19 +61,37 @@ const OneAnim = ({
           <div className="content">
             <ul>
               <li>
-                Durée: <span className="info">{details[1].duration}</span>
-              </li>
-              <li>
                 Type:{" "}
                 <span className="info">
-                  {details[1].type === "Movie" ? details[1].type : "Anime"}
+                  {details[1].type === "Movie" ? details[1].type : "Series"}
                 </span>
               </li>
               <li>
-                Age requis: <span className="info">{details[1].rating}</span>
+                Genre{details[1].genres > 1 ? "s" : null}:{" "}
+                <span className="info">
+                  <b>{Genres}</b>
+                </span>
+              </li>
+              <li>
+                Popularité:{" "}
+                <span className="info">{details[1].popularity}/10</span>
+              </li>
+              <li>
+                Durée: <span className="info">{details[1].duration}</span>
+              </li>
+              <li>
+                Status: <span className="info">{details[1].status}</span>
+              </li>
+
+              <li>
+                Studio{details[1].studios > 1 ? "s" : null}:{" "}
+                <span className="info">{Studios}</span>
               </li>
               <li>
                 Premiere: <span className="info">{details[1].premiered}</span>
+              </li>
+              <li>
+                Age requis: <span className="info">{details[1].rating}</span>
               </li>
               <li>
                 Résumé: <span className="info">{details[1].synopsis}</span>
@@ -103,16 +125,24 @@ const OneAnim = ({
           </header>
           <div className="EpContent">{Episodes}</div>
         </section>
+        <Button
+          variant="primary"
+          id="fixedOnTop"
+          onClick={() => handleAdd("NA")}
+        >
+          <span className="fas fa-plus"></span> Ajouter aux "Next Anime"
+        </Button>
+        <Button
+          variant="success"
+          block
+          id="fixedOnBottom"
+          size="lg"
+          onClick={handleAdd}
+        >
+          <span className="fas fa-plus"></span> Ajouter {details[1].title}
+        </Button>
       </div>
-      <Button
-        variant="success"
-        block
-        className="fixedOnBottom"
-        size="lg"
-        onClick={handleAdd}
-      >
-        <span className="fas fa-plus"></span> Ajouter {details[1].title}
-      </Button>
+
       {ShowMessageHtml ? (
         <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
           <span className="fas fa-info"></span> {ResText}
