@@ -1416,11 +1416,10 @@ export default class Home extends Component {
                         ATitle.toLowerCase().includes(
                           titleSearchAnime.toLowerCase()
                         ))
-                    )
-                       {
-                         if (!AlreadyFind) index = [...index, i];
-                         AlreadyFind = true;
-                       }
+                    ) {
+                      if (!AlreadyFind) index = [...index, i];
+                      AlreadyFind = true;
+                    }
                   });
                 } else if (
                   (Tag.toLowerCase() === Bdg.toLowerCase() ||
@@ -1599,7 +1598,7 @@ export default class Home extends Component {
         if (Ep.finished) RepereStop = [Saison.name.split(" ")[1], Ep.id];
       });
     });
-    return RepereStop;
+    return RepereStop.length === 0 ? ["1", 0] : RepereStop;
   };
 
   CalculateProgressionAnime = (AnimEP) => {
@@ -1615,7 +1614,9 @@ export default class Home extends Component {
       return acc + 0;
     }, WhereStop[1]);
 
-    return Math.round((TotalEpWhereStop / TotalEP) * 100);
+    return TotalEpWhereStop === 0
+      ? 0
+      : Math.round((TotalEpWhereStop / TotalEP) * 100);
   };
 
   TakeImgFromName = async (

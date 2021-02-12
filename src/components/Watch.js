@@ -951,7 +951,7 @@ class Watch extends Component {
         if (Ep.finished) RepereStop = [Saison.name.split(" ")[1], Ep.id];
       });
     });
-    return RepereStop;
+    return RepereStop.length === 0 ? ["1", 0] : RepereStop;
   };
 
   CalculateProgressionAnime = () => {
@@ -968,7 +968,9 @@ class Watch extends Component {
       return acc + 0;
     }, WhereStop[1]);
 
-    return Math.round((TotalEpWhereStop / TotalEP) * 100);
+     return TotalEpWhereStop === 0
+       ? 0
+       : Math.round((TotalEpWhereStop / TotalEP) * 100);
   };
 
   ShareFinishedAnime = () => {
