@@ -860,7 +860,6 @@ export default class Home extends Component {
           ResText: "Votre requête d'ajout a réussite.",
           typeAlert: "success",
         });
-        this.clearPopOver();
       })
       .catch((err) => {
         console.error(err);
@@ -902,7 +901,6 @@ export default class Home extends Component {
           : this.refreshValueFirebase();
 
         if (Next !== null) Next();
-        this.clearPopOver();
       })
       .catch((err) => {
         this.OfflineMode(null, true);
@@ -926,7 +924,6 @@ export default class Home extends Component {
           ResText: "Votre requête de suppression a réussite.",
           typeAlert: "success",
         });
-        this.clearPopOver();
       })
       .catch((err) => {
         console.error(err);
@@ -2526,12 +2523,6 @@ export default class Home extends Component {
       durer: 110,
       nbEP: "",
       imageUrl: null,
-    });
-  };
-
-  clearPopOver = () => {
-    document.querySelectorAll(".popover").forEach((popover) => {
-      if (document.body.contains(popover)) popover.innerHTML = null;
     });
   };
 

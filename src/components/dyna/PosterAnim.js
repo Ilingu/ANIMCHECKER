@@ -71,7 +71,7 @@ const PosterAnim = ({
 
   const templatePoster = (
     <OverlayTrigger
-      trigger={["click"]}
+      trigger={["hover"]}
       className="TooltipPoster"
       placement="top"
       overlay={
