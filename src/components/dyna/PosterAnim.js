@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import { Badge, Popover, OverlayTrigger, ProgressBar } from "react-bootstrap";
 import { Link } from "react-router-dom";
 // Img
@@ -65,17 +65,22 @@ const PosterAnim = ({
   ReTakeImgFromName,
 }) => {
   let Fav = isFav;
+  const [ShowOverlay, setShowOverlay] = useState(false);
 
   if (url === "PlaceHolderImg" && !NotAskAgain) ReTakeImgFromName();
   else if (url && inMyAnim) CheckNotUrlParams(url);
 
   const templatePoster = (
     <OverlayTrigger
-      trigger={["hover"]}
+      show={ShowOverlay}
       className="TooltipPoster"
-      placement="top"
+      placement="auto"
       overlay={
-        <Popover id="popover-basic">
+        <Popover
+          id="popover-basic"
+          onMouseEnter={() => setShowOverlay(true)}
+          onMouseLeave={() => setShowOverlay(false)}
+        >
           <Popover.Title as="h3">{title}</Popover.Title>
           <Popover.Content>
             {type === "serie" ? (
@@ -131,6 +136,8 @@ const PosterAnim = ({
       }
     >
       <div
+        onMouseEnter={() => setShowOverlay(true)}
+        onMouseLeave={() => setShowOverlay(false)}
         className={
           Skeleton
             ? "MyAnimPoster Skeleton"
