@@ -251,194 +251,197 @@ class Settings extends Component {
 
     return (
       <Fragment>
-        <section id="Settings">
-          <header>
-            <Link push="true" to="/">
-              <Button className="btnBackDesing">
-                <span className="fas fa-arrow-left"></span> Retour
+        <div className="container">
+          <section id="Settings">
+            <header>
+              <Link push="true" to="/">
+                <Button className="btnBackDesing">
+                  <span className="fas fa-arrow-left"></span> Retour
+                </Button>
+              </Link>
+              <h2>
+                <span className="fas fa-cog fa-spin"></span>
+                {Pseudo}, voici tes paramètres
+                <span className="fas fa-cog fa-spin"></span>
+              </h2>
+              <div id="returnAlert">
+                {ResText === null && typeAlert === null ? null : (
+                  <Alert
+                    variant={typeAlert}
+                    onClose={this.cancelState}
+                    dismissible
+                  >
+                    <p>{ResText}</p>
+                  </Alert>
+                )}
+              </div>
+            </header>
+            <div id="ActionAccount">
+              <h1>Action:</h1>
+              <Button
+                variant="outline-primary"
+                className="BtnActionAccount"
+                disabled={OfflineMode}
+                onClick={() => this.setState({ ShowModalChangePseudo: true })}
+              >
+                <span className="fas fa-user"></span> Changer De Pseudo
               </Button>
-            </Link>
-            <h2>
-              <span className="fas fa-cog fa-spin"></span>
-              {Pseudo}, voici tes paramètres
-              <span className="fas fa-cog fa-spin"></span>
-            </h2>
-            <div id="returnAlert">
-              {ResText === null && typeAlert === null ? null : (
-                <Alert
-                  variant={typeAlert}
-                  onClose={this.cancelState}
-                  dismissible
-                >
-                  <p>{ResText}</p>
-                </Alert>
-              )}
-            </div>
-          </header>
-          <div id="ActionAccount">
-            <h1>Action:</h1>
-            <Button
-              variant="outline-primary"
-              className="BtnActionAccount"
-              disabled={OfflineMode}
-              onClick={() => this.setState({ ShowModalChangePseudo: true })}
-            >
-              <span className="fas fa-user"></span> Changer De Pseudo
-            </Button>
-            {ParamsOptn === null ? null : (
-              <Fragment>
-                <Button
-                  variant={
-                    ParamsOptn.NotifState === false
-                      ? "outline-info"
-                      : "outline-warning"
-                  }
-                  onClick={() =>
-                    this.updateValue(
-                      `${Pseudo}/ParamsOptn`,
-                      {
-                        NotifState:
-                          ParamsOptn.NotifState === false ? true : false,
-                      },
-                      this.refreshParamsOptn
-                    )
-                  }
-                  className="BtnActionAccount"
-                >
-                  {ParamsOptn.NotifState === false ? (
-                    <Fragment>
-                      <span className="fas fa-bell"></span>
-                      Activer{" "}
-                    </Fragment>
-                  ) : (
-                    <Fragment>
-                      <span className="fas fa-bell-slash"></span>
-                      Désactiver{" "}
-                    </Fragment>
-                  )}
-                  les Notif
-                </Button>
-                <Button
-                  variant="outline-light"
-                  className="BtnActionAccount"
-                  onClick={() =>
-                    this.updateValue(
-                      `${Pseudo}/ParamsOptn`,
-                      {
-                        MyAnimRandom:
-                          ParamsOptn.MyAnimRandom === false ? true : false,
-                      },
-                      this.refreshParamsOptn
-                    )
-                  }
-                >
-                  <span className="fas fa-dice"></span> Mélange de la liste
-                  d'anime: {ParamsOptn.MyAnimRandom === false ? "Off" : "On"}
-                </Button>
-                <Button
-                  variant="outline-info"
-                  className="BtnActionAccount"
-                  onClick={() =>
-                    this.updateValue(
-                      `${Pseudo}/ParamsOptn`,
-                      {
-                        SmartRepere:
-                          ParamsOptn.SmartRepere === false ? true : false,
-                      },
-                      this.refreshParamsOptn
-                    )
-                  }
-                >
-                  <span className="fas fa-eye"></span> Repere de votre
-                  progression intelligente:{" "}
-                  {ParamsOptn.SmartRepere === false ? "Off" : "On"}
-                </Button>
-                <Form>
-                  <Form.Group controlId="animeAcueill">
-                    <Form.Control
-                      value={
-                        ParamsOptn.TypeAnimeHomePage
-                          ? ParamsOptn.TypeAnimeHomePage
-                          : "NotFinished"
-                      }
-                      onChange={(event) => {
-                        this.updateValue(
-                          `${Pseudo}/ParamsOptn`,
-                          {
-                            TypeAnimeHomePage: event.target.value,
-                          },
-                          this.refreshParamsOptn
-                        );
-                        this.setState({
-                          ResText: `A votre retour sur votre page d'accueil vous verez maintenant ${
-                            event.target.value === "All"
-                              ? "Tous vos Anime"
-                              : `vos animes ${event.target.value}`
-                          }`,
-                          typeAlert: "success",
-                        });
-                        setTimeout(() => {
+              {ParamsOptn === null ? null : (
+                <Fragment>
+                  <Button
+                    variant={
+                      ParamsOptn.NotifState === false
+                        ? "outline-info"
+                        : "outline-warning"
+                    }
+                    onClick={() =>
+                      this.updateValue(
+                        `${Pseudo}/ParamsOptn`,
+                        {
+                          NotifState:
+                            ParamsOptn.NotifState === false ? true : false,
+                        },
+                        this.refreshParamsOptn
+                      )
+                    }
+                    className="BtnActionAccount"
+                  >
+                    {ParamsOptn.NotifState === false ? (
+                      <Fragment>
+                        <span className="fas fa-bell"></span>
+                        Activer{" "}
+                      </Fragment>
+                    ) : (
+                      <Fragment>
+                        <span className="fas fa-bell-slash"></span>
+                        Désactiver{" "}
+                      </Fragment>
+                    )}
+                    les Notif
+                  </Button>
+                  <Button
+                    variant="outline-light"
+                    className="BtnActionAccount"
+                    onClick={() =>
+                      this.updateValue(
+                        `${Pseudo}/ParamsOptn`,
+                        {
+                          MyAnimRandom:
+                            ParamsOptn.MyAnimRandom === false ? true : false,
+                        },
+                        this.refreshParamsOptn
+                      )
+                    }
+                  >
+                    <span className="fas fa-dice"></span> Mélange de la liste
+                    d'anime: {ParamsOptn.MyAnimRandom === false ? "Off" : "On"}
+                  </Button>
+                  <Button
+                    variant="outline-info"
+                    className="BtnActionAccount"
+                    onClick={() =>
+                      this.updateValue(
+                        `${Pseudo}/ParamsOptn`,
+                        {
+                          SmartRepere:
+                            ParamsOptn.SmartRepere === false ? true : false,
+                        },
+                        this.refreshParamsOptn
+                      )
+                    }
+                  >
+                    <span className="fas fa-eye"></span> Repere de votre
+                    progression intelligente:{" "}
+                    {ParamsOptn.SmartRepere === false ? "Off" : "On"}
+                  </Button>
+                  <Form>
+                    <Form.Group controlId="animeAcueill">
+                      <Form.Control
+                        value={
+                          ParamsOptn.TypeAnimeHomePage
+                            ? ParamsOptn.TypeAnimeHomePage
+                            : "NotFinished"
+                        }
+                        onChange={(event) => {
+                          this.updateValue(
+                            `${Pseudo}/ParamsOptn`,
+                            {
+                              TypeAnimeHomePage: event.target.value,
+                            },
+                            this.refreshParamsOptn
+                          );
                           this.setState({
-                            ResText: null,
-                            typeAlert: null,
+                            ResText: `A votre retour sur votre page d'accueil vous verez maintenant ${
+                              event.target.value === "All"
+                                ? "Tous vos Anime"
+                                : `vos animes ${event.target.value}`
+                            }`,
+                            typeAlert: "success",
                           });
-                        }, 3600);
-                      }}
-                      as="select"
-                      custom
-                    >
-                      <option value="NotFinished">
-                        Page d'accueil sur tes animes En Cours
-                      </option>
-                      <option value="seasonAnim">
-                        Page d'accueil sur tes animes De Saison
-                      </option>
-                      <option value="Finished">
-                        Page d'accueil sur tes animes Finis
-                      </option>
-                      <option value="Paused">
-                        Page d'accueil sur tes animes En Pauses
-                      </option>
-                      <option value="Drop">
-                        Page d'accueil sur tes animes que ta arrêter en cours
-                      </option>
-                      <option value="Rate">
-                        Page d'accueil sur tes animes Notés
-                      </option>
-                      <option value="fav">
-                        Page d'accueil sur tes animes Favoris
-                      </option>
-                      <option value="All">
-                        Page d'accueil sur Tous tes animes
-                      </option>
-                    </Form.Control>
-                  </Form.Group>
-                </Form>
-              </Fragment>
-            )}
-            <hr />
-            <Button
-              variant="outline-dark"
-              disabled={OfflineMode}
-              className="BtnActionAccount"
-              onClick={() => {
-                this.cancelState();
-                if (OfflineMode) return;
-                this.setState({ ShowModalResetData: true });
-              }}
-            >
-              <span className="fas fa-history"></span> Réinitialiser les données
-            </Button>
-            <Button
-              variant="outline-danger"
-              disabled={OfflineMode}
-              className="BtnActionAccount"
-              onClick={() => this.setState({ ShowModalDeleteUser: true })}
-            >
-              <span className="fas fa-user-times"></span> Supprimer le compte
-            </Button>
-          </div>
-        </section>
+                          setTimeout(() => {
+                            this.setState({
+                              ResText: null,
+                              typeAlert: null,
+                            });
+                          }, 3600);
+                        }}
+                        as="select"
+                        custom
+                      >
+                        <option value="NotFinished">
+                          Page d'accueil sur tes animes En Cours
+                        </option>
+                        <option value="seasonAnim">
+                          Page d'accueil sur tes animes De Saison
+                        </option>
+                        <option value="Finished">
+                          Page d'accueil sur tes animes Finis
+                        </option>
+                        <option value="Paused">
+                          Page d'accueil sur tes animes En Pauses
+                        </option>
+                        <option value="Drop">
+                          Page d'accueil sur tes animes que ta arrêter en cours
+                        </option>
+                        <option value="Rate">
+                          Page d'accueil sur tes animes Notés
+                        </option>
+                        <option value="fav">
+                          Page d'accueil sur tes animes Favoris
+                        </option>
+                        <option value="All">
+                          Page d'accueil sur Tous tes animes
+                        </option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Form>
+                </Fragment>
+              )}
+              <hr />
+              <Button
+                variant="outline-dark"
+                disabled={OfflineMode}
+                className="BtnActionAccount"
+                onClick={() => {
+                  this.cancelState();
+                  if (OfflineMode) return;
+                  this.setState({ ShowModalResetData: true });
+                }}
+              >
+                <span className="fas fa-history"></span> Réinitialiser les
+                données
+              </Button>
+              <Button
+                variant="outline-danger"
+                disabled={OfflineMode}
+                className="BtnActionAccount"
+                onClick={() => this.setState({ ShowModalDeleteUser: true })}
+              >
+                <span className="fas fa-user-times"></span> Supprimer le compte
+              </Button>
+            </div>
+          </section>
+        </div>
         {/* MODAL */}
         <Modal
           show={ShowModalChangePseudo && OfflineMode === false}

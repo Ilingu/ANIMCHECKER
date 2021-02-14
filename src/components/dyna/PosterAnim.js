@@ -74,7 +74,7 @@ const PosterAnim = ({
     <OverlayTrigger
       show={ShowOverlay}
       className="TooltipPoster"
-      placement="auto"
+      placement="top"
       overlay={
         <Popover
           id="popover-basic"

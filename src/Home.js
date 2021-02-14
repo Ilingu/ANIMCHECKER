@@ -2383,7 +2383,10 @@ export default class Home extends Component {
         )}%`,
       ],
       durerFilm: (
-        parseFloat("0." + (DurerTotal / 60).toString().split(".")[1]) * 0.6 +
+        parseFloat("0." + (DurerTotal / 60).toString().split(".")[1]).toFixed(
+          1
+        ) *
+          0.6 +
         parseInt((DurerTotal / 60).toString().split(".")[0])
       ).toString(),
       EnCours:

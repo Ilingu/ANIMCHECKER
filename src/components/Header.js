@@ -95,14 +95,16 @@ const Header = () => {
 
   return (
     <Fragment>
-      <Navbar bg="light" expand="lg">
+      <Navbar bg="dark" variant="dark" expand="lg">
         <Navbar.Brand>ACK</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
-            <Link push="true" to={`/notificator/${Context.Pseudo}`}>
-              <Button variant="outline-info">My Notif</Button>
-            </Link>
+            <Nav.Item>
+              <Link push="true" to={`/notificator/${Context.Pseudo}`}>
+                <Button variant="outline-info">My Notif</Button>
+              </Link>
+            </Nav.Item>
+
             <Nav.Item>
               <Button
                 variant="outline-success"
