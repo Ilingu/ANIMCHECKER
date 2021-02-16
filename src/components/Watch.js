@@ -3,6 +3,7 @@ import { Redirect, Link } from "react-router-dom";
 import { openDB } from "idb";
 import ObjectPath from "object-path";
 import ReactStars from "react-rating-stars-component";
+import { Fireworks } from "fireworks/lib/react";
 // Components
 import AnimEpCo from "./dyna/AnimEp";
 // Img
@@ -33,7 +34,7 @@ class Watch extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
-    modeStart: false,
+    modeWatch: false,
     type: "",
     LoadingMode: true,
     isFirstTime: true,
@@ -43,6 +44,7 @@ class Watch extends Component {
     ModeEditTitle: false,
     ShowFormBadge: false,
     ShowModalRateAnime: false,
+    ShowModalAddObjectif: false,
     ShowMessage: false,
     ShowMessageHtml: false,
     SmartRepere: true,
@@ -51,6 +53,8 @@ class Watch extends Component {
     DropWithAlleged: false,
     AlreadyClicked: false,
     ResText: null,
+    // Fun
+    LetsCelebrate: false,
     // Repere
     repereSaison: {},
     repereEpisode: [],
@@ -59,6 +63,7 @@ class Watch extends Component {
     Rate: 7.5,
     nbEpToAddToHave: [1, 1],
     Newtitle: "",
+    nbEpObjectif: 1,
     NewBadgeName: "",
     ActionEndAnime: [false, false, false],
     nbEpToAdd: 1,
@@ -466,10 +471,15 @@ class Watch extends Component {
   StartModeWatch = () => {
     window.scrollTo(0, 0);
     document.body.style.cssText = "overflow: hidden;";
-    this.setState({ modeStart: true });
+    this.setState({ modeWatch: true });
   };
 
-  setRepere = (Saison, idEp, smart = false) => {
+  StopModeWatch = () => {
+    document.body.style.cssText = "overflow: unset;";
+    this.setState({ modeWatch: false });
+  };
+
+  setRepere = (Saison, idEp, smart = false, addObjectif = false) => {
     let previousEp, nextEp, thisEp, Ep;
 
     if (smart && this.state.SmartRepere) {
@@ -525,11 +535,12 @@ class Watch extends Component {
       repereEpisode: [previousEp, thisEp, nextEp],
       repereSaison: Saison,
     });
-  };
-
-  StopModeWatch = () => {
-    document.body.style.cssText = "overflow: unset;";
-    this.setState({ modeStart: false });
+    if (addObjectif) {
+      this.setState({
+        ShowModalAddObjectif: true,
+        nbEpObjectif: this.CalculateWhereStop()[1] + 1,
+      });
+    }
   };
 
   endAnime = () => {
@@ -619,7 +630,6 @@ class Watch extends Component {
       AnimToWatch,
       repereEpisode,
       repereSaison,
-      SecondMessage,
       AlreadyClicked,
     } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
@@ -633,30 +643,21 @@ class Watch extends Component {
           if (verified) this.verifiedEPRepere(Saison, false);
           if (next !== null) next();
 
-          this.setState({
-            SecondMessage: AlreadyClicked ? true : false,
-            AlreadyClicked: true,
-            ShowMessage: true,
-            ShowMessageHtml: true,
-            ResText: `Episode ${repereEpisode[1].id}(S${
-              Object.keys(repereSaison).length === 0
-                ? null
-                : repereSaison.name.split(" ")[1]
-            }) fini !`,
-          });
-
-          setTimeout(() => {
-            if (SecondMessage) {
-              this.setState({ SecondMessage: false });
-              return;
-            }
-
-            this.setState({ ShowMessage: false, AlreadyClicked: false });
-
-            setTimeout(() => {
-              this.setState({ ShowMessageHtml: false, ResText: null });
-            }, 900);
-          }, 3000);
+          this.setState(
+            {
+              SecondMessage: AlreadyClicked ? true : false,
+              AlreadyClicked: true,
+            },
+            () =>
+              this.DisplayMsg(
+                `Episode ${repereEpisode[1].id}(S${
+                  Object.keys(repereSaison).length === 0
+                    ? null
+                    : repereSaison.name.split(" ")[1]
+                }) fini !`,
+                3000
+              )
+          );
         },
         true
       );
@@ -672,30 +673,32 @@ class Watch extends Component {
         );
       }
     } else {
-      this.setState({
-        SecondMessage: AlreadyClicked ? true : false,
-        AlreadyClicked: true,
-        ShowMessage: true,
-        ShowMessageHtml: true,
-        ResText: `Episode ${repereEpisode[1].id}(S${
-          Object.keys(repereSaison).length === 0
-            ? null
-            : repereSaison.name.split(" ")[1]
-        }) déjà fini`,
-      });
-
-      setTimeout(() => {
-        if (SecondMessage) {
-          this.setState({ SecondMessage: false });
-          return;
-        }
-
-        this.setState({ ShowMessage: false, AlreadyClicked: false });
-
-        setTimeout(() => {
-          this.setState({ ShowMessageHtml: false, ResText: null });
-        }, 900);
-      }, 3000);
+      this.setState(
+        {
+          SecondMessage: AlreadyClicked ? true : false,
+          AlreadyClicked: true,
+        },
+        () =>
+          this.DisplayMsg(
+            `Episode ${repereEpisode[1].id}(S${
+              Object.keys(repereSaison).length === 0
+                ? null
+                : repereSaison.name.split(" ")[1]
+            }) déjà fini`,
+            3000
+          )
+      );
+    }
+    if (
+      AnimToWatch.Objectif !== undefined &&
+      this.CalculateWhereStop()[1] + 1 === AnimToWatch.Objectif.End[1]
+    ) {
+      this.deleteValue(`${Pseudo}/serie/${id}/Objectif`);
+      if (!this.state.OfflineMode) {
+        this.fnDbOffline("DELETE", `${Pseudo}/serie/${id}/Objectif`);
+      }
+      this.StopModeWatch();
+      this.setState({ LetsCelebrate: true });
     }
   };
 
@@ -720,8 +723,8 @@ class Watch extends Component {
       } catch (error) {
         this.setRepere(AnimToWatch.AnimEP[0], 1);
       }
+      this.StartModeWatch();
     }
-    this.StartModeWatch();
   };
 
   playEp = (Saison, idEp) => {
@@ -866,6 +869,33 @@ class Watch extends Component {
     }
   };
 
+  DisplayMsg = (msg, time) => {
+    this.setState({
+      ShowMessage: true,
+      ShowMessageHtml: true,
+      ResText: msg,
+    });
+
+    setTimeout(() => {
+      if (this.state.SecondMessage) {
+        this.setState({ SecondMessage: false });
+        return;
+      }
+
+      this.setState({
+        ShowMessage: false,
+        AlreadyClicked: false,
+      });
+
+      setTimeout(() => {
+        this.setState({
+          ShowMessageHtml: false,
+          ResText: null,
+        });
+      }, 900);
+    }, time);
+  };
+
   RemoveAnimVal = (typeRemove, idSeason, idEP) => {
     const { Pseudo, id, AnimToWatch } = this.state;
 
@@ -968,9 +998,24 @@ class Watch extends Component {
       return acc + 0;
     }, WhereStop[1]);
 
-     return TotalEpWhereStop === 0
-       ? 0
-       : Math.round((TotalEpWhereStop / TotalEP) * 100);
+    return TotalEpWhereStop === 0
+      ? 0
+      : Math.round((TotalEpWhereStop / TotalEP) * 100);
+  };
+
+  CalculateTimeDifference = (date1, date2) => {
+    const Date1 = new Date(date1),
+      Date2 = new Date(date2);
+    const DifferenceInTime = Date2.getTime() - Date1.getTime();
+    if (DifferenceInTime / (1000 * 3600 * 24) > 1)
+      return `${Math.round(DifferenceInTime / (1000 * 3600 * 24))} Jours`;
+    else if (DifferenceInTime / 36000000 > 1) {
+      return `${Math.round(DifferenceInTime / 36000000)} Heures`;
+    } else if (DifferenceInTime / 60000 > 1) {
+      return `${Math.round(DifferenceInTime / 60000)} Minutes`;
+    } else {
+      return `${Math.round(DifferenceInTime / 1000)} Secondes`;
+    }
   };
 
   ShareFinishedAnime = () => {
@@ -1079,16 +1124,18 @@ class Watch extends Component {
       ShowModalRateAnime,
       Rate,
       ShowFormBadge,
+      LetsCelebrate,
       NewBadgeName,
-      SecondMessage,
       nbEpToAddToHave,
-      modeStart,
+      modeWatch,
       ShowModalVerification,
       ShowMessage,
       ShowMessageHtml,
       ResText,
       ActionEndAnime,
       repereEpisode,
+      ShowModalAddObjectif,
+      nbEpObjectif,
       Newtitle,
       repereSaison,
       ToOpen,
@@ -1405,7 +1452,11 @@ class Watch extends Component {
 
     return (
       <section id="Watch">
-        <div className={modeStart ? "nonStartMod" : "nonStartMod active"}>
+        <div
+          className={
+            modeWatch || LetsCelebrate ? "nonStartMod" : "nonStartMod active"
+          }
+        >
           <header>
             <h1
               onDoubleClick={() => {
@@ -1489,7 +1540,9 @@ class Watch extends Component {
                 </span>
               ) : null}
               <div
-                className="play"
+                className={
+                  AnimToWatch.Objectif !== undefined ? "play Objectif" : "play"
+                }
                 onClick={() => {
                   type === "serie" ? this.StartNextEP() : this.StartModeWatch();
                 }}
@@ -1504,7 +1557,7 @@ class Watch extends Component {
                 <span className="fas fa-arrow-left"></span> Retour
               </Button>
             </Link>
-            <Dropdown>
+            <Dropdown drop="left">
               <Dropdown.Toggle variant="outline-secondary" id="DropdownAction">
                 <span className="fas fa-bars"></span>
               </Dropdown.Toggle>
@@ -1523,6 +1576,27 @@ class Watch extends Component {
                         <span className="fas fa-plus"></span> Ajouter une saison
                       </Button>
                     </Dropdown.Item>
+                    {AnimToWatch.AnimeSeason === true ? null : (
+                      <Dropdown.Item>
+                        <Button
+                          block
+                          style={{ backgroundColor: "#301c4d", border: "none" }}
+                          onClick={() => {
+                            this.setRepere(
+                              AnimToWatch.AnimEP[
+                                parseInt(this.CalculateWhereStop()[0]) - 1
+                              ],
+                              this.CalculateWhereStop()[1],
+                              false,
+                              true
+                            );
+                          }}
+                        >
+                          <span className="fas fa-bullseye"></span> Ajouter Un
+                          Objectif
+                        </Button>
+                      </Dropdown.Item>
+                    )}
                     <Dropdown.Item>
                       <Button
                         variant="dark"
@@ -1534,32 +1608,7 @@ class Watch extends Component {
                                 ? null
                                 : true,
                             },
-                            () => {
-                              this.setState({
-                                ShowMessage: true,
-                                ShowMessageHtml: true,
-                                ResText: "Changement opéré !",
-                              });
-
-                              setTimeout(() => {
-                                if (SecondMessage) {
-                                  this.setState({ SecondMessage: false });
-                                  return;
-                                }
-
-                                this.setState({
-                                  ShowMessage: false,
-                                  AlreadyClicked: false,
-                                });
-
-                                setTimeout(() => {
-                                  this.setState({
-                                    ShowMessageHtml: false,
-                                    ResText: null,
-                                  });
-                                }, 900);
-                              }, 3000);
-                            }
+                            () => this.DisplayMsg("Changement opéré !", 3000)
                           );
 
                           if (!this.state.OfflineMode) {
@@ -1800,6 +1849,87 @@ class Watch extends Component {
                 <span className="fas fa-plus-circle"></span>
               </Badge>
             </div>
+            {type === "serie" ? (
+              <Fragment>
+                {AnimToWatch.Objectif !== undefined ? (
+                  <div id="Objectif">
+                    <div className="TitleObjectif">Objectif:</div>
+                    <aside id="ObjectifEnd" title="Fin de l'objectif">
+                      <span className="fas fa-bullseye"></span> S
+                      <b>{AnimToWatch.Objectif.End[0]}</b> EP
+                      <b>{AnimToWatch.Objectif.End[1]}</b>
+                    </aside>
+                    <div className="TitleObjectif">Prochain EP:</div>
+                    <aside id="ObjectifNow">
+                      <span
+                        style={{ color: "#301c4d" }}
+                        className="fas fa-play"
+                      ></span>{" "}
+                      S<b>{this.CalculateWhereStop()[0]}</b> EP
+                      <b>
+                        {this.CalculateWhereStop()[1] + 1 < 10
+                          ? `0${this.CalculateWhereStop()[1] + 1}`
+                          : this.CalculateWhereStop()[1] + 1}
+                      </b>
+                    </aside>
+                    <div className="TitleObjectif">Progression:</div>
+                    <aside id="ObjectifProgress">
+                      {Math.round(
+                        ((this.CalculateWhereStop()[1] -
+                          AnimToWatch.Objectif.Begin[1]) /
+                          (AnimToWatch.Objectif.End[1] -
+                            AnimToWatch.Objectif.Begin[1])) *
+                          100
+                      )}{" "}
+                      % de l'objectif
+                    </aside>
+                    <div className="TitleObjectif">Début il y a:</div>
+                    <aside id="BeginAtObjectif">
+                      <span className="fas fa-hourglass-half"></span>{" "}
+                      {this.CalculateTimeDifference(
+                        AnimToWatch.Objectif.Begin[2],
+                        Date.now()
+                      )}
+                    </aside>
+                  </div>
+                ) : null}
+                <div id="DataAnim">
+                  <aside id="ProgressCircle">
+                    <div className="percent">
+                      <svg>
+                        <circle cx="70" cy="70" r="70"></circle>
+                        <circle
+                          style={{
+                            "--value": this.CalculateProgressionAnime(),
+                          }}
+                          cx="70"
+                          cy="70"
+                          r="70"
+                        ></circle>
+                      </svg>
+                      <div className="number">
+                        <h2>
+                          {this.CalculateProgressionAnime()}
+                          <span>%</span>
+                        </h2>
+                      </div>
+                    </div>
+                  </aside>
+                  <aside id="continuedAnim" onClick={this.StartNextEP}>
+                    <span
+                      style={{ color: "yellowgreen" }}
+                      className="fas fa-play"
+                    ></span>{" "}
+                    S<b>{this.CalculateWhereStop()[0]}</b> EP
+                    <b>
+                      {this.CalculateWhereStop()[1] + 1 < 10
+                        ? `0${this.CalculateWhereStop()[1] + 1}`
+                        : this.CalculateWhereStop()[1] + 1}
+                    </b>
+                  </aside>
+                </div>
+              </Fragment>
+            ) : null}
             <header>
               <h1
                 className={`${
@@ -1878,44 +2008,28 @@ class Watch extends Component {
                 <div className="accordionAnimEP">{MyAnimAccordeon}</div>
               )}
             </div>
-            {type === "serie" ? (
-              <div id="DataAnim">
-                <aside id="ProgressCircle">
-                  <div className="percent">
-                    <svg>
-                      <circle cx="70" cy="70" r="70"></circle>
-                      <circle
-                        style={{ "--value": this.CalculateProgressionAnime() }}
-                        cx="70"
-                        cy="70"
-                        r="70"
-                      ></circle>
-                    </svg>
-                    <div className="number">
-                      <h2>
-                        {this.CalculateProgressionAnime()}
-                        <span>%</span>
-                      </h2>
-                    </div>
-                  </div>
-                </aside>
-                <aside id="continuedAnim" onClick={this.StartNextEP}>
-                  <span
-                    style={{ color: "yellowgreen" }}
-                    className="fas fa-play"
-                  ></span>{" "}
-                  S<b>{this.CalculateWhereStop()[0]}</b> EP
-                  <b>
-                    {this.CalculateWhereStop()[1] + 1 < 10
-                      ? `0${this.CalculateWhereStop()[1] + 1}`
-                      : this.CalculateWhereStop()[1] + 1}
-                  </b>
-                </aside>
-              </div>
-            ) : null}
           </section>
         </div>
-        <div className={modeStart ? "StartMod active" : "StartMod"}>
+        {LetsCelebrate ? (
+          <div id="Celebrate">
+            <Fireworks
+              count={3}
+              interval={370}
+              colors={["#cc3333", "#4CAF50", "#81C784"]}
+              calc={(props, i) => ({
+                ...props,
+                x: (i + 1) * (window.innerWidth / 3) - (i + 1) * 100,
+                y: 200 + Math.random() * 100 - 50 + (i === 2 ? -80 : 0),
+              })}
+            />
+            <h1 onClick={() => this.setState({ LetsCelebrate: false })}>
+              <span style={{ color: "gold" }} className="fas fa-trophy"></span>{" "}
+              Bravo Votre Objectif est fini !{" "}
+              <span className="fas fa-times-circle"></span>
+            </h1>
+          </div>
+        ) : null}
+        <div className={modeWatch ? "StartMod active" : "StartMod"}>
           <div className="cancel" onClick={this.StopModeWatch}>
             <span className="fas fa-ban"></span>
           </div>
@@ -2228,32 +2342,10 @@ class Watch extends Component {
                     Rate: 0,
                   });
                 } else {
-                  this.setState({
-                    AlreadyClicked: true,
-                    ShowMessage: true,
-                    ShowMessageHtml: true,
-                    ResText:
-                      "Impossible de noter si l'anime n'ai pas fini ou que la note soit incorrect.",
-                  });
-
-                  setTimeout(() => {
-                    if (SecondMessage) {
-                      this.setState({ SecondMessage: false });
-                      return;
-                    }
-
-                    this.setState({
-                      ShowMessage: false,
-                      AlreadyClicked: false,
-                    });
-
-                    setTimeout(() => {
-                      this.setState({
-                        ShowMessageHtml: false,
-                        ResText: null,
-                      });
-                    }, 900);
-                  }, 6000);
+                  this.DisplayMsg(
+                    "Impossible de noter si l'anime n'ai pas fini ou que la note soit incorrect.",
+                    6000
+                  );
                 }
                 if (GoToHome) this.setState({ uid: null, RedirectHome: true });
               }}
@@ -2321,6 +2413,85 @@ class Watch extends Component {
               onClick={() => this.addEp(SeasonToAddEp, nbEpToAdd)}
             >
               <span className="fas fa-plus"></span> Ajouter {nbEpToAdd + " EP"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={ShowModalAddObjectif}
+          onHide={() => this.setState({ ShowModalAddObjectif: false })}
+        >
+          <Modal.Header id="ModalTitle" closeButton>
+            <Modal.Title>Ajouter Un Objectif</Modal.Title>
+          </Modal.Header>
+          <Modal.Body id="ModalBody">
+            <Form id="Addep">
+              <Form.Group controlId="EpToAdd">
+                <Form.Label>Nombres d'ep à rajouter</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={nbEpObjectif.toString()}
+                  min={1}
+                  placeholder="Objectif à atteindre"
+                  autoComplete="off"
+                  onChange={(event) =>
+                    this.setState({
+                      nbEpObjectif: parseInt(event.target.value),
+                    })
+                  }
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer id="ModalFooter">
+            <Button
+              variant="secondary"
+              onClick={() => this.setState({ ShowModalAddObjectif: false })}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={() => {
+                if (
+                  type !== "serie" ||
+                  AnimToWatch.AnimeSeason === true ||
+                  typeof nbEpObjectif !== "number" ||
+                  nbEpObjectif <= this.CalculateWhereStop()[1]
+                )
+                  return;
+                this.updateValue(`${Pseudo}/serie/${id}`, {
+                  Objectif: {
+                    Begin: [
+                      parseInt(repereSaison.name.split(" ")[1]),
+                      this.CalculateWhereStop()[1],
+                      Date.now(),
+                    ],
+                    End: [
+                      parseInt(repereSaison.name.split(" ")[1]),
+                      nbEpObjectif,
+                    ],
+                  },
+                });
+                if (!this.state.OfflineMode) {
+                  this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
+                    Objectif: {
+                      Begin: [
+                        parseInt(repereSaison.name.split(" ")[1]),
+                        this.CalculateWhereStop()[1],
+                        Date.now(),
+                      ],
+                      End: [
+                        parseInt(repereSaison.name.split(" ")[1]),
+                        nbEpObjectif,
+                      ],
+                    },
+                  });
+                }
+                this.setState({ ShowModalAddObjectif: false, nbEpObjectif: 1 });
+              }}
+              style={{ backgroundColor: "#301c4d", border: "none" }}
+            >
+              <span className="fas fa-bullseye"></span> Ajouter
             </Button>
           </Modal.Footer>
         </Modal>

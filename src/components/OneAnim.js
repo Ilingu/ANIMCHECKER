@@ -12,7 +12,6 @@ const OneAnim = ({
   ShowMessage,
   ResText,
 }) => {
-  console.log(details);
   const Episodes = details[0].episodes.map((EP) => (
     <Episode
       key={EP.episode_id}
@@ -74,7 +73,10 @@ const OneAnim = ({
               </li>
               <li>
                 Popularité:{" "}
-                <span className="info">{details[1].popularity}/10</span>
+                <span className="info">
+                  {details[1].popularity}
+                  <sup>ème</sup>
+                </span>
               </li>
               <li>
                 Durée: <span className="info">{details[1].duration}</span>
