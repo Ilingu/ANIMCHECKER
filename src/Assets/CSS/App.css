@@ -23,6 +23,38 @@ body {
   color: #ff6d00;
 }
 
+::-webkit-scrollbar {
+  width: 13px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#485563), to(#29323c));
+  background-image: linear-gradient(#485563, #29323c);
+  border-radius: 25px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ff6d00), to(#ffa661));
+  background-image: linear-gradient(#ff6d00, #ffa661);
+  -webkit-box-shadow: 5px 5px 10px #000;
+          box-shadow: 5px 5px 10px #000;
+  border-radius: 25px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffa661), to(#ff6d00));
+  background-image: linear-gradient(#ffa661, #ff6d00);
+}
+
+@media print {
+  html {
+    display: none;
+  }
+}
+
 ::-moz-selection {
   background-color: #ff6d00;
   color: #212121;
@@ -50,6 +82,10 @@ a:hover {
   color: #007bff;
   background-color: #fff;
   border-radius: 50px;
+}
+
+.btnBackDesing.Foreground {
+  pointer-events: auto !important;
 }
 
 .FakeDropDownItem {
@@ -2031,7 +2067,7 @@ a:hover {
   text-decoration: none;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -2044,9 +2080,9 @@ a:hover {
           align-items: center;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child {
   position: relative;
-  width: 50%;
+  width: 60%;
   min-width: 300px;
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 12px;
@@ -2055,42 +2091,280 @@ a:hover {
   margin-bottom: 5px;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name {
-  color: rgba(255, 255, 255, 0.5);
+@media screen and (max-width: 710px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child {
+    width: 100%;
+  }
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 1.7rem;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name span {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name .HourAnime {
   color: greenyellow;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name #AddEpBtn {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name #AddEpBtn {
   position: absolute;
-  right: 20px;
+  left: 0;
   top: 0;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .name .fa-trash {
+@media screen and (max-width: 420px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name #AddEpBtn {
+    -webkit-transform: scale(0.7);
+            transform: scale(0.7);
+    left: -20px;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name #AddEpBtn {
+    -webkit-transform: scale(0.65);
+            transform: scale(0.65);
+    left: -25px;
+  }
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name .fa-trash {
   position: absolute;
-  right: 130px;
+  right: 20px;
   top: calc(50px / 2 - 27px / 2);
   color: #dc3545;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList {
   display: none;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes span {
-  color: greenyellow;
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch {
+  position: relative;
+  width: 150px;
+  -webkit-transform: 0.7s;
+          transform: 0.7s;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child .episodes .fa-trash {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img {
+  position: relative;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img img {
+  width: 150px;
+  border-radius: 5px;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .play {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  cursor: pointer;
+  color: #007bff;
+  position: absolute;
+  top: calc(50% - 25px);
+  left: calc(50% - 25px);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ddd;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .play:hover {
+  -webkit-transform: scale(1.12);
+          transform: scale(1.12);
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .reverseEP,
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .deleteEP,
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .EpHashtag {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  width: 25px;
+  height: 25px;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .reverseEP {
+  top: 0;
+  right: 0;
+  color: #01d332;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .deleteEP {
+  top: 0;
+  left: 0;
   color: #dc3545;
 }
 
-#Watch .nonStartMod #ToWatch .content .accordionAnimEP .accordion-child.active .episodes {
-  display: block;
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .EpHashtag {
+  bottom: 0;
+  right: 0;
+  padding: 15px;
+  color: #d2dcdc;
+  font-style: italic;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .EpHashtag span {
+  font-style: normal;
+  font-weight: bold;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .EpHashtag.Big {
+  padding: 20px;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch h4 {
+  text-align: center;
+  color: #ff6d00;
+  font-size: 1rem;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch h4 .EpNb {
+  color: #999;
+  font-style: italic;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch h4 .EpNb span {
+  font-style: normal;
+  font-weight: bold;
+  -webkit-text-decoration: underline double;
+          text-decoration: underline double;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch.finishedEp {
+  -webkit-transform: skew(1.5deg) scale(0.95);
+          transform: skew(1.5deg) scale(0.95);
+  background-color: rgba(1, 211, 50, 0.13);
+  border-radius: 5px;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch.finishedEp .img img {
+  opacity: 0.8;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: (1fr)[6];
+      grid-template-columns: repeat(6, 1fr);
+  justify-items: center;
+  gap: 10px;
+  height: 700px;
+  overflow: auto;
+  margin-top: 10px;
+}
+
+@media screen and (max-width: 1660px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active {
+    width: 85%;
+  }
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    -ms-grid-columns: (1fr)[7];
+        grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+@media screen and (max-width: 1360px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    -ms-grid-columns: (1fr)[6];
+        grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media screen and (max-width: 1164px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active {
+    width: 95%;
+  }
+}
+
+@media screen and (max-width: 1045px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    -ms-grid-columns: (1fr)[5];
+        grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media screen and (max-width: 880px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    -ms-grid-columns: (1fr)[4];
+        grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media screen and (max-width: 720px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    -ms-grid-columns: (1fr)[3];
+        grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media screen and (max-width: 535px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 515px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    gap: 0;
+  }
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList .EPWatch {
+    -webkit-transform: scale(0.85);
+            transform: scale(0.85);
+  }
+}
+
+@media screen and (max-width: 490px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    -ms-grid-columns: (1fr)[2];
+        grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList .EPWatch {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+
+@media screen and (max-width: 350px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    gap: 0;
+  }
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList .EPWatch {
+    -webkit-transform: scale(0.85);
+            transform: scale(0.85);
+  }
+}
+
+@media screen and (max-width: 330px) {
+  #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child.active #EpisodesList {
+    -ms-grid-columns: (1fr)[1];
+        grid-template-columns: repeat(1, 1fr);
+  }
 }
 
 #Watch .nonStartMod.active {

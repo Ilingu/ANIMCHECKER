@@ -1,11 +1,14 @@
 import React, { Component, Fragment } from "react";
 import { Redirect, Link } from "react-router-dom";
+import axios from "axios";
 import { openDB } from "idb";
 import ObjectPath from "object-path";
 import ReactStars from "react-rating-stars-component";
 import { Fireworks } from "fireworks/lib/react";
 // Components
 import AnimEpCo from "./dyna/AnimEp";
+// Context
+import ContextSchema from "../Context/ContextEP";
 // Img
 import ADNLogo from "../Assets/Img/ADNLogo.png";
 import CrunchyrollLogo from "../Assets/Img/CrunchyrollLogo.png";
@@ -51,6 +54,7 @@ class Watch extends Component {
     SecondMessage: false,
     PauseWithAlleged: false,
     DropWithAlleged: false,
+    ScrollPosAccordeon: 0,
     AlreadyClicked: false,
     ResText: null,
     // Fun
@@ -168,7 +172,7 @@ class Watch extends Component {
   };
 
   refreshAnimToWatch = async (next = null) => {
-    const { id, type } = this.state;
+    const { id, type, ScrollPosAccordeon } = this.state;
 
     try {
       const AllDataPseudo = await base.fetch(this.state.Pseudo, {
@@ -192,11 +196,24 @@ class Watch extends Component {
           LoadingMode: false,
         },
         () => {
+          if (AnimToWatch.Objectif !== undefined) this.StartNextEP();
           if (this.state.WatchModeNow === "true") {
             this.StartNextEP();
             this.setState({ WatchModeNow: null });
           }
           if (next !== null) next();
+          if (AnimToWatch.DurationPerEP === undefined) {
+            this.ReTakeInfoFromName();
+          }
+          // Scroll EP
+          if (
+            document.getElementById("EpisodesList") !== undefined &&
+            document.getElementById("EpisodesList") !== null
+          ) {
+            document
+              .getElementById("EpisodesList")
+              .scrollTo(0, ScrollPosAccordeon);
+          }
         }
       );
     } catch (err) {
@@ -249,6 +266,15 @@ class Watch extends Component {
         () => {
           if (this.state.WatchModeNow === "true") this.StartNextEP();
           if (next !== null) next();
+          // Scroll EP
+          if (
+            document.getElementById("EpisodesList") !== undefined &&
+            document.getElementById("EpisodesList") !== null
+          ) {
+            document
+              .getElementById("EpisodesList")
+              .scrollTo(0, this.state.ScrollPosAccordeon);
+          }
         }
       );
     } else if (type === "POST") {
@@ -325,6 +351,9 @@ class Watch extends Component {
 
   addValue = (path, value) => {
     const { OfflineMode } = this.state;
+    this.setState({
+      ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
+    });
     if (OfflineMode === true) {
       this.fnDbOffline("POST", path, value);
       return;
@@ -340,6 +369,9 @@ class Watch extends Component {
 
   deleteValue = (path) => {
     const { OfflineMode } = this.state;
+    this.setState({
+      ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
+    });
     if (OfflineMode === true) {
       this.fnDbOffline("DELETE", path);
       return;
@@ -350,6 +382,9 @@ class Watch extends Component {
 
   updateValue = (path, value, next = null, nextAfterRefresh = false) => {
     const { OfflineMode } = this.state;
+    this.setState({
+      ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
+    });
     if (OfflineMode === true) {
       this.fnDbOffline("PUT", path, value, next);
       return;
@@ -364,6 +399,84 @@ class Watch extends Component {
         if (next !== null && !nextAfterRefresh) next();
       })
       .catch((err) => console.error(err));
+  };
+
+  ReTakeInfoFromName = async () => {
+    const { AnimToWatch, id, type } = this.state;
+
+    try {
+      const AnimeID = (
+        await axios.get(
+          `https://api.jikan.moe/v3/search/anime?q=${AnimToWatch.name}&limit=1`
+        )
+      ).data.results[0].mal_id;
+      const InfoAnimeRes = (
+        await Promise.all([
+          await axios.get(`https://api.jikan.moe/v3/anime/${AnimeID}/episodes`),
+          await axios.get(`https://api.jikan.moe/v3/anime/${AnimeID}`),
+        ])
+      ).map((dataAnime) => dataAnime.data);
+
+      const EpName =
+        InfoAnimeRes[0].episodes.length !== 0
+          ? InfoAnimeRes[0].episodes.map((epi) => epi.title)
+          : "none";
+      let AnimSEP = null;
+
+      if (EpName !== "none") {
+        let ArrEpSaison = AnimToWatch.AnimEP.map(
+          (saisons) => saisons.Episodes.length
+        ).join(",");
+        AnimSEP = ArrEpSaison.split(",").map((nbEpS, i) => {
+          let EpObj = [];
+
+          for (let j = 0; j < parseInt(nbEpS); j++) {
+            EpObj = [
+              ...EpObj,
+              {
+                id: j + 1,
+                finished: AnimToWatch.AnimEP[i].Episodes[j].finished,
+                EpTitle: i === 0 ? (!EpName[j] ? null : EpName[j]) : null,
+              },
+            ];
+          }
+
+          return {
+            name: `Saison ${i + 1}`,
+            Episodes: EpObj,
+            finished: AnimToWatch.AnimEP[i].finished,
+          };
+        });
+      }
+
+      this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
+        imageUrl: InfoAnimeRes[1].image_url.split("?s=")[0],
+        AnimEP: !AnimSEP ? AnimToWatch.AnimEP : AnimSEP,
+        DurationPerEP: !InfoAnimeRes[1].duration
+          ? "none"
+          : InfoAnimeRes[1].duration,
+      });
+
+      if (!this.state.OfflineMode) {
+        this.fnDbOffline("PUT", `${this.state.Pseudo}/${type}/${id}`, {
+          imageUrl: InfoAnimeRes[1].image_url.split("?s=")[0],
+          AnimEP: !AnimSEP ? AnimToWatch.AnimEP : AnimSEP,
+          DurationPerEP: !InfoAnimeRes[1].duration
+            ? "none"
+            : InfoAnimeRes[1].duration,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
+        DurationPerEP: "none",
+      });
+      if (!this.state.OfflineMode) {
+        this.fnDbOffline("PUT", `${this.state.Pseudo}/${type}/${id}`, {
+          DurationPerEP: "none",
+        });
+      }
+    }
   };
 
   addEp = (Season, nbEpToAdd) => {
@@ -1003,14 +1116,33 @@ class Watch extends Component {
       : Math.round((TotalEpWhereStop / TotalEP) * 100);
   };
 
+  CalculateNbTimeAnime = () => {
+    const { AnimToWatch } = this.state;
+
+    if (
+      typeof AnimToWatch.DurationPerEP !== "string" ||
+      AnimToWatch.DurationPerEP === "none"
+    )
+      return "0";
+
+    return parseFloat(
+      (AnimToWatch.AnimEP.reduce(
+        (acc, currentValue) => acc + currentValue.Episodes.length,
+        0
+      ) *
+        parseInt(AnimToWatch.DurationPerEP.split(" ")[0])) /
+        60
+    ).toFixed(1);
+  };
+
   CalculateTimeDifference = (date1, date2) => {
     const Date1 = new Date(date1),
       Date2 = new Date(date2);
     const DifferenceInTime = Date2.getTime() - Date1.getTime();
     if (DifferenceInTime / (1000 * 3600 * 24) > 1)
       return `${Math.round(DifferenceInTime / (1000 * 3600 * 24))} Jours`;
-    else if (DifferenceInTime / 36000000 > 1) {
-      return `${Math.round(DifferenceInTime / 36000000)} Heures`;
+    else if (DifferenceInTime / 3600000 > 1) {
+      return `${Math.round(DifferenceInTime / 3600000)} Heures`;
     } else if (DifferenceInTime / 60000 > 1) {
       return `${Math.round(DifferenceInTime / 60000)} Minutes`;
     } else {
@@ -1193,68 +1325,78 @@ class Watch extends Component {
 
     if (type === "serie") {
       MyAnimAccordeon = AnimToWatch.AnimEP.map((EpSaison) => (
-        <AnimEpCo
+        <ContextSchema.Provider
           key={Date.now() + Math.random() * 100000 - Math.random() * -100000}
-          ObjInfo={EpSaison}
-          nbTotalSeason={AnimToWatch.AnimEP.length}
-          play={this.playEp}
-          ToOpen={ToOpen}
-          RemoveVal={this.RemoveAnimVal}
-          AddEp={() =>
-            this.setState({
-              ShowModalAddEp: true,
-              SeasonToAddEp: EpSaison,
-              nbEpToAddToHave: [this.derterminateEpTotal(EpSaison) + 1, 1],
-            })
-          }
-          ReverseFinished={(idSaison, idEP) => {
-            const AnimToWatchCopy = [...this.state.AnimToWatch.AnimEP];
-            let IsSeasonFinished = true;
-            AnimToWatchCopy[idSaison].finished = false;
-            AnimToWatchCopy[idSaison].Episodes[
-              idEP - 1
-            ].finished = !AnimToWatchCopy[idSaison].Episodes[idEP - 1].finished;
-
-            AnimToWatchCopy[idSaison].Episodes.forEach((Ep) => {
-              if (!Ep.finished) {
-                IsSeasonFinished = false;
-              }
-            });
-
-            if (IsSeasonFinished) AnimToWatchCopy[idSaison].finished = true;
-            else if (AnimToWatchCopy[idSaison].finished)
+          value={{
+            play: (id) => this.playEp(EpSaison, id),
+            RemoveEP: (typeSuppr, idSeason, idEP) =>
+              this.RemoveAnimVal(typeSuppr, idSeason, idEP),
+            ReverseEP: (idSaison, idEP) => {
+              const AnimToWatchCopy = [...this.state.AnimToWatch.AnimEP];
+              let IsSeasonFinished = true;
               AnimToWatchCopy[idSaison].finished = false;
+              AnimToWatchCopy[idSaison].Episodes[
+                idEP - 1
+              ].finished = !AnimToWatchCopy[idSaison].Episodes[idEP - 1]
+                .finished;
 
-            if (IsSeasonFinished && idSaison === AnimToWatchCopy.length - 1)
-              this.endAnime();
-            else if (idSaison === AnimToWatchCopy.length - 1) {
+              AnimToWatchCopy[idSaison].Episodes.forEach((Ep) => {
+                if (!Ep.finished) {
+                  IsSeasonFinished = false;
+                }
+              });
+
+              if (IsSeasonFinished) AnimToWatchCopy[idSaison].finished = true;
+              else if (AnimToWatchCopy[idSaison].finished)
+                AnimToWatchCopy[idSaison].finished = false;
+
+              if (IsSeasonFinished && idSaison === AnimToWatchCopy.length - 1)
+                this.endAnime();
+              else if (idSaison === AnimToWatchCopy.length - 1) {
+                this.updateValue(`${Pseudo}/serie/${id}`, {
+                  finishedAnim: false,
+                });
+                if (!this.state.OfflineMode) {
+                  this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
+                    finishedAnim: false,
+                  });
+                }
+              }
+
               this.updateValue(`${Pseudo}/serie/${id}`, {
-                finishedAnim: false,
+                AnimEP: AnimToWatchCopy,
               });
               if (!this.state.OfflineMode) {
                 this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-                  finishedAnim: false,
+                  AnimEP: AnimToWatchCopy,
                 });
               }
-            }
-
-            this.updateValue(`${Pseudo}/serie/${id}`, {
-              AnimEP: AnimToWatchCopy,
-            });
-            if (!this.state.OfflineMode) {
-              this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-                AnimEP: AnimToWatchCopy,
-              });
-            }
+            },
+            ImgUrl: AnimToWatch.imageUrl,
+            Duration: AnimToWatch.DurationPerEP,
           }}
-          NextToOpen={(SaisonName) => {
-            if (SaisonName === ToOpen) {
-              this.setState({ ToOpen: "" });
-              return;
+        >
+          <AnimEpCo
+            key={Date.now() + Math.random() * 100000 - Math.random() * -100000}
+            ObjInfo={EpSaison}
+            nbTotalSeason={AnimToWatch.AnimEP.length}
+            ToOpen={ToOpen}
+            AddEp={() =>
+              this.setState({
+                ShowModalAddEp: true,
+                SeasonToAddEp: EpSaison,
+                nbEpToAddToHave: [this.derterminateEpTotal(EpSaison) + 1, 1],
+              })
             }
-            this.setState({ ToOpen: SaisonName });
-          }}
-        />
+            NextToOpen={(SaisonName) => {
+              if (SaisonName === ToOpen) {
+                this.setState({ ToOpen: "" });
+                return;
+              }
+              this.setState({ ToOpen: SaisonName });
+            }}
+          />
+        </ContextSchema.Provider>
       ));
     }
 
@@ -1486,7 +1628,6 @@ class Watch extends Component {
               ) : (
                 AnimToWatch.name
               )}{" "}
-              {type === "film" ? `(${AnimToWatch.durer}min)` : null}
             </h1>
             <div className="img">
               <img src={AnimToWatch.imageUrl} alt="Img of anim" />
@@ -1553,7 +1694,15 @@ class Watch extends Component {
           </header>
           <section id="ToWatch">
             <Link push="true" to="/">
-              <Button variant="primary" className="btnBackDesing">
+              <Button
+                variant="primary"
+                onClick={this.StopModeWatch}
+                className={
+                  AnimToWatch.Objectif !== undefined
+                    ? "btnBackDesing Foreground"
+                    : "btnBackDesing"
+                }
+              >
                 <span className="fas fa-arrow-left"></span> Retour
               </Button>
             </Link>
@@ -1956,10 +2105,20 @@ class Watch extends Component {
                           }
                         }}
                       ></span>{" "}
-                      Anime :
+                      Anime
+                      {typeof AnimToWatch.DurationPerEP === "string" &&
+                      AnimToWatch.DurationPerEP !== "none"
+                        ? `(${this.CalculateNbTimeAnime()}H)`
+                        : null}
+                      :
                     </Fragment>
                   ) : (
-                    "Anime:"
+                    `Anime${
+                      typeof AnimToWatch.DurationPerEP === "string" &&
+                      AnimToWatch.DurationPerEP !== "none"
+                        ? `(${this.CalculateNbTimeAnime()}H)`
+                        : null
+                    }:`
                   )
                 ) : AnimToWatch.finished ? (
                   <Fragment>
@@ -1967,10 +2126,10 @@ class Watch extends Component {
                       style={{ color: "greenyellow" }}
                       className="fas fa-check"
                     ></span>{" "}
-                    Film:
+                    Film(${AnimToWatch.durer}min):
                   </Fragment>
                 ) : (
-                  "Film:"
+                  `Film(${AnimToWatch.durer}min):`
                 )}
               </h1>
             </header>
@@ -2005,7 +2164,7 @@ class Watch extends Component {
                   {AnimToWatch.name}
                 </div>
               ) : (
-                <div className="accordionAnimEP">{MyAnimAccordeon}</div>
+                <div id="accordeonAnimEP">{MyAnimAccordeon}</div>
               )}
             </div>
           </section>
@@ -2030,7 +2189,26 @@ class Watch extends Component {
           </div>
         ) : null}
         <div className={modeWatch ? "StartMod active" : "StartMod"}>
-          <div className="cancel" onClick={this.StopModeWatch}>
+          <div
+            className="cancel"
+            onDoubleClick={() => {
+              this.deleteValue(`${Pseudo}/serie/${id}/Objectif`);
+              if (!this.state.OfflineMode) {
+                this.fnDbOffline("DELETE", `${Pseudo}/serie/${id}/Objectif`);
+              }
+              this.StopModeWatch();
+            }}
+            onClick={() => {
+              if (AnimToWatch.Objectif !== undefined) {
+                this.DisplayMsg(
+                  "Mode Objectif Activé: Impossible de quitter le mode Watch. Veuillez Désactiver le Mode Objectif pour quitter (Double Click sur le boutton quitter)",
+                  12000
+                );
+                return;
+              }
+              this.StopModeWatch();
+            }}
+          >
             <span className="fas fa-ban"></span>
           </div>
           {type === "serie" ? (

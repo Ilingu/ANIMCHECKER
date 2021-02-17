@@ -1,7 +1,7 @@
 import { createContext } from "react";
 
 export default createContext({
-  openModalNewAnim: () => {},
+  openModalNewAnim: Function,
   Pseudo: String,
   search: Function,
   logOut: Function,

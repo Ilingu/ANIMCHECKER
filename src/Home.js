@@ -14,7 +14,7 @@ import MyAnim from "./components/MyAnim";
 import Login from "./components/Auth/Login";
 import PseudoCO from "./components/Auth/Pseudo";
 // Context
-import ContextForMyAnim from "./ContextSchema";
+import ContextForMyAnim from "./Context/ContextSchema";
 // CSS
 import { Modal, Button, Form, Dropdown } from "react-bootstrap";
 // DB
@@ -105,6 +105,8 @@ export default class Home extends Component {
     UrlUserImg: "",
     FileToImport: null,
     imageUrl: null,
+    EpisodeName: null,
+    DurationPerEp: null,
     AntiLostData: true,
     SeasonAnimCheck: false,
     WaitAnimCheck: false,
@@ -1619,32 +1621,39 @@ export default class Home extends Component {
       : Math.round((TotalEpWhereStop / TotalEP) * 100);
   };
 
-  TakeImgFromName = async (
+  TakeInfoFromName = async (
     title,
     ModeRetake = false,
     id = null,
     next = null
   ) => {
     try {
-      const ImgUrlRes = await axios.get(
-        `https://api.jikan.moe/v3/search/anime?q=${title}&limit=1`
-      );
+      const AnimeID = (await this.SearchAnim(title, true)).data.results[0]
+        .mal_id;
+      const InfoAnimeRes = await this.SeeInDetails(AnimeID, true);
       if (ModeRetake === true) {
         this.updateValue(`${this.state.Pseudo}/${id.split("-")[0]}/${id}`, {
           imageUrl: this.handleDeleteImageURLParameter(
-            ImgUrlRes.data.results[0].image_url
+            InfoAnimeRes[1].image_url
           ),
+          DurationPerEP: !InfoAnimeRes[1].duration
+            ? "none"
+            : InfoAnimeRes[1].duration,
         });
         return;
       }
       return next(
-        this.handleDeleteImageURLParameter(ImgUrlRes.data.results[0].image_url)
+        this.handleDeleteImageURLParameter(InfoAnimeRes[1].image_url),
+        InfoAnimeRes[0].episodes.length !== 0
+          ? InfoAnimeRes[0].episodes.map((epi) => epi.title)
+          : "none",
+        !InfoAnimeRes[1].duration ? "none" : InfoAnimeRes[1].duration
       );
     } catch (err) {
       console.error(err);
       this.setState({ ShowModalChooseImgURL: [true, id] });
       if (ModeRetake === true) return;
-      return next("PlaceHolderImg");
+      return next("PlaceHolderImg", "none", "none");
     }
   };
 
@@ -1661,25 +1670,41 @@ export default class Home extends Component {
       NextAnimToDelete,
       filmFireBase,
       serieFirebase,
+      EpisodeName,
+      DurationPerEp,
       OfflineMode,
       DeleteTemplateAnim,
     } = this.state;
     const self = this;
 
-    let imgUrl = imageUrl;
+    let imgUrl = imageUrl,
+      EpName = EpisodeName,
+      DuraPerEp = DurationPerEp;
 
-    if (imgUrl === null) {
+    if (imgUrl === null || EpName === null || DuraPerEp === null) {
       if (OfflineMode === true) {
         imgUrl = "PlaceHolderImg";
+        EpName = DuraPerEp = "none";
         next();
       } else {
         const title2 = this.replaceSpace(title, "%20");
-        this.TakeImgFromName(title2, false, null, (resImg) => {
-          imgUrl = resImg;
-          next();
-        });
+        this.TakeInfoFromName(
+          title2,
+          false,
+          null,
+          (resImg, resEp, resDuration) => {
+            imgUrl = resImg;
+            EpName = resEp;
+            DuraPerEp = resDuration;
+            next();
+          }
+        );
       }
-    } else if (typeof imgUrl === "string") {
+    } else if (
+      typeof imgUrl === "string" &&
+      EpName.length !== 0 &&
+      typeof DuraPerEp === "string"
+    ) {
       next();
     } else {
       this.setState({
@@ -1695,13 +1720,9 @@ export default class Home extends Component {
         IsGoodForPost = true;
       if (type === "serie") {
         if (
-          title !== undefined &&
-          title !== null &&
           typeof title === "string" &&
           title.trim().length !== 0 &&
           title !== "" &&
-          nbEP !== undefined &&
-          nbEP !== null &&
           typeof nbEP === "string" &&
           nbEP.trim().length !== 0 &&
           nbEP !== ""
@@ -1716,7 +1737,14 @@ export default class Home extends Component {
             let EpObj = [];
 
             for (let j = 0; j < parseInt(nbEpS); j++) {
-              EpObj = [...EpObj, { id: j + 1, finished: false }];
+              EpObj = [
+                ...EpObj,
+                {
+                  id: j + 1,
+                  finished: false,
+                  EpTitle: !EpName[j] ? null : EpName[j],
+                },
+              ];
             }
 
             return {
@@ -1743,6 +1771,7 @@ export default class Home extends Component {
                 AnimEP: AnimSEP,
                 AnimeSeason: !SeasonAnimCheck ? null : true,
                 InWait: !WaitAnimCheck ? null : true,
+                DurationPerEP: DuraPerEp,
               },
             });
             // reset
@@ -1866,6 +1895,8 @@ export default class Home extends Component {
           nbEP: "",
           NextAnim: "",
           imageUrl: null,
+          EpisodeName: null,
+          DurationPerEp: null,
           // Alerts
           ResText: null,
           typeAlert: null,
@@ -2201,8 +2232,7 @@ export default class Home extends Component {
         .mal_id;
       const { title, title_english, title_synonyms } = (
         await this.SeeInDetails(AnimeID, true)
-      ).data;
-      console.log(title, title_english, title_synonyms);
+      )[1];
 
       Object.keys(NextAnimFireBase).forEach((key) => {
         if (NextAnimFireBase[key].AlternativeTitle !== undefined) {
@@ -2296,7 +2326,12 @@ export default class Home extends Component {
 
   SeeInDetails = async (id, toReturn = false) => {
     if (toReturn === true) {
-      return await axios.get(`https://api.jikan.moe/v3/anime/${id}`);
+      return (
+        await Promise.all([
+          await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`),
+          await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
+        ])
+      ).map((dataAnime) => dataAnime.data);
     }
     this.setState({ ShowModalSearch: false });
     try {
@@ -2713,7 +2748,7 @@ export default class Home extends Component {
           });
         }}
         ReTakeImgFromName={() => {
-          this.TakeImgFromName(
+          this.TakeInfoFromName(
             this.replaceSpace(
               { ...serieFirebase, ...filmFireBase }[key].name,
               "%20"
@@ -3078,10 +3113,22 @@ export default class Home extends Component {
               nbEP:
                 animToDetails[1].type === "Movie"
                   ? ""
-                  : animToDetails[0].episodes.length,
+                  : animToDetails[0].episodes.length.toString(),
               imageUrl: this.handleDeleteImageURLParameter(
                 animToDetails[1].image_url
               ),
+              EpisodeName:
+                animToDetails[1].type === "Movie"
+                  ? null
+                  : animToDetails[0].episodes.length !== 0
+                  ? animToDetails[0].episodes.map((epi) => epi.title)
+                  : "none",
+              DurationPerEp:
+                animToDetails[1].type === "Movie"
+                  ? null
+                  : !animToDetails[1].duration
+                  ? "none"
+                  : animToDetails[1].duration,
             });
             this.openNext(animToDetails[1].type === "Movie" ? "film" : "serie");
           }}
