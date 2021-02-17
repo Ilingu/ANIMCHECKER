@@ -419,7 +419,13 @@ class Watch extends Component {
 
       const EpName =
         InfoAnimeRes[0].episodes.length !== 0
-          ? InfoAnimeRes[0].episodes.map((epi) => epi.title)
+          ? InfoAnimeRes[0].episodes.map((epi) => {
+              return {
+                title: epi.title,
+                filler: !epi.filler ? null : true,
+                recap: !epi.recap ? null : true,
+              };
+            })
           : "none";
       let AnimSEP = null;
 
@@ -436,7 +442,7 @@ class Watch extends Component {
               {
                 id: j + 1,
                 finished: AnimToWatch.AnimEP[i].Episodes[j].finished,
-                EpTitle: i === 0 ? (!EpName[j] ? null : EpName[j]) : null,
+                Info: i === 0 ? (!EpName[j] ? null : EpName[j]) : null,
               },
             ];
           }
@@ -1931,20 +1937,33 @@ class Watch extends Component {
                 </Dropdown.Item>
                 <Dropdown.Divider />
                 {type === "serie" ? (
-                  <Dropdown.Item>
-                    <Button
-                      variant="warning"
-                      block
-                      onClick={() =>
-                        this.setState({
-                          ShowModalVerification: [true, "alleger"],
-                        })
-                      }
-                    >
-                      <span className="fas fa-window-close"></span> Alléger{" "}
-                      {AnimToWatch.name}
-                    </Button>
-                  </Dropdown.Item>
+                  <Fragment>
+                    <Dropdown.Item>
+                      <Button
+                        variant="outline-dark"
+                        block
+                        onClick={this.ReTakeInfoFromName}
+                      >
+                        <span className="fas fa-undo-alt"></span> Mettre à jour
+                        les infos de
+                        {AnimToWatch.name}
+                      </Button>
+                    </Dropdown.Item>
+                    <Dropdown.Item>
+                      <Button
+                        variant="warning"
+                        block
+                        onClick={() =>
+                          this.setState({
+                            ShowModalVerification: [true, "alleger"],
+                          })
+                        }
+                      >
+                        <span className="fas fa-window-close"></span> Alléger{" "}
+                        {AnimToWatch.name}
+                      </Button>
+                    </Dropdown.Item>
+                  </Fragment>
                 ) : null}
                 <Dropdown.Item>
                   <Button

@@ -41,7 +41,15 @@ const Episode = ({
   return (
     <div
       id={`EP-${AllDataEp.id}`}
-      className={AllDataEp.finished ? "EPWatch finishedEp" : "EPWatch"}
+      className={
+        AllDataEp.Info?.filler
+          ? "EPWatch filler"
+          : AllDataEp.Info?.recap
+          ? "EPWatch recap"
+          : AllDataEp.finished
+          ? "EPWatch finishedEp"
+          : "EPWatch"
+      }
     >
       <div className="img">
         {LastEP === AllDataEp.id ? (
@@ -70,6 +78,15 @@ const Episode = ({
         >
           #<span>{AllDataEp.id}</span>
         </div>
+        {AllDataEp.Info?.filler || AllDataEp.Info?.recap ? (
+          <div
+            className={`Specials ${
+              AllDataEp.Info?.filler ? "Filler" : "Recap"
+            }`}
+          >
+            {AllDataEp.Info?.filler ? "Filler" : "Recap"}
+          </div>
+        ) : null}
         <img src={ContextVar.ImgUrl} alt="Ep img" />
         <div className="play" onClick={() => ContextVar.play(AllDataEp.id)}>
           <span className="fas fa-play"></span>
@@ -82,9 +99,9 @@ const Episode = ({
           ContextVar.Duration !== "none"
             ? `-${ContextVar.Duration.split(" ")[0]}Min`
             : null}
-          {!AllDataEp.EpTitle ? "" : ":"}{" "}
+          {!AllDataEp.Info ? "" : ":"}{" "}
         </span>
-        <span className="title">{AllDataEp.EpTitle}</span>
+        <span className="title">{AllDataEp.Info?.title}</span>
       </h4>
     </div>
   );

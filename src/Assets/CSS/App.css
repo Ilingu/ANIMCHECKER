@@ -2103,8 +2103,12 @@ a:hover {
   font-size: 1.7rem;
 }
 
-#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name .HourAnime {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name .fa-check {
   color: greenyellow;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name .HourAnime {
+  color: #999;
 }
 
 #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child .name #AddEpBtn {
@@ -2143,8 +2147,8 @@ a:hover {
 #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch {
   position: relative;
   width: 150px;
-  -webkit-transform: 0.7s;
-          transform: 0.7s;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
 }
 
 #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img {
@@ -2186,7 +2190,8 @@ a:hover {
 
 #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .reverseEP,
 #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .deleteEP,
-#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .EpHashtag {
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .EpHashtag,
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .Specials {
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
@@ -2237,6 +2242,26 @@ a:hover {
   padding: 20px;
 }
 
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .Specials {
+  bottom: 0;
+  left: 0;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .Specials.Filler,
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .Specials.Recap {
+  width: 55px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .Specials.Filler {
+  color: #dc3545;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch .img .Specials.Recap {
+  color: #999;
+}
+
 #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch h4 {
   text-align: center;
   color: #ff6d00;
@@ -2253,6 +2278,20 @@ a:hover {
   font-weight: bold;
   -webkit-text-decoration: underline double;
           text-decoration: underline double;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch.filler {
+  background-color: rgba(220, 53, 70, 0.13);
+  -webkit-transform: scale(0.9);
+          transform: scale(0.9);
+  border-radius: 5px;
+}
+
+#Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch.recap {
+  background-color: rgba(153, 153, 153, 0.2);
+  -webkit-transform: scale(0.85);
+          transform: scale(0.85);
+  border-radius: 5px;
 }
 
 #Watch .nonStartMod #ToWatch .content #accordeonAnimEP .accordion-child #EpisodesList .EPWatch.finishedEp {

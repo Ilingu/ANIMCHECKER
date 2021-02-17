@@ -1645,7 +1645,13 @@ export default class Home extends Component {
       return next(
         this.handleDeleteImageURLParameter(InfoAnimeRes[1].image_url),
         InfoAnimeRes[0].episodes.length !== 0
-          ? InfoAnimeRes[0].episodes.map((epi) => epi.title)
+          ? InfoAnimeRes[0].episodes.map((epi) => {
+              return {
+                title: epi.title,
+                filler: !epi.filler ? null : true,
+                recap: !epi.recap ? null : true,
+              };
+            })
           : "none",
         !InfoAnimeRes[1].duration ? "none" : InfoAnimeRes[1].duration
       );
@@ -3121,7 +3127,13 @@ export default class Home extends Component {
                 animToDetails[1].type === "Movie"
                   ? null
                   : animToDetails[0].episodes.length !== 0
-                  ? animToDetails[0].episodes.map((epi) => epi.title)
+                  ? animToDetails[0].episodes.map((epi) => {
+                      return {
+                        title: epi.title,
+                        filler: !epi.filler ? null : true,
+                        recap: !epi.recap ? null : true,
+                      };
+                    })
                   : "none",
               DurationPerEp:
                 animToDetails[1].type === "Movie"

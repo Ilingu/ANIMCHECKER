@@ -25,16 +25,18 @@ const AnimEp = ({ ObjInfo, ToOpen, NextToOpen, AddEp, nbTotalSeason }) => {
         ToOpen === idSaison ? "accordion-child active" : "accordion-child"
       }
       id={ObjInfo.name.split(" ").join("")}
-      onClick={(event) => {
-        if (
-          event.target.classList[1] === "fa-trash" ||
-          event.target.classList[1] === "fa-undo-alt"
-        )
-          return;
-        NextToOpen(idSaison);
-      }}
     >
-      <div className="name">
+      <div
+        className="name"
+        onClick={(event) => {
+          if (
+            event.target.classList[1] === "fa-trash" ||
+            event.target.classList[1] === "fa-undo-alt"
+          )
+            return;
+          NextToOpen(idSaison);
+        }}
+      >
         {ObjInfo.name}
         {ObjInfo.finished === true ? (
           <span className="fas fa-check"></span>
