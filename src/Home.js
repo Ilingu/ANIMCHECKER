@@ -2330,6 +2330,30 @@ export default class Home extends Component {
       });
   };
 
+  getAllTheEpisode = async (id) => {
+    let Episodes = [
+      ...(await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`)).data
+        .episodes,
+    ];
+    let i = 0;
+    const fetchOtherEP = async () => {
+      console.log(Episodes.length);
+      if (Episodes.length === 100) {
+        return axios
+          .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i + 2}`)
+          .then(async (res) => {
+            Episodes = [...Episodes, ...res.data.episodes];
+            i++;
+            return await fetchOtherEP();
+          });
+      } else {
+        i = 0;
+        return Episodes;
+      }
+    };
+    return await fetchOtherEP();
+  };
+
   SeeInDetails = async (id, toReturn = false) => {
     if (toReturn === true) {
       return (
@@ -2343,11 +2367,11 @@ export default class Home extends Component {
     try {
       const result = await Promise.all([
         await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
-        await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`),
+        await this.getAllTheEpisode(id),
       ]);
-
+      console.log(result[1]);
       this.setState({
-        animToDetails: [result[1].data, result[0].data],
+        animToDetails: [{ episodes: result[1] }, result[0].data],
         findAnim: [],
       });
     } catch (err) {

@@ -401,6 +401,30 @@ class Watch extends Component {
       .catch((err) => console.error(err));
   };
 
+  getAllTheEpisode = async (id) => {
+    let Episodes = [
+      ...(await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`)).data
+        .episodes,
+    ];
+    let i = 0;
+    const fetchOtherEP = async () => {
+      console.log(Episodes.length);
+      if (Episodes.length === 100) {
+        return axios
+          .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i + 2}`)
+          .then(async (res) => {
+            Episodes = [...Episodes, ...res.data.episodes];
+            i++;
+            return await fetchOtherEP();
+          });
+      } else {
+        i = 0;
+        return Episodes;
+      }
+    };
+    return await fetchOtherEP();
+  };
+
   ReTakeInfoFromName = async () => {
     const { AnimToWatch, id, type } = this.state;
 
@@ -412,14 +436,14 @@ class Watch extends Component {
       ).data.results[0].mal_id;
       const InfoAnimeRes = (
         await Promise.all([
-          await axios.get(`https://api.jikan.moe/v3/anime/${AnimeID}/episodes`),
+          await this.getAllTheEpisode(AnimeID),
           await axios.get(`https://api.jikan.moe/v3/anime/${AnimeID}`),
         ])
-      ).map((dataAnime) => dataAnime.data);
+      )
 
       const EpName =
-        InfoAnimeRes[0].episodes.length !== 0
-          ? InfoAnimeRes[0].episodes.map((epi) => {
+        InfoAnimeRes[0].length !== 0
+          ? InfoAnimeRes[0].map((epi) => {
               return {
                 title: epi.title,
                 filler: !epi.filler ? null : true,
@@ -456,20 +480,20 @@ class Watch extends Component {
       }
 
       this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
-        imageUrl: InfoAnimeRes[1].image_url.split("?s=")[0],
+        imageUrl: InfoAnimeRes[1].data.image_url.split("?s=")[0],
         AnimEP: !AnimSEP ? AnimToWatch.AnimEP : AnimSEP,
-        DurationPerEP: !InfoAnimeRes[1].duration
+        DurationPerEP: !InfoAnimeRes[1].data.duration
           ? "none"
-          : InfoAnimeRes[1].duration,
+          : InfoAnimeRes[1].data.duration,
       });
 
       if (!this.state.OfflineMode) {
         this.fnDbOffline("PUT", `${this.state.Pseudo}/${type}/${id}`, {
-          imageUrl: InfoAnimeRes[1].image_url.split("?s=")[0],
+          imageUrl: InfoAnimeRes[1].data.image_url.split("?s=")[0],
           AnimEP: !AnimSEP ? AnimToWatch.AnimEP : AnimSEP,
-          DurationPerEP: !InfoAnimeRes[1].duration
+          DurationPerEP: !InfoAnimeRes[1].data.duration
             ? "none"
-            : InfoAnimeRes[1].duration,
+            : InfoAnimeRes[1].data.duration,
         });
       }
     } catch (err) {
