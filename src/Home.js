@@ -1748,7 +1748,7 @@ export default class Home extends Component {
                 {
                   id: j + 1,
                   finished: false,
-                  EpTitle: !EpName[j] ? null : EpName[j],
+                  Info: i === 0 ? (!EpName[j] ? null : EpName[j]) : null,
                 },
               ];
             }
@@ -2337,7 +2337,6 @@ export default class Home extends Component {
     ];
     let i = 0;
     const fetchOtherEP = async () => {
-      console.log(Episodes.length);
       if (Episodes.length === 100) {
         return axios
           .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i + 2}`)
@@ -2358,10 +2357,12 @@ export default class Home extends Component {
     if (toReturn === true) {
       return (
         await Promise.all([
-          await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`),
+          await this.getAllTheEpisode(id),
           await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
         ])
-      ).map((dataAnime) => dataAnime.data);
+      ).map((dataAnime, i) =>
+        i > 0 ? dataAnime.data : { episodes: dataAnime }
+      );
     }
     this.setState({ ShowModalSearch: false });
     try {

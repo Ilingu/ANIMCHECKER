@@ -2571,6 +2571,8 @@ a:hover {
 }
 
 #Watch .StartMod.active .cancel {
+  -ms-touch-action: manipulation;
+      touch-action: manipulation;
   color: red;
   border: 3px solid red;
 }
