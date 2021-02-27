@@ -421,7 +421,13 @@ export default class Home extends Component {
               { ...serieFirebase, ...filmFireBase },
               { ...GlobalInfoUser.serie, ...GlobalInfoUser.film }
             ) === true &&
-            SwitchMyAnim
+            SwitchMyAnim &&
+            (GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage === "NotFinished" ||
+              !GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage ||
+              (this.state.FirstQuerie &&
+                GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage !==
+                  "NotFinished" &&
+                this.state.ModeFilter === "NotFinished"))
               ? false
               : true,
           RefreshRandomizeAnime2:
@@ -633,13 +639,10 @@ export default class Home extends Component {
                 : {}
               : {}
             : {},
-          ParamsOptn: results[3]
-            ? results[3][0]
+          ParamsOptn:
+            results[3] && results[3][0] && results[3][0].data
               ? results[3][0].data
-                ? results[3][0].data
-                : {}
-              : {}
-            : {},
+              : {},
           RefreshfromFnOffline: true,
           LoadingMode: [
             results[0] && results[1]
@@ -665,7 +668,14 @@ export default class Home extends Component {
           ModeFindAnime: [false, null],
           RefreshRandomizeAnime: true,
           RefreshRandomizeAnime2: true,
-          ModeFilter: typeof next === "string" ? next : "NotFinished",
+          ModeFilter:
+            typeof next === "string"
+              ? next
+              : results[3] &&
+                results[3][0] &&
+                results[3][0]?.data?.TypeAnimeHomePage
+              ? results[3][0].data.TypeAnimeHomePage
+              : "NotFinished",
           FirstQuerie: true,
         },
         () => {

@@ -2847,9 +2847,26 @@ a:hover {
   margin: 10px 10px 0 10px;
 }
 
+#Settings {
+  position: relative;
+  width: 100%;
+}
+
+#Settings h1 {
+  text-decoration: underline;
+}
+
 #Settings #ActionAccount {
-  overflow: auto;
-  position: absolute;
+  display: -ms-grid;
+  display: grid;
+  width: 100% !important;
+  -ms-grid-columns: (1fr)[2];
+      grid-template-columns: repeat(2, 1fr);
+}
+
+#Settings #ActionAccount #App,
+#Settings #ActionAccount #User {
+  position: relative;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -2857,20 +2874,51 @@ a:hover {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  left: 10px;
-  top: 75px;
-  width: 20%;
-  height: calc(100% - 75px);
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
-#Settings #ActionAccount h1 {
-  text-align: center;
-  font-size: 1.9rem;
+#Settings #ActionAccount #App h3,
+#Settings #ActionAccount #User h3 {
   text-decoration: underline;
 }
 
-#Settings #ActionAccount .BtnActionAccount {
+#Settings #ActionAccount #App button,
+#Settings #ActionAccount #User button {
+  width: 50%;
   margin-bottom: 10px;
+}
+
+#Settings #ActionAccount #App #PersoAppBgc,
+#Settings #ActionAccount #User #PersoAppBgc {
+  border: none;
+  background-color: transparent;
+  width: 50px;
+  height: 30px;
+  outline: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+@media screen and (max-width: 1450px) {
+  #Settings #ActionAccount button {
+    width: 400px !important;
+  }
+}
+
+@media screen and (max-width: 860px) {
+  #Settings header h2 {
+    font-size: 2rem;
+    margin-top: 45px;
+  }
+  #Settings #ActionAccount {
+    -ms-grid-columns: (1fr)[1];
+        grid-template-columns: repeat(1, 1fr);
+  }
+  #Settings #ActionAccount button {
+    width: 300px !important;
+  }
 }
 
 @-webkit-keyframes LToR {

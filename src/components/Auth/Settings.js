@@ -26,6 +26,7 @@ class Settings extends Component {
     ShowModalResetData: false,
     ShowModalChangePseudo: false,
     newPseudo: "",
+    ACKColor: null,
     ResText: null,
     typeAlert: null,
   };
@@ -69,14 +70,13 @@ class Settings extends Component {
       const db = await openDB("AckDb", 1);
       const Store = db.transaction("ParamsOptn").objectStore("ParamsOptn");
       const results = await Store.getAll();
-      console.log(results);
 
       const ParamsOptn = OfflineMode
         ? results[0].data
         : await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
             context: this,
           });
-      this.setState({ ParamsOptn });
+      this.setState({ ParamsOptn, ACKColor: ParamsOptn.ACKColor });
     } catch (err) {
       console.error(err);
     }
@@ -216,6 +216,7 @@ class Settings extends Component {
       RedirectHome,
       newPseudo,
       isFirstTime,
+      ACKColor,
       OfflineMode,
       ResText,
       typeAlert,
@@ -251,41 +252,51 @@ class Settings extends Component {
 
     return (
       <Fragment>
-        <div className="container">
-          <section id="Settings">
-            <header>
-              <Link push="true" to="/">
-                <Button className="btnBackDesing">
-                  <span className="fas fa-arrow-left"></span> Retour
-                </Button>
-              </Link>
-              <h2>
-                <span className="fas fa-cog fa-spin"></span>
-                {Pseudo}, voici tes paramètres
-                <span className="fas fa-cog fa-spin"></span>
-              </h2>
-              <div id="returnAlert">
-                {ResText === null && typeAlert === null ? null : (
-                  <Alert
-                    variant={typeAlert}
-                    onClose={this.cancelState}
-                    dismissible
-                  >
-                    <p>{ResText}</p>
-                  </Alert>
-                )}
-              </div>
-            </header>
-            <div id="ActionAccount">
-              <h1>Action:</h1>
-              <Button
-                variant="outline-primary"
-                className="BtnActionAccount"
-                disabled={OfflineMode}
-                onClick={() => this.setState({ ShowModalChangePseudo: true })}
-              >
-                <span className="fas fa-user"></span> Changer De Pseudo
+        <section id="Settings">
+          <header>
+            <Link push="true" to="/">
+              <Button className="btnBackDesing">
+                <span className="fas fa-arrow-left"></span> Retour
               </Button>
+            </Link>
+            <h2>
+              <span className="fas fa-cog fa-spin"></span>
+              {Pseudo}, voici tes paramètres
+              <span className="fas fa-cog fa-spin"></span>
+            </h2>
+            <div id="returnAlert">
+              {ResText === null && typeAlert === null ? null : (
+                <Alert
+                  variant={typeAlert}
+                  onClose={this.cancelState}
+                  dismissible
+                >
+                  <p>{ResText}</p>
+                </Alert>
+              )}
+            </div>
+          </header>
+          <h1>Action:</h1>
+          <div id="ActionAccount">
+            <aside id="App">
+              <h3>
+                Application
+                {!ParamsOptn ? null : (
+                  <Fragment>
+                    :
+                    <input
+                      type="color"
+                      value={ACKColor ? ACKColor : "#212121"}
+                      onChange={(event) => {
+                        document.body.style.backgroundColor =
+                          event.target.value;
+                      }}
+                      id="PersoAppBgc"
+                    />
+                  </Fragment>
+                )}
+                :
+              </h3>
               {ParamsOptn === null ? null : (
                 <Fragment>
                   <Button
@@ -391,17 +402,20 @@ class Settings extends Component {
                         <option value="NotFinished">
                           Page d'accueil sur tes animes En Cours
                         </option>
-                        <option value="seasonAnim">
-                          Page d'accueil sur tes animes De Saison
-                        </option>
                         <option value="Finished">
                           Page d'accueil sur tes animes Finis
+                        </option>
+                        <option value="seasonAnim">
+                          Page d'accueil sur tes animes De Saison
                         </option>
                         <option value="Paused">
                           Page d'accueil sur tes animes En Pauses
                         </option>
                         <option value="Drop">
                           Page d'accueil sur tes animes que ta arrêter en cours
+                        </option>
+                        <option value="WaitAnim">
+                          Page d'accueil sur tes animes en attentes
                         </option>
                         <option value="Rate">
                           Page d'accueil sur tes animes Notés
@@ -417,10 +431,21 @@ class Settings extends Component {
                   </Form>
                 </Fragment>
               )}
-              <hr />
+            </aside>
+            <aside id="User">
+              <h3>Utilisateur:</h3>
+              <Button
+                variant="outline-primary"
+                className="BtnActionAccount"
+                disabled={OfflineMode}
+                onClick={() => this.setState({ ShowModalChangePseudo: true })}
+              >
+                <span className="fas fa-user"></span> Changer De Pseudo
+              </Button>
               <Button
                 variant="outline-dark"
                 disabled={OfflineMode}
+                style={{ color: "#ddd" }}
                 className="BtnActionAccount"
                 onClick={() => {
                   this.cancelState();
@@ -439,9 +464,9 @@ class Settings extends Component {
               >
                 <span className="fas fa-user-times"></span> Supprimer le compte
               </Button>
-            </div>
-          </section>
-        </div>
+            </aside>
+          </div>
+        </section>
         {/* MODAL */}
         <Modal
           show={ShowModalChangePseudo && OfflineMode === false}
