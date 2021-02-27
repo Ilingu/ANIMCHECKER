@@ -16,17 +16,6 @@ import NotFound from "./components/Error/NotFound";
 // CSS
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Assets/CSS/App.css";
-// Service Worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("./firebase-messaging-sw.js")
-    .then(function (registration) {
-      console.log("Registration successful, scope is:", registration.scope);
-    })
-    .catch(function (err) {
-      console.log("Service worker registration failed, error:", err);
-    });
-}
 
 const Root = () => (
   <Router>

@@ -15,9 +15,7 @@ const firebaseApp = firebase.initializeApp({
 });
 
 const base = Rebase.createClass(firebaseApp.database());
-const messaging = firebaseApp.messaging();
 
 export { firebaseApp };
-export { messaging };
 
 export default base;

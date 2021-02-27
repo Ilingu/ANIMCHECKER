@@ -165,6 +165,24 @@ export default class Notif extends Component {
       AnimeList,
     } = this.state;
 
+    // FN
+    const GenerateCalledTime = () => {
+      let NextDay = new Date();
+      // Get Day to first call notif from now
+      NextDay.setDate(
+        NextDay.getDate() + ((parseInt(day) + 7 - NextDay.getDay()) % 7)
+      );
+      // Set date to 00:00
+      NextDay.setHours(0, 0, 0, 0);
+      // Set Date to TimeStamp
+      NextDay = NextDay.getTime();
+      // Add Time in day to call Notif
+      NextDay += time * 1000;
+      // Return => 604800000 -> Week in ms / 1209600000 -> 2Week in ms
+      return [NextDay, NextDay + 604800000, NextDay + 1209600000];
+    };
+
+    // Add
     const db = await openDB("AckDb", 1);
     const Store = db
       .transaction("NotifFirebase", "readwrite")
@@ -185,10 +203,8 @@ export default class Notif extends Component {
         const CopyData = [...(await Store.getAll())][0].data;
         CopyData[UpdateNotif] = {
           name,
-          day,
-          time,
           Lier,
-          called: false,
+          calledTime: GenerateCalledTime(),
           paused: false,
         };
         CopyDataGlobal = CopyData;
@@ -248,7 +264,11 @@ export default class Notif extends Component {
             data: CopyDataGlobal,
           })
         : base.update(`${Pseudo}/Notif/${UpdateNotif}`, {
-            data: { name, day, time, Lier },
+            data: {
+              name,
+              calledTime: GenerateCalledTime(),
+              Lier: !Lier ? null : Lier,
+            },
           })
       ).then(this.refreshNotif);
 
@@ -274,11 +294,9 @@ export default class Notif extends Component {
         ...Notif,
         [IDNotif]: {
           name,
-          day,
-          time,
           Lier,
+          calledTime: GenerateCalledTime(),
           paused: false,
-          called: false,
         },
       };
 
@@ -300,11 +318,9 @@ export default class Notif extends Component {
               ...CopyNotif,
               [IDNotif]: {
                 name,
-                day,
-                time,
                 Lier,
+                calledTime: GenerateCalledTime(),
                 paused: false,
-                called: false,
               },
             };
           }
@@ -325,11 +341,9 @@ export default class Notif extends Component {
               ...CopyNotif,
               [IDNotif]: {
                 name,
-                day,
-                time,
                 Lier,
+                calledTime: GenerateCalledTime(),
                 paused: false,
-                called: false,
               },
             };
             base.remove(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
@@ -508,8 +522,7 @@ export default class Notif extends Component {
           <OneNotif
             key={key}
             name={Notif[key].name}
-            day={Notif[key].day}
-            time={Notif[key].time}
+            calledTime={Notif[key].calledTime[0]}
             paused={Notif[key].paused}
             fn={[
               () => this.updatePaused(key, !Notif[key].paused),
@@ -519,8 +532,10 @@ export default class Notif extends Component {
                   UpdateNotif: key,
                   ShowModalAddNotif: true,
                   name: Notif[key].name,
-                  day: Notif[key].day,
-                  time: Notif[key].time,
+                  day: new Date(Notif[key].calledTime[0]).getDay().toString(),
+                  time:
+                    new Date(Notif[key].calledTime[0]).getHours() * 3600 +
+                    new Date(Notif[key].calledTime[0]).getMinutes() * 60,
                   Lier: Notif[key].Lier,
                 }),
             ]}

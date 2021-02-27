@@ -2,29 +2,29 @@ import React from "react";
 // CSS
 import { Button } from "react-bootstrap";
 
-const OneNotif = ({ name, day, time, paused, fn }) => {
+const OneNotif = ({ name, calledTime, paused, fn }) => {
   const toDayString = () => {
     let dayVar = null;
-    switch (day) {
-      case "0":
+    switch (new Date(calledTime).getDay()) {
+      case 0:
         dayVar = "Dimanche";
         break;
-      case "1":
+      case 1:
         dayVar = "Lundi";
         break;
-      case "2":
+      case 2:
         dayVar = "Mardi";
         break;
-      case "3":
+      case 3:
         dayVar = "Mercredi";
         break;
-      case "4":
+      case 4:
         dayVar = "Jeudi";
         break;
-      case "5":
+      case 5:
         dayVar = "Vendredi";
         break;
-      case "6":
+      case 6:
         dayVar = "Samedi";
         break;
       default:
@@ -35,21 +35,12 @@ const OneNotif = ({ name, day, time, paused, fn }) => {
   };
 
   const toHourMinute = () => {
-    let baseCalcul = Math.round(((time / 3600) * 30) / 0.5);
-    let HMSplit = (baseCalcul / 60).toString().split(".");
-    let decimalToMin =
-      HMSplit.length === 1
-        ? 0
-        : parseFloat("0." + HMSplit[1].split("")[0] + HMSplit[1].split("")[1]) *
-          60;
-
-    return baseCalcul >= 60
-      ? `${parseInt(HMSplit[0]) < 10 ? `0${HMSplit[0]}` : HMSplit[0]}:${
-          Math.round(decimalToMin) < 10
-            ? `0${Math.round(decimalToMin)}`
-            : Math.round(decimalToMin)
-        }`
-      : `00:${baseCalcul}`;
+    const toDate = new Date(calledTime);
+    return `${
+      toDate.getHours() < 10 ? `0${toDate.getHours()}` : toDate.getHours()
+    }:${
+      toDate.getMinutes() < 10 ? `0${toDate.getMinutes()}` : toDate.getMinutes()
+    }`;
   };
 
   return (
