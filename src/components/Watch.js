@@ -382,9 +382,15 @@ class Watch extends Component {
 
   updateValue = (path, value, next = null, nextAfterRefresh = false) => {
     const { OfflineMode } = this.state;
-    this.setState({
-      ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
-    });
+    // Save PosAccordeon
+    try {
+      this.setState({
+        ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+    // Update
     if (OfflineMode === true) {
       this.fnDbOffline("PUT", path, value, next);
       return;
@@ -434,12 +440,10 @@ class Watch extends Component {
           `https://api.jikan.moe/v3/search/anime?q=${AnimToWatch.name}&limit=1`
         )
       ).data.results[0].mal_id;
-      const InfoAnimeRes = (
-        await Promise.all([
-          await this.getAllTheEpisode(AnimeID),
-          await axios.get(`https://api.jikan.moe/v3/anime/${AnimeID}`),
-        ])
-      )
+      const InfoAnimeRes = await Promise.all([
+        await this.getAllTheEpisode(AnimeID),
+        await axios.get(`https://api.jikan.moe/v3/anime/${AnimeID}`),
+      ]);
 
       const EpName =
         InfoAnimeRes[0].length !== 0
