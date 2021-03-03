@@ -202,7 +202,7 @@ class Watch extends Component {
             this.setState({ WatchModeNow: null });
           }
           if (next !== null) next();
-          if (AnimToWatch.DurationPerEP === undefined) {
+          if (AnimToWatch.DurationPerEP === undefined && type === "serie") {
             this.ReTakeInfoFromName();
           }
           // Scroll EP
@@ -1886,28 +1886,26 @@ class Watch extends Component {
                   </Fragment>
                 ) : null}
                 <Dropdown.Divider />
-                {type === "serie" ? (
-                  <Dropdown.Item>
-                    <Button
-                      variant="secondary"
-                      block
-                      onClick={() => {
-                        this.updateValue(`${Pseudo}/serie/${id}`, {
+                <Dropdown.Item>
+                  <Button
+                    variant="secondary"
+                    block
+                    onClick={() => {
+                      this.updateValue(`${Pseudo}/${type}/${id}`, {
+                        InWait: true,
+                      });
+                      if (!this.state.OfflineMode) {
+                        this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
                           InWait: true,
                         });
-                        if (!this.state.OfflineMode) {
-                          this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-                            InWait: true,
-                          });
-                        }
-                        this.setState({ uid: null, RedirectHome: true });
-                      }}
-                    >
-                      <span className="fas fa-hourglass-half"></span> Mettre en
-                      attente {AnimToWatch.name}
-                    </Button>
-                  </Dropdown.Item>
-                ) : null}
+                      }
+                      this.setState({ uid: null, RedirectHome: true });
+                    }}
+                  >
+                    <span className="fas fa-hourglass-half"></span> Mettre en
+                    attente {AnimToWatch.name}
+                  </Button>
+                </Dropdown.Item>
                 {AnimToWatch.finished === false ||
                 AnimToWatch.finishedAnim === false ? (
                   <Dropdown.Item>

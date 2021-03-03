@@ -2900,10 +2900,8 @@ export default class Home extends Component {
           )
         }
         InWait={
-          key.split("-")[0] === "serie"
-            ? serieFirebase[key].InWait
-              ? serieFirebase[key].InWait
-              : false
+          { ...serieFirebase, ...filmFireBase }[key]?.InWait
+            ? { ...serieFirebase, ...filmFireBase }[key].InWait
             : false
         }
         ModeFilter={ModeFilter}
