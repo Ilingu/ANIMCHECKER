@@ -16,6 +16,8 @@ import MavLogo from "../Assets/Img/MAVLogo.png";
 import NekoSamaLogo from "../Assets/Img/NekoSamaLogo.svg";
 import NetflixLogo from "../Assets/Img/NetflixLogo.png";
 import WakanimLogo from "../Assets/Img/WakanimLogo.png";
+import VoirAnimeLogo from "../Assets/Img/voiranime.png";
+import NineAnimeLogo from "../Assets/Img/9anime.png";
 // CSS
 import { Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
 // DB
@@ -975,6 +977,8 @@ class Watch extends Component {
         AnimEP: null,
         Badge: null,
         Lier: null,
+        DurationPerEP: null,
+        InWait: null,
         AnimeSeason: null,
         Paused: PauseWithAlleged ? true : null,
         Drop: DropWithAlleged ? true : null,
@@ -984,6 +988,8 @@ class Watch extends Component {
           AnimEP: null,
           Badge: null,
           Lier: null,
+          DurationPerEP: null,
+          InWait: null,
           AnimeSeason: null,
           Paused: PauseWithAlleged ? true : null,
           Drop: DropWithAlleged ? true : null,
@@ -1458,9 +1464,54 @@ class Watch extends Component {
             </Badge>
           );
         } else if (
-          value.toLowerCase() === "crunchyroll" ||
-          value.toLowerCase() === "crunchyrol"
+          value.toLowerCase() === "voiranime" ||
+          value.toLowerCase() === "voiranime.com"
         ) {
+          return (
+            <Badge key={i} className="BadgesME" variant="dark">
+              <a
+                href="https://voiranime.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={VoirAnimeLogo} alt="VoirAnimeLogo" />
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
+            </Badge>
+          );
+        } else if (
+          value.toLowerCase() === "9anime" ||
+          value.toLowerCase() === "9anime.to"
+        ) {
+          return (
+            <Badge key={i} className="BadgesME" variant="light">
+              <a
+                href="https://www13.9anime.to/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={NineAnimeLogo} alt="NineAnimeLogo" />
+                <div
+                  id="CancelBadge"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    this.handleDeleteBadge(i);
+                  }}
+                >
+                  <span className="fas fa-times"></span>
+                </div>
+              </a>
+            </Badge>
+          );
+        } else if (value.toLowerCase() === "crunchyroll") {
           return (
             <Badge key={i} className="BadgesME" variant="light">
               <a
