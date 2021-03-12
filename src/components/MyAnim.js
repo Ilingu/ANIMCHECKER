@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 // Components
 import Header from "./Header";
 // CSS
-import { Nav, Form, Button, Alert, Dropdown } from "react-bootstrap";
+import { Form, Button, Alert, Dropdown } from "react-bootstrap";
 
 const MyAnim = ({
   SwitchMyAnimVar,
@@ -62,139 +62,138 @@ const MyAnim = ({
 
       <section id="MyAnime">
         <header>
-          <Nav fill variant="tabs">
-            <Nav.Item>
-              <div
-                id="TabsHomeMade"
-                className={SwitchMyAnimVar ? "active" : ""}
-                onClick={ModeFindAnime ? null : SwitchMyAnim}
-              >
-                Mes Animes{" "}
-                {SwitchMyAnimVar && !LoadingMode ? (
-                  <Fragment>
-                    <Button
-                      variant="link"
-                      aria-label="Button for search an anime in the list"
-                      onClick={() => SearchInAnimeListFn(true)}
-                    >
-                      <span className="fas fa-search"></span>
-                    </Button>
-                    <Dropdown>
-                      <Dropdown.Toggle
-                        variant="link"
-                        title="Filtre"
-                        id="FilterBtn"
-                      >
-                        <span className="fas fa-filter"></span>
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu>
-                        <Dropdown.Item
-                          active={ModeFilter === "NotFinished" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "NotFinished") return;
-                            NewFilter("NotFinished");
-                          }}
-                        >
-                          En Cours
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          active={ModeFilter === "Finished" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "Finished") return;
-                            NewFilter("Finished");
-                          }}
-                        >
-                          Finis
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          active={ModeFilter === "seasonAnim" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "seasonAnim") return;
-                            NewFilter("seasonAnim");
-                          }}
-                        >
-                          Anime de saison
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          active={ModeFilter === "Paused" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "Paused") return;
-                            NewFilter("Paused");
-                          }}
-                        >
-                          Pause
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          active={ModeFilter === "Drop" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "Drop") return;
-                            NewFilter("Drop");
-                          }}
-                        >
-                          Drop
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          active={ModeFilter === "WaitAnim" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "WaitAnim") return;
-                            NewFilter("WaitAnim");
-                          }}
-                        >
-                          Anime en attente
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          active={ModeFilter === "Rate" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "Rate") return;
-                            NewFilter("Rate");
-                          }}
-                        >
-                          Note
-                        </Dropdown.Item>
-                        <Dropdown.Item
-                          active={ModeFilter === "fav" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "fav") return;
-                            NewFilter("fav");
-                          }}
-                        >
-                          Favoris
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          active={ModeFilter === "All" ? true : false}
-                          onClick={() => {
-                            if (ModeFilter === "All") return;
-                            NewFilter("All");
-                          }}
-                        >
-                          Tous
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </Fragment>
-                ) : null}
-              </div>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                eventKey="link-2"
-                active={!SwitchMyAnimVar}
-                onClick={ModeFindAnime ? null : SwitchMyNextAnim}
-              >
-                My next anime{" "}
-                {!SwitchMyAnimVar && !LoadingMode ? (
+          <div id="TabsAnime">
+            <div
+              id="MyAnimeTabs"
+              className={SwitchMyAnimVar ? "active" : ""}
+              onClick={ModeFindAnime || SwitchMyAnimVar ? null : SwitchMyAnim}
+            >
+              Mes Animes{" "}
+              {SwitchMyAnimVar && !LoadingMode ? (
+                <Fragment>
                   <Button
                     variant="link"
-                    onClick={() => SearchInAnimeListFn(false)}
+                    aria-label="Button for search an anime in the list"
+                    onClick={() => SearchInAnimeListFn(true)}
                   >
                     <span className="fas fa-search"></span>
                   </Button>
-                ) : null}
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
+                  <Dropdown>
+                    <Dropdown.Toggle
+                      variant="link"
+                      title="Filtre"
+                      id="FilterBtn"
+                    >
+                      <span className="fas fa-filter"></span>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        active={ModeFilter === "NotFinished" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "NotFinished") return;
+                          NewFilter("NotFinished");
+                        }}
+                      >
+                        En Cours
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "Finished" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "Finished") return;
+                          NewFilter("Finished");
+                        }}
+                      >
+                        Finis
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "seasonAnim" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "seasonAnim") return;
+                          NewFilter("seasonAnim");
+                        }}
+                      >
+                        Anime de saison
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "Paused" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "Paused") return;
+                          NewFilter("Paused");
+                        }}
+                      >
+                        Pause
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "Drop" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "Drop") return;
+                          NewFilter("Drop");
+                        }}
+                      >
+                        Drop
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "WaitAnim" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "WaitAnim") return;
+                          NewFilter("WaitAnim");
+                        }}
+                      >
+                        Anime en attente
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        active={ModeFilter === "Rate" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "Rate") return;
+                          NewFilter("Rate");
+                        }}
+                      >
+                        Note
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "fav" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "fav") return;
+                          NewFilter("fav");
+                        }}
+                      >
+                        Favoris
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        active={ModeFilter === "All" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "All") return;
+                          NewFilter("All");
+                        }}
+                      >
+                        Tous
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Fragment>
+              ) : null}
+            </div>
+
+            <div
+              id="NATabs"
+              className={!SwitchMyAnimVar ? "active" : ""}
+              onClick={
+                ModeFindAnime || !SwitchMyAnimVar ? null : SwitchMyNextAnim
+              }
+            >
+              My next anime{" "}
+              {!SwitchMyAnimVar && !LoadingMode ? (
+                <Button
+                  variant="link"
+                  onClick={() => SearchInAnimeListFn(false)}
+                >
+                  <span className="fas fa-search"></span>
+                </Button>
+              ) : null}
+            </div>
+          </div>
           <div id="returnAlert">
             {ResText !== null && typeAlert !== null ? (
               <Alert variant={typeAlert} onClose={onClose} dismissible>

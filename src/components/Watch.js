@@ -1791,7 +1791,7 @@ class Watch extends Component {
                 <span className="fas fa-arrow-left"></span> Retour
               </Button>
             </Link>
-            <Dropdown drop="left">
+            <Dropdown drop="down">
               <Dropdown.Toggle variant="outline-secondary" id="DropdownAction">
                 <span className="fas fa-bars"></span>
               </Dropdown.Toggle>

@@ -2484,6 +2484,28 @@ export default class Home extends Component {
     return URL;
   };
 
+  TransitionTabsChange = (First) => {
+    const elem = document.getElementById("ContentAnimeList");
+    const elemPos = parseInt(
+      (elem.classList.contains("none")
+        ? elem.style.left
+        : elem.style.marginLeft
+      ).split("vw")[0]
+    );
+    if (First) {
+      elem.style.left = "80vw";
+      elem.style.marginLeft = "80vw";
+      requestAnimationFrame(() => this.TransitionTabsChange());
+    } else if (elemPos > 0) {
+      elem.style.left = `${elemPos - 1.2}vw`;
+      elem.style.marginLeft = `${elemPos - 1.2}vw`;
+      requestAnimationFrame(() => this.TransitionTabsChange());
+    } else {
+       elem.style.left = "0";
+       elem.style.marginLeft = "0";
+    }
+  };
+
   StartSpeechRecognition = () => {
     const { SecondMessage } = this.state;
     try {
@@ -3268,8 +3290,14 @@ export default class Home extends Component {
           >
             <MyAnim
               SwitchMyAnimVar={SwitchMyAnim}
-              SwitchMyNextAnim={() => this.setState({ SwitchMyAnim: false })}
-              SwitchMyAnim={() => this.setState({ SwitchMyAnim: true })}
+              SwitchMyNextAnim={() => {
+                this.setState({ SwitchMyAnim: false });
+                requestAnimationFrame(() => this.TransitionTabsChange(true));
+              }}
+              SwitchMyAnim={() => {
+                this.setState({ SwitchMyAnim: true });
+                requestAnimationFrame(() => this.TransitionTabsChange(true));
+              }}
               NextAnimChange={(event) =>
                 this.setState({ NextAnim: event.target.value })
               }

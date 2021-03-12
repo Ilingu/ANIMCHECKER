@@ -7,6 +7,7 @@ import { Navbar, Nav, Form, Button, Dropdown } from "react-bootstrap";
 
 const Header = () => {
   const [Anim, SetAnim] = useState("");
+  const [IsOpen, SetIsOpen] = useState(false);
   const [ResText, SetResText] = useState("");
   const [ShowMessage, SetShowMessage] = useState(false);
   const [SecondMessage, SetSecondMessage] = useState(false);
@@ -96,54 +97,108 @@ const Header = () => {
   return (
     <Fragment>
       <Navbar bg="dark" variant="dark" expand="lg">
-        <Navbar.Brand>ACK</Navbar.Brand>
-        <Navbar.Collapse id="basic-navbar-nav">
+        <Navbar.Brand>
+          ACK<sup>β10</sup>
+        </Navbar.Brand>
+        <div id="btnBarsMenu" onClick={() => SetIsOpen(!IsOpen)}>
+          <span className="fas fa-bars"></span>
+        </div>
+        <Navbar.Collapse
+          className={IsOpen ? "active" : ""}
+          id="basic-navbar-nav"
+        >
           <Nav className="mr-auto">
-            <Nav.Item>
-              <Link push="true" to={`/notificator/${Context.Pseudo}`}>
-                <Button variant="outline-info">My Notif</Button>
-              </Link>
-            </Nav.Item>
-
             <Nav.Item>
               <Button
                 variant="outline-success"
-                style={{ marginLeft: "10px" }}
                 onClick={Context.openModalNewAnim}
               >
-                New Anime
+                <span className="fas fa-plus-circle"></span> Anime
               </Button>
+            </Nav.Item>
+            <Nav.Item>
+              <Link push="true" to={`/notificator/${Context.Pseudo}`}>
+                <Button variant="outline-info">
+                  <span className="fas fa-bell"></span> Notif
+                </Button>
+              </Link>
             </Nav.Item>
             <Nav.Item>
               <Button
                 id="RdaBtn"
                 title="Choisir un anime aléatoirement parmi toutes taliste de prochain anime"
-                style={{ marginLeft: "10px" }}
                 onClick={Context.RdaAnime}
                 variant="outline-primary"
               >
                 <span className="fas fa-random"></span>
               </Button>
             </Nav.Item>
+            {window.matchMedia("(display-mode: standalone)").matches ? null : (
+              <Nav.Item>
+                <Button
+                  variant="outline-secondary"
+                  title="Ajoute cette application à ton écran d'accueil ou Bureau !"
+                  onClick={Context.addToHome}
+                >
+                  <span className="fas fa-plus-circle"></span>
+                </Button>
+              </Nav.Item>
+            )}
             <Nav.Item>
-              <Button
-                variant="outline-secondary"
-                title="Ajoute cette application à ton écran d'accueil ou Bureau !"
-                style={{ marginLeft: "10px" }}
-                onClick={Context.addToHome}
-              >
-                <span className="fas fa-plus-circle"></span>
-              </Button>
-            </Nav.Item>
-            <Nav.Item>
-              <Button
-                variant="outline-warning"
-                style={{ marginLeft: "10px" }}
-                title="Se déconnecter"
-                onClick={Context.logOut}
-              >
-                <span className="fas fa-sign-out-alt"></span>
-              </Button>
+              <Dropdown>
+                <Dropdown.Toggle
+                  variant="light"
+                  aria-label="Show the account button of the user"
+                  id="dropdown-basic"
+                >
+                  <span className="fas fa-user"></span>
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                  <h5>Bonjour, {Context.Pseudo}</h5>
+                  <Dropdown.Item
+                    disabled={Context.LoadingMode}
+                    onClick={Context.openPalmares}
+                  >
+                    <span
+                      className="fas fa-trophy"
+                      style={{ color: "gold" }}
+                    ></span>{" "}
+                    Palmarès
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item
+                    disabled={Context.LoadingMode}
+                    onClick={Context.ExportDB}
+                  >
+                    <span className="fas fa-file-upload"></span> Exporter Ton
+                    ACK
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    disabled={Context.LoadingMode}
+                    onClick={Context.ImportDB}
+                  >
+                    <span className="fas fa-file-download"></span> Imorter un
+                    ACK
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item
+                    title="Se déconnecter"
+                    onClick={Context.logOut}
+                  >
+                    <span className="fas fa-sign-out-alt"></span> Se déconnecter
+                  </Dropdown.Item>
+                  <div id="FakeDropdownItem">
+                    <Link push="true" to={`/Settings/${Context.Pseudo}`}>
+                      <span
+                        className="fas fa-cog fa-spin"
+                        style={{ color: "grey" }}
+                      ></span>{" "}
+                      Parametres
+                    </Link>
+                  </div>
+                </Dropdown.Menu>
+              </Dropdown>
             </Nav.Item>
           </Nav>
           <Form onSubmit={HandleSubmit} id="searchForm" inline>
@@ -171,54 +226,6 @@ const Header = () => {
               ></span>
             </div>
           </Form>
-          <aside id="account">
-            <Dropdown>
-              <Dropdown.Toggle
-                variant="light"
-                aria-label="Show the account button of the user"
-                id="dropdown-basic"
-              >
-                <span className="fas fa-user"></span>
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu>
-                <h5>Bonjour, {Context.Pseudo}</h5>
-                <Dropdown.Item
-                  disabled={Context.LoadingMode}
-                  onClick={Context.openPalmares}
-                >
-                  <span
-                    className="fas fa-trophy"
-                    style={{ color: "gold" }}
-                  ></span>{" "}
-                  Palmarès
-                </Dropdown.Item>{" "}
-                <Dropdown.Divider />
-                <Dropdown.Item
-                  disabled={Context.LoadingMode}
-                  onClick={Context.ExportDB}
-                >
-                  <span className="fas fa-file-upload"></span> Exporter Ton ACK
-                </Dropdown.Item>{" "}
-                <Dropdown.Item
-                  disabled={Context.LoadingMode}
-                  onClick={Context.ImportDB}
-                >
-                  <span className="fas fa-file-download"></span> Imorter un ACK
-                </Dropdown.Item>{" "}
-                <Dropdown.Divider />
-                <div id="FakeDropdownItem">
-                  <Link push="true" to={`/Settings/${Context.Pseudo}`}>
-                    <span
-                      className="fas fa-cog fa-spin"
-                      style={{ color: "grey" }}
-                    ></span>{" "}
-                    Parametres
-                  </Link>
-                </div>
-              </Dropdown.Menu>
-            </Dropdown>
-          </aside>
         </Navbar.Collapse>
       </Navbar>
       {ShowMessageHtml ? (
