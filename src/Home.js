@@ -3367,49 +3367,51 @@ export default class Home extends Component {
         RefreshRandomizeAnime3: false,
         MyMangaListSaved: [
           MangaFirebase[0]
-            ? Object.keys(MangaFirebase[0]).map((key) => (
-                <Poster
-                  key={key}
-                  ModeFilter={ModeFilter}
-                  isFinishedManga={MangaFirebase[0][key].finished}
-                  inMyManga={true}
-                  title={MangaFirebase[0][key].name}
-                  openDetailsManga={() => {
-                    let LastScanRead = null;
-                    MangaFirebase[0][key].Scan.forEach((val, i) => {
-                      if (val === true) {
-                        LastScanRead = i;
-                      }
-                    });
-                    this.setState(
-                      {
-                        ShowModalMangaDetails: true,
-                        ScanManga: [
-                          this.GTemplateScan(key, MangaFirebase, {
-                            ...MangaFirebase[0][key].Scan,
-                          }),
-                          key,
-                        ],
-                      },
-                      () => {
-                        try {
-                          document
-                            .getElementById("ScanContainer")
-                            .parentNode.scrollTo({
-                              left:
-                                document
-                                  .querySelector(
-                                    `.ScanManga.SM-${LastScanRead}`
-                                  )
-                                  .getBoundingClientRect().x - 740,
-                              behavior: "smooth",
-                            });
-                        } catch (err) {}
-                      }
-                    );
-                  }}
-                />
-              ))
+            ? Object.keys(MangaFirebase[0])
+                .reverse()
+                .map((key) => (
+                  <Poster
+                    key={key}
+                    ModeFilter={ModeFilter}
+                    isFinishedManga={MangaFirebase[0][key].finished}
+                    inMyManga={true}
+                    title={MangaFirebase[0][key].name}
+                    openDetailsManga={() => {
+                      let LastScanRead = null;
+                      MangaFirebase[0][key].Scan.forEach((val, i) => {
+                        if (val === true) {
+                          LastScanRead = i;
+                        }
+                      });
+                      this.setState(
+                        {
+                          ShowModalMangaDetails: true,
+                          ScanManga: [
+                            this.GTemplateScan(key, MangaFirebase, {
+                              ...MangaFirebase[0][key].Scan,
+                            }),
+                            key,
+                          ],
+                        },
+                        () => {
+                          try {
+                            document
+                              .getElementById("ScanContainer")
+                              .parentNode.scrollTo({
+                                left:
+                                  document
+                                    .querySelector(
+                                      `.ScanManga.SM-${LastScanRead}`
+                                    )
+                                    .getBoundingClientRect().x - 740,
+                                behavior: "smooth",
+                              });
+                          } catch (err) {}
+                        }
+                      );
+                    }}
+                  />
+                ))
             : "Vous n'avez aucun Manga En Cours",
           MangaFirebase[1]
             ? Object.keys(MangaFirebase[1]).map((key) => (
@@ -3424,7 +3426,11 @@ export default class Home extends Component {
                     })
                   }
                 >
-                  <span className="fas fa-long-arrow-alt-left"></span>{" "}
+                  <span
+                    className={`fas fa-long-arrow-alt-${
+                      window.innerWidth <= 767 ? "up" : "left"
+                    }`}
+                  ></span>{" "}
                   {MangaFirebase[1][key].name}
                 </div>
               ))
