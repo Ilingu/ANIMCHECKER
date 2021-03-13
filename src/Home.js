@@ -11,12 +11,13 @@ import Poster from "./components/dyna/PosterAnim";
 import NextAnimCO from "./components/dyna/NextAnim";
 import OneAnim from "./components/OneAnim";
 import MyAnim from "./components/MyAnim";
+import MyManga from "./components/MyManga";
 import Login from "./components/Auth/Login";
 import PseudoCO from "./components/Auth/Pseudo";
 // Context
 import ContextForMyAnim from "./Context/ContextSchema";
 // CSS
-import { Modal, Button, Form, Dropdown } from "react-bootstrap";
+import { Modal, Button, Form, Dropdown, Spinner } from "react-bootstrap";
 // DB
 import base, { firebaseApp } from "./db/base";
 import firebase from "firebase/app";
@@ -31,6 +32,7 @@ export default class Home extends Component {
     NumTel: "",
     NewLogin: false,
     NextAnimFireBase: {},
+    MangaFirebase: [],
     filmFireBase: {},
     serieFirebase: {},
     PhoneNumFireBase: null,
@@ -42,6 +44,12 @@ export default class Home extends Component {
     proprio: null,
     ReConnectionFirebase: false,
     // Bon fonctionnement de l'app
+    PageMode:
+      JSON.parse(window.localStorage.getItem("PageMode")) === null ||
+      JSON.parse(window.localStorage.getItem("PageMode")) === undefined ||
+      JSON.parse(window.localStorage.getItem("OfflineMode")) === true
+        ? true
+        : JSON.parse(window.localStorage.getItem("PageMode")),
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
@@ -69,8 +77,11 @@ export default class Home extends Component {
     ShowModalImportFile: false,
     ShowModalType: false,
     ShowModalVerification: false,
+    ShowModalAddManga: false,
+    ShowModalMangaDetails: false,
     ////
     PalmaresModal: false,
+    ScanManga: null,
     NotAskAgain: true,
     ModePreview: false,
     SwitchMyAnim: true,
@@ -80,6 +91,11 @@ export default class Home extends Component {
     SearchInAnimeList: [false, null],
     RefreshRandomizeAnime: true,
     RefreshRandomizeAnime2: true,
+    RefreshRandomizeAnime3: true,
+    MyMangaListSaved: [
+      "Vous n'avez aucun Manga En Cours",
+      "Vous n'avez aucun Manga à Regarder Prochainement",
+    ],
     MyAnimListSaved: null,
     MyNextAnimListSaved: null,
     ModeFilter: "NotFinished",
@@ -117,6 +133,7 @@ export default class Home extends Component {
       Math.round(new Date().getMinutes() / 10) * 10 * 60,
     durer: 110,
     nbEP: "",
+    Scan: 1,
     NextAnim: "",
     ImportanceNA: 0,
     ImportanceSearch: null,
@@ -269,7 +286,7 @@ export default class Home extends Component {
     }
 
     async function next() {
-      self.setState({ OfflineMode: true });
+      self.setState({ OfflineMode: true, RefreshRandomizeAnime: true });
       self.ShowMessageInfo("Mode hors ligne activé", 6000);
 
       if (self.setIntervalVar !== null) {
@@ -397,6 +414,32 @@ export default class Home extends Component {
     return object != null && typeof object === "object";
   }
 
+  refreshManga = async () => {
+    try {
+      const { ScanManga } = this.state;
+      const MangaInfo = await base.fetch(`${this.state.Pseudo}/manga`, {
+        context: this,
+      });
+      let NewScanManga = null;
+      if (ScanManga !== null) {
+        NewScanManga = [
+          this.GTemplateScan(ScanManga[1], MangaInfo, {
+            ...MangaInfo[0][ScanManga[1]].Scan,
+          }),
+          ScanManga[1],
+        ];
+      }
+
+      this.setState({
+        MangaFirebase: !MangaInfo ? [] : MangaInfo,
+        RefreshRandomizeAnime3: true,
+        ScanManga: NewScanManga !== null ? NewScanManga : null,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   refreshValueFirebase = async (after = null, HomePage = null) => {
     try {
       const GlobalInfoUser = await base.fetch(`${this.state.Pseudo}`, {
@@ -464,6 +507,7 @@ export default class Home extends Component {
             : GlobalInfoUser.NextAnim,
           serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
           filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
+          MangaFirebase: !GlobalInfoUser.manga ? [] : GlobalInfoUser.manga,
           PhoneNumFireBase: GlobalInfoUser.PhoneNum,
           ParamsOptn: GlobalInfoUser.ParamsOptn,
         },
@@ -825,7 +869,9 @@ export default class Home extends Component {
         data: value,
       })
       .then(() => {
-        this.refreshValueFirebase();
+        if (path.includes("manga")) {
+          this.refreshManga();
+        } else this.refreshValueFirebase();
         this.setState({
           ResText: "Votre requête d'ajout a réussite.",
           typeAlert: "success",
@@ -866,9 +912,13 @@ export default class Home extends Component {
         data: value,
       })
       .then(() => {
-        HomePage !== null
-          ? this.refreshValueFirebase(null, HomePage)
-          : this.refreshValueFirebase();
+        if (path.includes("manga")) {
+          this.refreshManga();
+        } else if (HomePage !== null) {
+          this.refreshValueFirebase(null, HomePage);
+        } else {
+          this.refreshValueFirebase();
+        }
 
         if (Next !== null) Next();
       })
@@ -1631,6 +1681,75 @@ export default class Home extends Component {
     }
   };
 
+  addManga = () => {
+    const {
+      Pseudo,
+      MangaFirebase,
+      title,
+      Scan,
+      NextMangaToDelete,
+    } = this.state;
+    const self = this;
+
+    if (
+      typeof title === "string" &&
+      title.trim().length !== 0 &&
+      typeof Scan === "number" &&
+      Scan >= 1
+    ) {
+      let IsGoodForPost = true,
+        ScanArr = [];
+
+      for (let i = 0; i < Scan; i++) {
+        ScanArr = [...ScanArr, false];
+      }
+
+      try {
+        Object.keys(MangaFirebase[0]).forEach((key) => {
+          if (MangaFirebase[key].name.toLowerCase() === title.toLowerCase()) {
+            IsGoodForPost = false;
+          }
+        });
+      } catch (error) {}
+
+      if (IsGoodForPost) {
+        this.addValue(`${Pseudo}/manga`, [
+          {
+            ...MangaFirebase[0],
+            [`manga-${Date.now()}`]: {
+              name: title,
+              Scan: ScanArr,
+            },
+          },
+          { ...MangaFirebase[1] },
+        ]);
+        reset();
+      } else {
+        reset(false, `"${title}" existe déjà dans votre liste`);
+      }
+    } else {
+      reset("Veuillez remplir tous les champs");
+    }
+
+    function reset(error = false, warn = false) {
+      self.setState({
+        title: "",
+        Scan: 1,
+        ShowModalAddManga: false,
+        ResText: error ? error : warn ? warn : null,
+        typeAlert: error ? "danger" : warn ? "warning" : null,
+      });
+      if (error) {
+        setTimeout(() => {
+          self.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 3600);
+      }
+    }
+  };
+
   addAnime = () => {
     const {
       title,
@@ -1728,11 +1847,15 @@ export default class Home extends Component {
             };
           });
 
-          Object.keys(serieFirebase).forEach((key) => {
-            if (serieFirebase[key].name.toLowerCase() === title.toLowerCase()) {
-              IsGoodForPost = false;
-            }
-          });
+          try {
+            Object.keys(serieFirebase).forEach((key) => {
+              if (
+                serieFirebase[key].name.toLowerCase() === title.toLowerCase()
+              ) {
+                IsGoodForPost = false;
+              }
+            });
+          } catch (err) {}
 
           if (IsGoodForPost) {
             self.addValue(`${self.state.Pseudo}/serie`, {
@@ -2501,10 +2624,34 @@ export default class Home extends Component {
       elem.style.marginLeft = `${elemPos - 1.2}vw`;
       requestAnimationFrame(() => this.TransitionTabsChange());
     } else {
-       elem.style.left = "0";
-       elem.style.marginLeft = "0";
+      elem.style.left = "0";
+      elem.style.marginLeft = "0";
     }
   };
+
+  GTemplateScan = (key, data, CopyScan) =>
+    data[0][key].Scan.map((finished, i) => (
+      <div
+        key={i}
+        className={`ScanManga SM-${i}`}
+        onClick={() => {
+          CopyScan[i] = true;
+          this.updateValue(`${this.state.Pseudo}/manga/0/${key}`, {
+            Scan: { ...CopyScan },
+          });
+        }}
+      >
+        {finished ? (
+          <span className="fas fa-check" style={{ color: "#ff0" }}></span>
+        ) : (
+          <span
+            className="fas fa-flag-checkered"
+            style={{ color: "yellowgreen" }}
+          ></span>
+        )}{" "}
+        Scan {i + 1}
+      </div>
+    ));
 
   StartSpeechRecognition = () => {
     const { SecondMessage } = this.state;
@@ -2586,6 +2733,8 @@ export default class Home extends Component {
       ShowModalSearch: false,
       ShowModalAddAnim: false,
       ShowModalAddFilm: false,
+      ShowModalMangaDetails: false,
+      ShowModalAddManga: false,
       ShowModalChooseImgURL: [false, null],
       ShowModalType: false,
       ShowModalAddNotifLier: false,
@@ -2593,6 +2742,7 @@ export default class Home extends Component {
       FileToImport: null,
       AntiLostData: true,
       AddNotifWithAnim: false,
+      ScanManga: null,
       SeasonAnimCheck: false,
       WaitAnimCheck: false,
       PalmaresModal: false,
@@ -2639,13 +2789,16 @@ export default class Home extends Component {
       filmFireBase,
       serieFirebase,
       NextAnimFireBase,
+      MangaFirebase,
       uid,
       proprio,
+      PageMode,
       AuthenticateMethod,
       ModeDisplayNextAnim,
       AllowUseReAuth,
       ShowModalChooseImgURL,
       RedirectPage,
+      ShowModalMangaDetails,
       ShowModalSearch,
       addEPToAlleged,
       findAnim,
@@ -2655,6 +2808,8 @@ export default class Home extends Component {
       title,
       ResText,
       DeletePathVerif,
+      Scan,
+      ScanManga,
       OfflineMode,
       typeAlert,
       type,
@@ -2669,6 +2824,7 @@ export default class Home extends Component {
       ShowMessage,
       UrlUserImg,
       ShowMessageHtml,
+      ShowModalAddManga,
       NotAskAgain,
       TagNA,
       TagSearchAnime,
@@ -2694,8 +2850,10 @@ export default class Home extends Component {
       ShowModalChangeNote,
       RefreshRandomizeAnime,
       RefreshRandomizeAnime2,
+      RefreshRandomizeAnime3,
       MyAnimListSaved,
       MyNextAnimListSaved,
+      MyMangaListSaved,
       titleSearchAnime,
       ModeFindAnime,
       palmares,
@@ -3050,6 +3208,7 @@ export default class Home extends Component {
     }
 
     if (
+      PageMode === true &&
       typeof serieFirebase === "object" &&
       typeof filmFireBase === "object" &&
       (Object.keys(filmFireBase).length !== 0 ||
@@ -3102,6 +3261,7 @@ export default class Home extends Component {
             : this.shuffleArray(MyAnimListTemplate),
       });
     } else if (
+      PageMode === true &&
       !SwitchMyAnim &&
       NextAnimFireBase !== undefined &&
       Object.keys(NextAnimFireBase).length !== 0 &&
@@ -3120,6 +3280,7 @@ export default class Home extends Component {
           : this.shuffleArray(MyNextAnimListTemplate),
       });
     } else if (
+      PageMode === true &&
       typeof filmFireBase === "object" &&
       typeof serieFirebase === "object" &&
       typeof NextAnimFireBase === "object" &&
@@ -3131,6 +3292,68 @@ export default class Home extends Component {
       FirstQuerie
     ) {
       this.refreshValueFirebase();
+    }
+
+    if (
+      PageMode === false &&
+      MangaFirebase.length !== 0 &&
+      RefreshRandomizeAnime3
+    ) {
+      this.setState({
+        RefreshRandomizeAnime3: false,
+        MyMangaListSaved: [
+          MangaFirebase[0]
+            ? Object.keys(MangaFirebase[0]).map((key) => (
+                <Poster
+                  key={key}
+                  ModeFilter={ModeFilter}
+                  inMyManga={true}
+                  title={MangaFirebase[0][key].name}
+                  openDetailsManga={() => {
+                    let LastScanRead = null;
+                    MangaFirebase[0][key].Scan.forEach((val, i) => {
+                      if (val === true) {
+                        LastScanRead = i;
+                      }
+                    });
+                    this.setState(
+                      {
+                        ShowModalMangaDetails: true,
+                        ScanManga: [
+                          this.GTemplateScan(key, MangaFirebase, {
+                            ...MangaFirebase[0][key].Scan,
+                          }),
+                          key,
+                        ],
+                      },
+                      () => {
+                        document
+                          .getElementById("ScanContainer")
+                          .parentNode.scrollTo({
+                            left:
+                              document
+                                .querySelector(`.ScanManga.SM-${LastScanRead}`)
+                                .getBoundingClientRect().x - 740,
+                            behavior: "smooth",
+                          });
+                      }
+                    );
+                  }}
+                />
+              ))
+            : "Vous n'avez aucun Manga En Cours",
+          MangaFirebase[1]
+            ? Object.keys(MangaFirebase[1]).map((key) => (
+                <Poster
+                  key={key}
+                  ModeFilter={ModeFilter}
+                  inMyManga={true}
+                  title={MangaFirebase[1][key].name}
+                />
+              ))
+            : "Vous n'avez aucun Manga à Regarder Prochainement",
+        ],
+      });
     }
 
     if (animToDetails !== null && animToDetails.length >= 2) {
@@ -3232,20 +3455,42 @@ export default class Home extends Component {
         <Fragment>
           <ContextForMyAnim.Provider
             value={{
-              openModalNewAnim: () => this.setState({ ShowModalType: true }),
+              openModalNew: () =>
+                this.setState({
+                  ShowModalType: PageMode ? true : false,
+                  ShowModalAddManga: PageMode ? false : true,
+                }),
               Pseudo,
               search: this.SearchAnim,
               logOut: this.logOut,
               LoadingMode: LoadingMode[0],
+              ChangePage: () => {
+                this.setState({
+                  PageMode: !PageMode,
+                  RefreshRandomizeAnime: true,
+                });
+                window.localStorage.setItem(
+                  "PageMode",
+                  JSON.stringify(!PageMode)
+                );
+              },
+              PageMode: PageMode,
               RdaAnime: () => {
-                const KeyRda = Object.keys(NextAnimFireBase)[
+                const KeyRda = Object.keys(
+                  PageMode ? NextAnimFireBase : MangaFirebase
+                )[
                   Math.round(
-                    Math.random() * (Object.keys(NextAnimFireBase).length - 1)
+                    Math.random() *
+                      (Object.keys(PageMode ? NextAnimFireBase : MangaFirebase)
+                        .length -
+                        1)
                   )
                 ];
+                if (!KeyRda) return;
                 this.setState({
                   ShowModalType: true,
-                  title: NextAnimFireBase[KeyRda].name,
+                  title: (PageMode ? NextAnimFireBase : MangaFirebase)[KeyRda]
+                    .name,
                   NextAnimToDelete: KeyRda,
                 });
               },
@@ -3288,91 +3533,116 @@ export default class Home extends Component {
               ImportDB: () => this.setState({ ShowModalImportFile: true }),
             }}
           >
-            <MyAnim
-              SwitchMyAnimVar={SwitchMyAnim}
-              SwitchMyNextAnim={() => {
-                this.setState({ SwitchMyAnim: false });
-                requestAnimationFrame(() => this.TransitionTabsChange(true));
-              }}
-              SwitchMyAnim={() => {
-                this.setState({ SwitchMyAnim: true });
-                requestAnimationFrame(() => this.TransitionTabsChange(true));
-              }}
-              NextAnimChange={(event) =>
-                this.setState({ NextAnim: event.target.value })
-              }
-              NextAnim={NextAnim}
-              fnNextAnimForm={[
-                (LvlImportance) => {
-                  this.setState({ ImportanceNA: LvlImportance });
-                },
-                (event) => this.setState({ TagNA: event.target.value }),
-              ]}
-              Tag={TagNA}
-              ModeImportant={ImportanceNA}
-              LoadingMode={LoadingMode[0]}
-              ModeDisplayNextAnim={ModeDisplayNextAnim}
-              ChangeModeDisplayNextAnim={(NewMode) => {
-                if (NewMode === ModeDisplayNextAnim) return;
-                window.localStorage.setItem(
-                  "ModeDisplayNextAnim",
-                  JSON.stringify(NewMode)
-                );
-                this.setState({
-                  ModeDisplayNextAnim: NewMode,
-                  RefreshRandomizeAnime2: true,
-                });
-              }}
-              ResText={ResText}
-              typeAlert={typeAlert}
-              ModeFindAnime={ModeFindAnime[0]}
-              ModeFilter={ModeFilter}
-              NewFilter={(filter) => {
-                this.setState({
-                  ModeFilter: filter,
-                  SwitchMyAnim: true,
-                  RefreshRandomizeAnime: true,
-                });
-              }}
-              MyAnimList={
-                ModeFindAnime[0] && SearchInAnimeList[1]
-                  ? ModeFindAnime[1].map((key) => TemplateGAnime(key))
-                  : LoadingMode[0]
-                  ? SkeletonListAnime
-                  : MyAnimListSaved || "Vous avez aucun anime :/\nRajoutez-en !"
-              }
-              MyNextAnimList={
-                ModeFindAnime[0] && !SearchInAnimeList[1]
-                  ? ModeFindAnime[1].map((key) => TemplateGNextAnim(key))
-                  : LoadingMode[1]
-                  ? SkeletonListNextAnime
-                  : MyNextAnimListSaved ||
-                    "Vous avez mis aucun anime comme souhait dans cette section\nRajoutez-en"
-              }
-              CloseModeFindAnime={() =>
-                this.setState({
-                  SearchInAnimeList: [false, null],
-                  ModeFindAnime: [false, null],
-                })
-              }
-              handleSubmit={this.newNextAnim}
-              SearchInAnimeListFn={(type) =>
-                this.setState({
-                  SearchInAnimeList: [true, type],
-                  ModeCombinaisonSearch: "ET",
-                  titleSearchAnime: "",
-                  ImportanceSearch: null,
-                  TagSearchAnime: "",
-                  ToReSearchAfterRefresh: false,
-                })
-              }
-              onClose={() =>
-                this.setState({
-                  ResText: null,
-                  typeAlert: null,
-                })
-              }
-            />
+            {PageMode === false && OfflineMode === false ? (
+              <MyManga
+                MyMangaList={
+                  MyMangaListSaved || [
+                    <Spinner animation="border" variant="warning" />,
+                    <Spinner animation="border" variant="warning" />,
+                  ]
+                }
+                ResText={ResText}
+                typeAlert={typeAlert}
+                ModeFilter={ModeFilter}
+                NewFilter={(filter) => {
+                  this.setState({
+                    ModeFilter: filter,
+                    SwitchMyAnim: true,
+                    RefreshRandomizeAnime: true,
+                  });
+                }}
+                openModalAddNextManga={() =>
+                  this.setState({ ShowModalAddNM: true })
+                }
+              />
+            ) : (
+              <MyAnim
+                SwitchMyAnimVar={SwitchMyAnim}
+                SwitchMyNextAnim={() => {
+                  this.setState({ SwitchMyAnim: false });
+                  requestAnimationFrame(() => this.TransitionTabsChange(true));
+                }}
+                SwitchMyAnim={() => {
+                  this.setState({ SwitchMyAnim: true });
+                  requestAnimationFrame(() => this.TransitionTabsChange(true));
+                }}
+                NextAnimChange={(event) =>
+                  this.setState({ NextAnim: event.target.value })
+                }
+                NextAnim={NextAnim}
+                fnNextAnimForm={[
+                  (LvlImportance) => {
+                    this.setState({ ImportanceNA: LvlImportance });
+                  },
+                  (event) => this.setState({ TagNA: event.target.value }),
+                ]}
+                Tag={TagNA}
+                ModeImportant={ImportanceNA}
+                LoadingMode={LoadingMode[0]}
+                ModeDisplayNextAnim={ModeDisplayNextAnim}
+                ChangeModeDisplayNextAnim={(NewMode) => {
+                  if (NewMode === ModeDisplayNextAnim) return;
+                  window.localStorage.setItem(
+                    "ModeDisplayNextAnim",
+                    JSON.stringify(NewMode)
+                  );
+                  this.setState({
+                    ModeDisplayNextAnim: NewMode,
+                    RefreshRandomizeAnime2: true,
+                  });
+                }}
+                ResText={ResText}
+                typeAlert={typeAlert}
+                ModeFindAnime={ModeFindAnime[0]}
+                ModeFilter={ModeFilter}
+                NewFilter={(filter) => {
+                  this.setState({
+                    ModeFilter: filter,
+                    SwitchMyAnim: true,
+                    RefreshRandomizeAnime: true,
+                  });
+                }}
+                MyAnimList={
+                  ModeFindAnime[0] && SearchInAnimeList[1]
+                    ? ModeFindAnime[1].map((key) => TemplateGAnime(key))
+                    : LoadingMode[0]
+                    ? SkeletonListAnime
+                    : MyAnimListSaved ||
+                      "Vous avez aucun anime :/\nRajoutez-en !"
+                }
+                MyNextAnimList={
+                  ModeFindAnime[0] && !SearchInAnimeList[1]
+                    ? ModeFindAnime[1].map((key) => TemplateGNextAnim(key))
+                    : LoadingMode[1]
+                    ? SkeletonListNextAnime
+                    : MyNextAnimListSaved ||
+                      "Vous avez mis aucun anime comme souhait dans cette section\nRajoutez-en"
+                }
+                CloseModeFindAnime={() =>
+                  this.setState({
+                    SearchInAnimeList: [false, null],
+                    ModeFindAnime: [false, null],
+                  })
+                }
+                handleSubmit={this.newNextAnim}
+                SearchInAnimeListFn={(type) =>
+                  this.setState({
+                    SearchInAnimeList: [true, type],
+                    ModeCombinaisonSearch: "ET",
+                    titleSearchAnime: "",
+                    ImportanceSearch: null,
+                    TagSearchAnime: "",
+                    ToReSearchAfterRefresh: false,
+                  })
+                }
+                onClose={() =>
+                  this.setState({
+                    ResText: null,
+                    typeAlert: null,
+                  })
+                }
+              />
+            )}
           </ContextForMyAnim.Provider>
 
           {/* MODALS */}
@@ -4292,6 +4562,82 @@ export default class Home extends Component {
               </Button>
             </Modal.Footer>
           </Modal>
+
+          <Modal show={ShowModalAddManga} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Ajouter un Manga</Modal.Title>
+            </Modal.Header>
+            <Modal.Body
+              id="ModalBody"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") this.addManga();
+              }}
+            >
+              <Form id="AddManga" onSubmit={this.addManga}>
+                <Form.Group controlId="titreM">
+                  <Form.Label>Titre Du Manga</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Titre Du Manga"
+                    required
+                    autoComplete="off"
+                    value={title}
+                    onChange={(event) =>
+                      this.setState({
+                        title: event.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId="scan">
+                  <Form.Label>Nombres de Scans</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={Scan.toString()}
+                    min="1"
+                    placeholder="Scan du manga"
+                    autoComplete="off"
+                    onChange={(event) => {
+                      const value = parseInt(event.target.value);
+
+                      if (value < 1) return;
+                      this.setState({ Scan: value });
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                Annuler
+              </Button>
+              <Button variant="success" onClick={this.addManga}>
+                <span className="fas fa-plus"></span> Créer {title}
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal
+            show={ShowModalMangaDetails}
+            size="lg"
+            onHide={this.cancelModal}
+          >
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>
+                Scans de{" "}
+                {!ScanManga ? null : MangaFirebase[0][ScanManga[1]].name}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <div id="ScanContainer">{!ScanManga ? null : ScanManga[0]}</div>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="primary" onClick={this.cancelModal}>
+                <span className="fas fa-window-close"></span> Fermer
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
           {ShowMessageHtml ? (
             <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
               <span className="fas fa-info"></span> {ResText}

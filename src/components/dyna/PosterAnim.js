@@ -63,10 +63,23 @@ const PosterAnim = ({
   Skeleton,
   InfoTooltip,
   ReTakeImgFromName,
+  // MyManga
+  inMyManga,
+  openDetailsManga,
 }) => {
   let Fav = isFav;
   const [ShowOverlay, setShowOverlay] = useState(false);
 
+  // MyManga
+  if (inMyManga === true)
+    return (
+      <div className="PosterManga" onClick={openDetailsManga}>
+        <div className="content">{title}</div>
+        <span className="fas fa-eye"></span>
+      </div>
+    );
+
+  // MyAnim
   if (url === "PlaceHolderImg" && !NotAskAgain) ReTakeImgFromName();
   else if (url && inMyAnim) CheckNotUrlParams(url);
 

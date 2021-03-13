@@ -31,34 +31,19 @@ const MyAnim = ({
   // Dyna Components
   let NbTemplate = [],
     NbFois = !ModeImportant ? 1 : ModeImportant;
-  for (let i = 0; i < NbFois; i++) {
-    NbTemplate = [
-      ...NbTemplate,
-      <span key={i} className="fas fa-exclamation"></span>,
-    ];
+  if (!SwitchMyAnimVar) {
+    for (let i = 0; i < NbFois; i++) {
+      NbTemplate = [
+        ...NbTemplate,
+        <span key={i} className="fas fa-exclamation"></span>,
+      ];
+    }
   }
 
   // Render
   return (
     <div className="container">
       <Header />
-
-      {ModeFindAnime ? (
-        <Button
-          variant="outline-danger"
-          onClick={() => CloseModeFindAnime()}
-          style={{
-            position: "absolute",
-            left: "calc(50% - 100px)",
-            borderRadius: "100px",
-            zIndex: "50",
-            top: "170px",
-            width: "200px",
-          }}
-        >
-          <span className="fas fa-times-circle"></span>
-        </Button>
-      ) : null}
 
       <section id="MyAnime">
         <header>
@@ -194,6 +179,22 @@ const MyAnim = ({
               ) : null}
             </div>
           </div>
+
+          <div id="BtnCancelModeFindAnime">
+            {ModeFindAnime ? (
+              <Button
+                variant="outline-danger"
+                onClick={() => CloseModeFindAnime()}
+                style={{
+                  borderRadius: "100px",
+                  width: "200px",
+                }}
+              >
+                <span className="fas fa-times-circle"></span>
+              </Button>
+            ) : null}
+          </div>
+
           <div id="returnAlert">
             {ResText !== null && typeAlert !== null ? (
               <Alert variant={typeAlert} onClose={onClose} dismissible>
