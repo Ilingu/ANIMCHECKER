@@ -66,18 +66,34 @@ const PosterAnim = ({
   // MyManga
   inMyManga,
   openDetailsManga,
+  isFinishedManga,
 }) => {
   let Fav = isFav;
   const [ShowOverlay, setShowOverlay] = useState(false);
 
   // MyManga
-  if (inMyManga === true)
-    return (
-      <div className="PosterManga" onClick={openDetailsManga}>
-        <div className="content">{title}</div>
+  if (inMyManga === true) {
+    const TemplateMangaPoster = (
+      <div
+        className={`PosterManga${isFinishedManga ? " finished" : ""}`}
+        onClick={openDetailsManga}
+      >
+        <div className="content">
+          {isFinishedManga ? <span className="fas fa-check"> </span> : null}
+          {title}
+        </div>
         <span className="fas fa-eye"></span>
       </div>
     );
+    // Filter
+    if (ModeFilter === "NotFinished") {
+      return isFinishedManga ? null : TemplateMangaPoster;
+    } else if (ModeFilter === "Finished") {
+      return isFinishedManga ? TemplateMangaPoster : null;
+    } else {
+      return TemplateMangaPoster;
+    }
+  }
 
   // MyAnim
   if (url === "PlaceHolderImg" && !NotAskAgain) ReTakeImgFromName();

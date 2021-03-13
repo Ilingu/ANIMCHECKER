@@ -71,6 +71,7 @@ export default class Home extends Component {
     ShowModalSearch: false,
     ShowModalChangeNote: false,
     ShowModalAddAnim: false,
+    ShowModalAddScan: false,
     ShowModalAddFilm: false,
     ShowModalAddNotifLier: false,
     ShowModalChooseImgURL: [false, null],
@@ -154,7 +155,9 @@ export default class Home extends Component {
   componentDidMount() {
     const self = this;
     // Title
-    document.title = "ACK:Anim-Checker";
+    this.state.PageMode
+      ? (document.title = "ACK:Anim-Checker")
+      : (document.title = "MCK:Manga-Checker");
     // Offline Mode
     if (!JSON.parse(window.localStorage.getItem("OfflineMode")))
       window.localStorage.setItem("OfflineMode", JSON.stringify(false));
@@ -1719,6 +1722,7 @@ export default class Home extends Component {
             [`manga-${Date.now()}`]: {
               name: title,
               Scan: ScanArr,
+              finished: false,
             },
           },
           { ...MangaFirebase[1] },
@@ -2638,6 +2642,7 @@ export default class Home extends Component {
           CopyScan[i] = true;
           this.updateValue(`${this.state.Pseudo}/manga/0/${key}`, {
             Scan: { ...CopyScan },
+            finished: i === Object.keys(CopyScan).length - 1 ? true : false,
           });
         }}
       >
@@ -2732,6 +2737,7 @@ export default class Home extends Component {
     this.setState({
       ShowModalSearch: false,
       ShowModalAddAnim: false,
+      ShowModalAddScan: false,
       ShowModalAddFilm: false,
       ShowModalMangaDetails: false,
       ShowModalAddManga: false,
@@ -2818,6 +2824,7 @@ export default class Home extends Component {
       PalmaresModal,
       Rate,
       ShowModalVerification,
+      ShowModalAddScan,
       ShowModalType,
       MicOn,
       ShowModalImportFile,
@@ -3307,6 +3314,7 @@ export default class Home extends Component {
                 <Poster
                   key={key}
                   ModeFilter={ModeFilter}
+                  isFinishedManga={MangaFirebase[0][key].finished}
                   inMyManga={true}
                   title={MangaFirebase[0][key].name}
                   openDetailsManga={() => {
@@ -3327,15 +3335,19 @@ export default class Home extends Component {
                         ],
                       },
                       () => {
-                        document
-                          .getElementById("ScanContainer")
-                          .parentNode.scrollTo({
-                            left:
-                              document
-                                .querySelector(`.ScanManga.SM-${LastScanRead}`)
-                                .getBoundingClientRect().x - 740,
-                            behavior: "smooth",
-                          });
+                        try {
+                          document
+                            .getElementById("ScanContainer")
+                            .parentNode.scrollTo({
+                              left:
+                                document
+                                  .querySelector(
+                                    `.ScanManga.SM-${LastScanRead}`
+                                  )
+                                  .getBoundingClientRect().x - 740,
+                              behavior: "smooth",
+                            });
+                        } catch (err) {}
                       }
                     );
                   }}
@@ -3465,9 +3477,14 @@ export default class Home extends Component {
               logOut: this.logOut,
               LoadingMode: LoadingMode[0],
               ChangePage: () => {
+                PageMode
+                  ? (document.title = "MCK:Manga-Checker")
+                  : (document.title = "ACK:Anim-Checker");
                 this.setState({
                   PageMode: !PageMode,
                   RefreshRandomizeAnime: true,
+                  RefreshRandomizeAnime3: true,
+                  ModeFilter: "NotFinished",
                 });
                 window.localStorage.setItem(
                   "PageMode",
@@ -3476,23 +3493,29 @@ export default class Home extends Component {
               },
               PageMode: PageMode,
               RdaAnime: () => {
-                const KeyRda = Object.keys(
-                  PageMode ? NextAnimFireBase : MangaFirebase
-                )[
-                  Math.round(
-                    Math.random() *
-                      (Object.keys(PageMode ? NextAnimFireBase : MangaFirebase)
-                        .length -
-                        1)
-                  )
-                ];
-                if (!KeyRda) return;
-                this.setState({
-                  ShowModalType: true,
-                  title: (PageMode ? NextAnimFireBase : MangaFirebase)[KeyRda]
-                    .name,
-                  NextAnimToDelete: KeyRda,
-                });
+                try {
+                  const KeyRda = Object.keys(
+                    PageMode ? NextAnimFireBase : MangaFirebase[1]
+                  )[
+                    Math.round(
+                      Math.random() *
+                        (Object.keys(
+                          PageMode ? NextAnimFireBase : MangaFirebase[1]
+                        ).length -
+                          1)
+                    )
+                  ];
+                  if (!KeyRda) return;
+                  this.setState({
+                    ShowModalType: true,
+                    title: (PageMode ? NextAnimFireBase : MangaFirebase[1])[
+                      KeyRda
+                    ].name,
+                    NextAnimToDelete: KeyRda,
+                  });
+                } catch (err) {
+                  console.warn("Error: No Next Manga");
+                }
               },
               addToHome: this.AddToHome,
               openPalmares: () =>
@@ -3548,7 +3571,7 @@ export default class Home extends Component {
                   this.setState({
                     ModeFilter: filter,
                     SwitchMyAnim: true,
-                    RefreshRandomizeAnime: true,
+                    RefreshRandomizeAnime3: true,
                   });
                 }}
                 openModalAddNextManga={() =>
@@ -4634,6 +4657,68 @@ export default class Home extends Component {
             <Modal.Footer id="ModalFooter">
               <Button variant="primary" onClick={this.cancelModal}>
                 <span className="fas fa-window-close"></span> Fermer
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => this.setState({ ShowModalAddScan: true })}
+              >
+                <span className="fas fa-plus"></span> Ajouter des Scans
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={ShowModalAddScan} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>
+                Ajouter {Scan} Scans à{" "}
+                {ShowModalAddScan ? MangaFirebase[0][ScanManga[1]].name : null}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body id="ModalBody">
+              <Form id="AddScan">
+                <Form.Group controlId="scanToAdd">
+                  <Form.Label>Nombres de Scans</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={Scan.toString()}
+                    min="1"
+                    placeholder="Scan du manga"
+                    autoComplete="off"
+                    onChange={(event) => {
+                      const value = parseInt(event.target.value);
+
+                      if (value < 1) return;
+                      this.setState({ Scan: value });
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button
+                variant="secondary"
+                onClick={() => this.setState({ ShowModalAddScan: false })}
+              >
+                <span className="fas fa-window-close"></span> Annuler
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  let ScanToAdd = [];
+                  for (let i = 0; i < Scan; i++) {
+                    ScanToAdd = [...ScanToAdd, false];
+                  }
+                  this.updateValue(`${Pseudo}/manga/0/${ScanManga[1]}`, {
+                    Scan: [
+                      ...MangaFirebase[0][ScanManga[1]].Scan,
+                      ...ScanToAdd,
+                    ],
+                    finished: false,
+                  });
+                  this.setState({ ShowModalAddScan: false });
+                }}
+              >
+                <span className="fas fa-plus"></span> Ajouter {Scan} Scans
               </Button>
             </Modal.Footer>
           </Modal>

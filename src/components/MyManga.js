@@ -71,6 +71,16 @@ const MyManga = ({
                   >
                     Finis
                   </Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item
+                    active={ModeFilter === "All" ? true : false}
+                    onClick={() => {
+                      if (ModeFilter === "All") return;
+                      NewFilter("All");
+                    }}
+                  >
+                    Tous
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </header>

@@ -375,6 +375,18 @@ a:hover {
   padding: 5px;
 }
 
+@media screen and (max-width: 460px) {
+  .modal #ScanContainer .ScanManga {
+    width: 150px;
+  }
+}
+
+@media screen and (max-width: 355px) {
+  .modal #ScanContainer .ScanManga {
+    width: 100px;
+  }
+}
+
 .loginForm {
   margin-left: calc(50% - 150px);
   padding: 10px;
@@ -883,12 +895,14 @@ a:hover {
   text-decoration: underline;
   text-transform: capitalize;
   word-break: break-word;
+  font-weight: bold;
+  letter-spacing: 1px;
   font-size: 20px;
   -webkit-transition: 0.3s;
   transition: 0.3s;
 }
 
-#MyManga #ContentMangaList #MyMangaTab aside .PosterManga .fas {
+#MyManga #ContentMangaList #MyMangaTab aside .PosterManga .fas.fa-eye {
   position: absolute;
   opacity: 0;
   -webkit-transition: 0.3s;
@@ -899,11 +913,16 @@ a:hover {
   color: #17a2b8;
 }
 
+#MyManga #ContentMangaList #MyMangaTab aside .PosterManga.finished {
+  background-color: rgba(38, 255, 0, 0.041);
+  color: rgba(38, 255, 0, 0.8);
+}
+
 #MyManga #ContentMangaList #MyMangaTab aside .PosterManga:hover .content {
   opacity: 0;
 }
 
-#MyManga #ContentMangaList #MyMangaTab aside .PosterManga:hover .fas {
+#MyManga #ContentMangaList #MyMangaTab aside .PosterManga:hover .fas.fa-eye {
   opacity: 1;
 }
 
