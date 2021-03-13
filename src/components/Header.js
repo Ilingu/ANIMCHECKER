@@ -106,7 +106,7 @@ const Header = () => {
           onClick={Context.ChangePage}
         >
           {Context.PageMode ? "ACK" : "MCK"}
-          <sup>β10</sup>
+          <sup>V10</sup>
         </Navbar.Brand>
         <div id="btnBarsMenu" onClick={() => SetIsOpen(!IsOpen)}>
           <span className="fas fa-bars"></span>

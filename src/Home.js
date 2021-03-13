@@ -72,6 +72,7 @@ export default class Home extends Component {
     ShowModalChangeNote: false,
     ShowModalAddAnim: false,
     ShowModalAddScan: false,
+    ShowModalAddNM: false,
     ShowModalAddFilm: false,
     ShowModalAddNotifLier: false,
     ShowModalChooseImgURL: [false, null],
@@ -89,6 +90,7 @@ export default class Home extends Component {
     AddNotifWithAnim: false,
     animToDetails: [],
     NextAnimToDelete: null,
+    NextMangaToDelete: null,
     SearchInAnimeList: [false, null],
     RefreshRandomizeAnime: true,
     RefreshRandomizeAnime2: true,
@@ -135,6 +137,7 @@ export default class Home extends Component {
     durer: 110,
     nbEP: "",
     Scan: 1,
+    NextManga: "",
     NextAnim: "",
     ImportanceNA: 0,
     ImportanceSearch: null,
@@ -862,7 +865,7 @@ export default class Home extends Component {
 
   addValue = (path, value) => {
     const { OfflineMode } = this.state;
-    if (OfflineMode === true) {
+    if (OfflineMode === true && !path.includes("manga")) {
       this.fnDbOffline("POST", path, value);
       return;
     }
@@ -899,7 +902,7 @@ export default class Home extends Component {
 
   updateValue = (path, value, HomePage = null, Next = null) => {
     const { OfflineMode } = this.state;
-    if (OfflineMode === true) {
+    if (OfflineMode === true && !path.includes("manga")) {
       this.fnDbOffline(
         "PUT",
         path,
@@ -933,7 +936,7 @@ export default class Home extends Component {
 
   deleteValue = async (path) => {
     const { OfflineMode } = this.state;
-    if (OfflineMode === true) {
+    if (OfflineMode === true && !path.includes("manga")) {
       this.fnDbOffline("DELETE", path);
       return;
     }
@@ -942,7 +945,11 @@ export default class Home extends Component {
       .remove(path)
       .then(() => {
         this.cancelModal();
-        this.refreshValueFirebase();
+        if (path.includes("manga")) {
+          this.refreshManga();
+        } else {
+          this.refreshValueFirebase();
+        }
         this.setState({
           ResText: "Votre requête de suppression a réussite.",
           typeAlert: "success",
@@ -1097,6 +1104,7 @@ export default class Home extends Component {
           SwitchMyAnim: true,
           animToDetails: [],
           NextAnimToDelete: null,
+          NextMangaToDelete: null,
           SearchInAnimeList: [false, null],
           RefreshRandomizeAnime: true,
           RefreshRandomizeAnime2: true,
@@ -1716,17 +1724,17 @@ export default class Home extends Component {
       } catch (error) {}
 
       if (IsGoodForPost) {
-        this.addValue(`${Pseudo}/manga`, [
-          {
-            ...MangaFirebase[0],
-            [`manga-${Date.now()}`]: {
-              name: title,
-              Scan: ScanArr,
-              finished: false,
-            },
+        this.addValue(`${Pseudo}/manga/0`, {
+          ...MangaFirebase[0],
+          [`manga-${Date.now()}`]: {
+            name: title,
+            Scan: ScanArr,
+            finished: false,
           },
-          { ...MangaFirebase[1] },
-        ]);
+        });
+        if (NextMangaToDelete !== null) {
+          this.deleteValue(`${Pseudo}/manga/1/${NextMangaToDelete}`);
+        }
         reset();
       } else {
         reset(false, `"${title}" existe déjà dans votre liste`);
@@ -1740,6 +1748,7 @@ export default class Home extends Component {
         title: "",
         Scan: 1,
         ShowModalAddManga: false,
+        NextMangaToDelete: null,
         ResText: error ? error : warn ? warn : null,
         typeAlert: error ? "danger" : warn ? "warning" : null,
       });
@@ -2336,7 +2345,51 @@ export default class Home extends Component {
     }, 4000);
   };
 
-  newNextAnim = async (event) => {
+  addNextManga = () => {
+    const self = this;
+    const { Pseudo, NextManga, MangaFirebase } = this.state;
+
+    if (typeof NextManga === "string" && NextManga.trim().length !== 0) {
+      let IsGoodForPost = true;
+
+      try {
+        Object.keys(MangaFirebase[1]).forEach((NM) => {
+          if (NM.name === NextManga) IsGoodForPost = false;
+        });
+      } catch (err) {}
+
+      if (IsGoodForPost) {
+        this.addValue(`${Pseudo}/manga/1`, {
+          ...MangaFirebase[1],
+          [`NM-${Date.now()}`]: { name: NextManga },
+        });
+        reset();
+      } else {
+        reset(false, `"${NextManga}" existe déjà dans votre liste`);
+      }
+    } else {
+      reset("Veuillez remplir tous les champs");
+    }
+
+    function reset(error = false, warn = false) {
+      self.setState({
+        NextManga: "",
+        ShowModalAddNM: false,
+        ResText: error ? error : warn ? warn : null,
+        typeAlert: error ? "danger" : warn ? "warning" : null,
+      });
+      if (error) {
+        setTimeout(() => {
+          self.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 3600);
+      }
+    }
+  };
+
+  addNextAnim = async (event) => {
     event.preventDefault();
 
     const { NextAnim, ImportanceNA, TagNA, NextAnimFireBase } = this.state;
@@ -2366,23 +2419,25 @@ export default class Home extends Component {
         await this.SeeInDetails(AnimeID, true)
       )[1];
 
-      Object.keys(NextAnimFireBase).forEach((key) => {
-        if (NextAnimFireBase[key].AlternativeTitle !== undefined) {
-          NextAnimFireBase[key].AlternativeTitle.forEach((ATitle) => {
-            if (
-              NextAnimFireBase[key].name.toLowerCase() ===
-                NextAnim.toLowerCase() ||
-              ATitle.toLowerCase() === NextAnim.toLowerCase()
-            ) {
-              IsGoodForPost = false;
-            }
-          });
-        } else if (
-          NextAnimFireBase[key].name.toLowerCase() === NextAnim.toLowerCase()
-        ) {
-          IsGoodForPost = false;
-        }
-      });
+      try {
+        Object.keys(NextAnimFireBase).forEach((key) => {
+          if (NextAnimFireBase[key].AlternativeTitle !== undefined) {
+            NextAnimFireBase[key].AlternativeTitle.forEach((ATitle) => {
+              if (
+                NextAnimFireBase[key].name.toLowerCase() ===
+                  NextAnim.toLowerCase() ||
+                ATitle.toLowerCase() === NextAnim.toLowerCase()
+              ) {
+                IsGoodForPost = false;
+              }
+            });
+          } else if (
+            NextAnimFireBase[key].name.toLowerCase() === NextAnim.toLowerCase()
+          ) {
+            IsGoodForPost = false;
+          }
+        });
+      } catch (err) {}
 
       if (IsGoodForPost) {
         this.addValue(`${this.state.Pseudo}/NextAnim`, {
@@ -2637,8 +2692,9 @@ export default class Home extends Component {
     data[0][key].Scan.map((finished, i) => (
       <div
         key={i}
-        className={`ScanManga SM-${i}`}
+        className={`ScanManga SM-${i}${finished ? " finished" : ""}`}
         onClick={() => {
+          if (CopyScan[i] === true) return;
           CopyScan[i] = true;
           this.updateValue(`${this.state.Pseudo}/manga/0/${key}`, {
             Scan: { ...CopyScan },
@@ -2647,14 +2703,11 @@ export default class Home extends Component {
         }}
       >
         {finished ? (
-          <span className="fas fa-check" style={{ color: "#ff0" }}></span>
+          <span className="fas fa-check"></span>
         ) : (
-          <span
-            className="fas fa-flag-checkered"
-            style={{ color: "yellowgreen" }}
-          ></span>
+          <span className="fas fa-flag-checkered"></span>
         )}{" "}
-        Scan {i + 1}
+        Scan <span className="ScanID">{i + 1}</span>
       </div>
     ));
 
@@ -2738,6 +2791,7 @@ export default class Home extends Component {
       ShowModalSearch: false,
       ShowModalAddAnim: false,
       ShowModalAddScan: false,
+      ShowModalAddNM: false,
       ShowModalAddFilm: false,
       ShowModalMangaDetails: false,
       ShowModalAddManga: false,
@@ -2762,6 +2816,7 @@ export default class Home extends Component {
       findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
       NextAnimToDelete: null,
+      NextMangaToDelete: null,
       addEPToAlleged: false,
       DeletePathVerif: null,
       title: "",
@@ -2820,6 +2875,7 @@ export default class Home extends Component {
       typeAlert,
       type,
       ModeFilter,
+      ShowModalAddNM,
       ShowModalAddFilm,
       PalmaresModal,
       Rate,
@@ -2841,6 +2897,7 @@ export default class Home extends Component {
       SeasonAnimCheck,
       ParamsOptn,
       NextAnim,
+      NextManga,
       LoadingMode,
       CodeNumber,
       JustDefined,
@@ -3356,12 +3413,20 @@ export default class Home extends Component {
             : "Vous n'avez aucun Manga En Cours",
           MangaFirebase[1]
             ? Object.keys(MangaFirebase[1]).map((key) => (
-                <Poster
+                <div
                   key={key}
-                  ModeFilter={ModeFilter}
-                  inMyManga={true}
-                  title={MangaFirebase[1][key].name}
-                />
+                  className="PosterNextManga"
+                  onClick={() =>
+                    this.setState({
+                      title: MangaFirebase[1][key].name,
+                      NextMangaToDelete: key,
+                      ShowModalAddManga: true,
+                    })
+                  }
+                >
+                  <span className="fas fa-long-arrow-alt-left"></span>{" "}
+                  {MangaFirebase[1][key].name}
+                </div>
               ))
             : "Vous n'avez aucun Manga à Regarder Prochainement",
         ],
@@ -3647,7 +3712,7 @@ export default class Home extends Component {
                     ModeFindAnime: [false, null],
                   })
                 }
-                handleSubmit={this.newNextAnim}
+                handleSubmit={this.addNextAnim}
                 SearchInAnimeListFn={(type) =>
                   this.setState({
                     SearchInAnimeList: [true, type],
@@ -3676,7 +3741,7 @@ export default class Home extends Component {
             <Modal.Body id="ModalBody">{animList}</Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
             </Modal.Footer>
           </Modal>
@@ -3728,7 +3793,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 disabled={UrlUserImg === ""}
@@ -3872,7 +3937,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 variant={AntiLostData ? "primary" : "danger"}
@@ -3914,7 +3979,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 variant="success"
@@ -3997,7 +4062,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.addAnime}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 variant="success"
@@ -4035,7 +4100,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 variant="danger"
@@ -4147,7 +4212,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
             </Modal.Footer>
           </Modal>
@@ -4337,7 +4402,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 variant="info"
@@ -4398,7 +4463,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 variant="success"
@@ -4509,7 +4574,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button
                 variant="success"
@@ -4578,7 +4643,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button variant="success" onClick={this.addAnime}>
                 <span className="fas fa-plus"></span> Créer {title}
@@ -4632,7 +4697,7 @@ export default class Home extends Component {
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
-                Annuler
+                <span className="fas fa-window-close"></span> Annuler
               </Button>
               <Button variant="success" onClick={this.addManga}>
                 <span className="fas fa-plus"></span> Créer {title}
@@ -4657,6 +4722,17 @@ export default class Home extends Component {
             <Modal.Footer id="ModalFooter">
               <Button variant="primary" onClick={this.cancelModal}>
                 <span className="fas fa-window-close"></span> Fermer
+              </Button>
+              <Button
+                variant="danger"
+                style={{ touchAction: "manipulation" }}
+                onDoubleClick={() => {
+                  this.deleteValue(`${Pseudo}/manga/0/${ScanManga[1]}`);
+                  this.cancelModal();
+                }}
+              >
+                <span className="fas fa-trash-alt"></span> Supprimer{" "}
+                {!ScanManga ? null : MangaFirebase[0][ScanManga[1]].name}
               </Button>
               <Button
                 variant="success"
@@ -4719,6 +4795,43 @@ export default class Home extends Component {
                 }}
               >
                 <span className="fas fa-plus"></span> Ajouter {Scan} Scans
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <Modal show={ShowModalAddNM} onHide={this.cancelModal}>
+            <Modal.Header id="ModalTitle" closeButton>
+              <Modal.Title>Next Manga</Modal.Title>
+            </Modal.Header>
+            <Modal.Body
+              id="ModalBody"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") this.addNextManga();
+              }}
+            >
+              <Form id="AddNextManga" onSubmit={this.addNextManga}>
+                <Form.Group controlId="titreNM">
+                  <Form.Label>Titre Du Manga</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Titre Du Manga"
+                    required
+                    autoComplete="off"
+                    value={NextManga}
+                    onChange={(event) =>
+                      this.setState({
+                        NextManga: event.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer id="ModalFooter">
+              <Button variant="secondary" onClick={this.cancelModal}>
+                <span className="fas fa-window-close"></span> Annuler
+              </Button>
+              <Button variant="success" onClick={this.addNextManga}>
+                <span className="fas fa-plus"></span> Ajouter
               </Button>
             </Modal.Footer>
           </Modal>
