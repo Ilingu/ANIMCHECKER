@@ -1073,77 +1073,167 @@ export default class Home extends Component {
       .auth()
       .signOut()
       .then(() => {
-        this.setState({
-          // Firebase
-          Pseudo: null,
-          NumTel: "",
-          NewLogin: false,
-          NextAnimFireBase: {},
-          filmFireBase: {},
-          serieFirebase: {},
-          PhoneNumFireBase: null,
-          ParamsOptn: null,
-          FirstQuerie: false,
-          AuthenticateMethod: false,
-          AllowUseReAuth: false,
-          uid: null,
-          proprio: null,
-          // Bon fonctionnement de l'app
-          findAnim: [],
-          JustDefined: false,
-          RedirectPage: null,
-          ShowModalSearch: false,
-          IdToAddEp: null,
-          InfoAnimeToChangeNote: null,
-          ShowModalChangeNote: false,
-          ShowModalAddAnim: false,
-          ShowModalAddFilm: false,
-          ShowModalType: false,
-          ShowModalVerification: false,
-          PalmaresModal: false,
-          SwitchMyAnim: true,
-          animToDetails: [],
-          NextAnimToDelete: null,
-          NextMangaToDelete: null,
-          SearchInAnimeList: [false, null],
-          RefreshRandomizeAnime: true,
-          RefreshRandomizeAnime2: true,
-          MyAnimListSaved: null,
-          MyNextAnimListSaved: null,
-          ModeFilter: "NotFinished",
-          ModeDisplayNextAnim: "Block",
-          ModeFindAnime: [false, null],
-          LoadingMode: [true, true],
-          palmares: null,
-          MicOn: false,
-          addEPToAlleged: false,
-          ShowMessage: false,
-          ShowMessageHtml: false,
-          SecondMessage: false,
-          // Form
-          title: "",
-          type: "serie",
-          Rate: 7.5,
-          imageUrl: null,
-          durer: 110,
-          nbEP: "",
-          ImportanceNA: 0,
-          ImportanceSearch: null,
-          TagNA: "",
-          TagSearchAnime: "",
-          NextAnim: "",
-          CodeNumber: ["", 1],
-          titleSearchAnime: "",
-          DeletePathVerif: null,
-          // Alerts
-          ResText: null,
-          typeAlert: null,
-          // A2HS
-          AddToHomeScreen: null,
-        });
-        if (refresh) {
-          window.location.reload();
-        }
+        this.setState(
+          {
+            // Firebase
+            Pseudo: !JSON.parse(window.localStorage.getItem("Pseudo"))
+              ? null
+              : JSON.parse(window.localStorage.getItem("Pseudo")),
+            NumTel: "",
+            NewLogin: false,
+            NextAnimFireBase: {},
+            MangaFirebase: [],
+            filmFireBase: {},
+            serieFirebase: {},
+            PhoneNumFireBase: null,
+            ParamsOptn: null,
+            FirstQuerie: false,
+            AuthenticateMethod: false,
+            AllowUseReAuth: false,
+            uid: null,
+            proprio: null,
+            ReConnectionFirebase: false,
+            // Bon fonctionnement de l'app
+            PageMode:
+              JSON.parse(window.localStorage.getItem("PageMode")) === null ||
+              JSON.parse(window.localStorage.getItem("PageMode")) ===
+                undefined ||
+              JSON.parse(window.localStorage.getItem("OfflineMode")) === true
+                ? true
+                : JSON.parse(window.localStorage.getItem("PageMode")),
+            OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
+              ? false
+              : JSON.parse(window.localStorage.getItem("OfflineMode")),
+            UpdateDbFromIndexedDB: false,
+            LastAntiLostData:
+              JSON.parse(
+                window.localStorage.getItem("LastSecurityAntiLostData")
+              ) !== false &&
+              JSON.parse(
+                window.localStorage.getItem("LastSecurityAntiLostData")
+              ) !== true
+                ? true
+                : JSON.parse(
+                    window.localStorage.getItem("LastSecurityAntiLostData")
+                  ),
+            findAnim: [],
+            JustDefined: false,
+            RedirectPage: null,
+            IdToAddEp: null,
+            InfoAnimeToChangeNote: null,
+            RefreshfromFnOffline: false,
+            //// Modal
+            ShowModalSearch: false,
+            ShowModalChangeNote: false,
+            ShowModalAddAnim: false,
+            ShowModalAddScan: false,
+            ShowModalAddNM: false,
+            ShowModalAddFilm: false,
+            ShowModalAddNotifLier: false,
+            ShowModalChooseImgURL: [false, null],
+            ShowModalImportFile: false,
+            ShowModalType: false,
+            ShowModalVerification: false,
+            ShowModalAddManga: false,
+            ShowModalMangaDetails: false,
+            ////
+            PalmaresModal: false,
+            ScanManga: null,
+            NotAskAgain: true,
+            ModePreview: false,
+            SwitchMyAnim: true,
+            AddNotifWithAnim: false,
+            animToDetails: [],
+            NextAnimToDelete: null,
+            NextMangaToDelete: null,
+            SearchInAnimeList: [false, null],
+            RefreshRandomizeAnime: true,
+            RefreshRandomizeAnime2: true,
+            RefreshRandomizeAnime3: true,
+            MyMangaListSaved: [
+              "Vous n'avez aucun Manga En Cours",
+              "Vous n'avez aucun Manga à Regarder Prochainement",
+            ],
+            MyAnimListSaved: null,
+            MyNextAnimListSaved: null,
+            ModeFilter: "NotFinished",
+            ModeDisplayNextAnim: !JSON.parse(
+              window.localStorage.getItem("ModeDisplayNextAnim")
+            )
+              ? null
+              : JSON.parse(window.localStorage.getItem("ModeDisplayNextAnim")),
+            ModeFindAnime: [false, null],
+            LoadingMode: [true, true],
+            palmares: null,
+            ToReSearchAfterRefresh: false,
+            MicOn: false,
+            DeleteTemplateAnim: null,
+            addEPToAlleged: false,
+            ShowMessage: false,
+            ShowMessageHtml: false,
+            SecondMessage: false,
+            // Form
+            title: "",
+            type: "serie",
+            Rate: 7.5,
+            UrlUserImg: "",
+            FileToImport: null,
+            imageUrl: null,
+            EpisodeName: null,
+            DurationPerEp: null,
+            AntiLostData: true,
+            SeasonAnimCheck: false,
+            WaitAnimCheck: false,
+            ModeCombinaisonSearch: "ET",
+            day: new Date().getDay().toString(),
+            time:
+              new Date().getHours() * 3600 +
+              Math.round(new Date().getMinutes() / 10) * 10 * 60,
+            durer: 110,
+            nbEP: "",
+            Scan: 1,
+            NextManga: "",
+            NextAnim: "",
+            ImportanceNA: 0,
+            ImportanceSearch: null,
+            TagNA: "",
+            TagSearchAnime: "",
+            CodeNumber: ["", 1],
+            titleSearchAnime: "",
+            DeletePathVerif: null,
+            // Alerts
+            ResText: null,
+            typeAlert: null,
+            // A2HS
+            AddToHomeScreen: null,
+          },
+          async () => {
+            // IndexedDB
+            const db = await openDB("AckDb", 1);
+            const Store = [
+              db
+                .transaction("serieFirebase", "readwrite")
+                .objectStore("serieFirebase"),
+              db
+                .transaction("filmFireBase", "readwrite")
+                .objectStore("filmFireBase"),
+              db
+                .transaction("NextAnimFireBase", "readwrite")
+                .objectStore("NextAnimFireBase"),
+              db
+                .transaction("ParamsOptn", "readwrite")
+                .objectStore("ParamsOptn"),
+              db
+                .transaction("NotifFirebase", "readwrite")
+                .objectStore("NotifFirebase"),
+            ];
+
+            Store.forEach((req) => req.delete(req.name));
+            if (refresh) {
+              window.location.reload();
+            }
+          }
+        );
       })
       .catch(console.error);
   };
