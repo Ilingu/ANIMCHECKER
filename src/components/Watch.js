@@ -978,6 +978,7 @@ class Watch extends Component {
         Badge: null,
         Lier: null,
         DurationPerEP: null,
+        NewEpMode: null,
         InWait: null,
         AnimeSeason: null,
         Paused: PauseWithAlleged ? true : null,
@@ -989,6 +990,7 @@ class Watch extends Component {
           Badge: null,
           Lier: null,
           DurationPerEP: null,
+          NewEpMode: null,
           InWait: null,
           AnimeSeason: null,
           Paused: PauseWithAlleged ? true : null,
@@ -1967,6 +1969,10 @@ class Watch extends Component {
                         this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                           Drop: true,
                           Paused: null,
+                          InWait: null,
+                          AnimeSeason: null,
+                          Lier: null,
+                          NewEpMode: null,
                         });
                         if (!this.state.OfflineMode) {
                           this.fnDbOffline(
@@ -1975,6 +1981,10 @@ class Watch extends Component {
                             {
                               Drop: true,
                               Paused: null,
+                              InWait: null,
+                              AnimeSeason: null,
+                              Lier: null,
+                              NewEpMode: null,
                             }
                           );
                         }
@@ -1994,6 +2004,10 @@ class Watch extends Component {
                       this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                         Paused: true,
                         Drop: null,
+                        InWait: null,
+                        AnimeSeason: null,
+                        Lier: null,
+                        NewEpMode: null,
                       });
                       if (!this.state.OfflineMode) {
                         this.fnDbOffline(
@@ -2002,6 +2016,10 @@ class Watch extends Component {
                           {
                             Paused: true,
                             Drop: null,
+                            InWait: null,
+                            AnimeSeason: null,
+                            Lier: null,
+                            NewEpMode: null,
                           }
                         );
                       }
@@ -2573,10 +2591,28 @@ class Watch extends Component {
                   type === "serie" &&
                   !ActionEndAnime[1]
                 ) {
-                  this.updateValue(`${this.state.Pseudo}/serie/${id}`, {
+                  this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                     Paused: true,
                     Drop: null,
+                    InWait: null,
+                    AnimeSeason: null,
+                    Lier: null,
+                    NewEpMode: null,
                   });
+                  if (!this.state.OfflineMode) {
+                    this.fnDbOffline(
+                      "PUT",
+                      `${this.state.Pseudo}/${type}/${id}`,
+                      {
+                        Paused: true,
+                        Drop: null,
+                        InWait: null,
+                        AnimeSeason: null,
+                        Lier: null,
+                        NewEpMode: null,
+                      }
+                    );
+                  }
                   GoToHome = true;
                 } else if (
                   ActionEndAnime[0] &&
