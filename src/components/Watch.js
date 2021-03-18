@@ -2240,7 +2240,7 @@ class Watch extends Component {
                       style={{ color: "greenyellow" }}
                       className="fas fa-check"
                     ></span>{" "}
-                    Film(${AnimToWatch.durer}min):
+                    Film({AnimToWatch.durer}min):
                   </Fragment>
                 ) : (
                   `Film(${AnimToWatch.durer}min):`
