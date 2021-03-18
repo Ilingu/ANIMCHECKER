@@ -337,6 +337,10 @@ a:hover {
   }
 }
 
+.modal {
+  z-index: 2050;
+}
+
 .modal #palamaresUl {
   color: gold;
   list-style: inside circle;

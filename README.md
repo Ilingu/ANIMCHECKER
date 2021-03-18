@@ -3,7 +3,8 @@
 [THIS WEBSITE IS PRIVATE](aucunDomaine)
 Copyright (©) 2019-2020 IlinguCorp(Chollet, Arthur), Inc.
 This webSite are the propity of IlinguCorp, Inc., Nobody are allowed to copy or
-distributed OR MODIFIE some version of MY webSite!!!
+distributed OR MODIFIE some version of MY webSite.
+F = Fix, B = Beta, N = For Next Version
 
 # File and Folder
 
