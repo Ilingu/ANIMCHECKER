@@ -6,26 +6,27 @@ import PlaceHolderImg from "../../Assets/Img/PlaceHolderImg.png";
 
 const WhitchSeason = () => {
   const Month = new Date().getMonth() + 1;
+  const Day = new Date().getDate();
   let season = null;
-  switch (Month) {
-    case 12:
-    case 1:
-    case 2:
+  switch (true) {
+    case Month === 12 && Day >= 21:
+    case Month === 1:
+    case Month === 2:
       season = "hiver";
       break;
-    case 3:
-    case 4:
-    case 5:
+    case Month === 3 && Day >= 20:
+    case Month === 4:
+    case Month === 5:
       season = "printemps";
       break;
-    case 6:
-    case 7:
-    case 8:
+    case Month === 6 && Day >= 20:
+    case Month === 7:
+    case Month === 8:
       season = "ete";
       break;
-    case 9:
-    case 10:
-    case 11:
+    case Month === 9 && Day >= 22:
+    case Month === 10:
+    case Month === 11:
       season = "automne";
       break;
     default:
@@ -167,6 +168,9 @@ const PosterAnim = ({
       <div
         onMouseEnter={() => setShowOverlay(true)}
         onMouseLeave={() => setShowOverlay(false)}
+        id={`${!title ? null : title.split(" ").join("")}-${
+          !id ? null : id.split("-")[1].split("").reverse().join("").slice(0, 5)
+        }`}
         className={
           Skeleton
             ? "MyAnimPoster Skeleton"
@@ -218,7 +222,7 @@ const PosterAnim = ({
             !isFinished & !Paused &&
             !Drop &&
             !InWait ? (
-              <h3 id="NEWEPBadge">
+              <h3 className="NEWEPBadge">
                 <Badge variant="danger">NEW</Badge>
               </h3>
             ) : null}

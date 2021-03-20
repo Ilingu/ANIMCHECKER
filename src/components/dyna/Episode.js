@@ -32,18 +32,16 @@ const Episode = ({
         </a>
       </div>
     );
-  /*
- filler,
-  recap,
-  duration
-   */
-
   return (
     <div
       id={`EP-${AllDataEp.id}`}
       className={
-        AllDataEp.Info?.filler
+        AllDataEp.Info?.filler && AllDataEp.finished
+          ? "EPWatch filler finishedEp"
+          : AllDataEp.Info?.filler
           ? "EPWatch filler"
+          : AllDataEp.Info?.recap && AllDataEp.finished
+          ? "EPWatch recap finishedEp"
           : AllDataEp.Info?.recap
           ? "EPWatch recap"
           : AllDataEp.finished

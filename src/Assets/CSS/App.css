@@ -1375,7 +1375,7 @@ a:hover {
   color: #7700ff;
 }
 
-#MyAnime .content .MyAnimPoster.Season.NewEP #NEWEPBadge {
+#MyAnime .content .MyAnimPoster.Season.NewEP .NEWEPBadge {
   position: absolute;
   top: 2.5px;
   right: -15px;

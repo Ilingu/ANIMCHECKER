@@ -651,7 +651,14 @@ export default class Home extends Component {
     }
   };
 
-  fnDbOffline = async (type, path, value, next = null, next2 = null) => {
+  fnDbOffline = async (
+    type,
+    path,
+    value,
+    next = null,
+    next2 = null,
+    refresh = true
+  ) => {
     const db = await openDB("AckDb", 1);
     if (type === "GET") {
       // Get Data IndexedDB
@@ -763,7 +770,7 @@ export default class Home extends Component {
         data: value,
       })
         .then(() => {
-          this.fnDbOffline("GET");
+          if (refresh) this.fnDbOffline("GET");
           this.setState({
             ResText: "Votre requête d'ajout a réussite.",
             typeAlert: "success",
@@ -815,7 +822,9 @@ export default class Home extends Component {
         id: Store[WayIndex].name,
         data: CopyData,
       })
-        .then(() => this.fnDbOffline("GET", null, null, next, next2))
+        .then(() => {
+          if (refresh) this.fnDbOffline("GET", null, null, next, next2);
+        })
         .catch(console.error);
     } else if (type === "DELETE") {
       const WayStr = path.split("/")[1];
@@ -841,7 +850,7 @@ export default class Home extends Component {
       })
         .then(() => {
           this.cancelModal();
-          this.fnDbOffline("GET", null, null, next);
+          if (refresh) this.fnDbOffline("GET", null, null, next);
           this.setState({
             ResText: "Votre requête de suppression a réussite.",
             typeAlert: "success",
@@ -900,7 +909,7 @@ export default class Home extends Component {
     }, 2500);
   };
 
-  updateValue = (path, value, HomePage = null, Next = null) => {
+  updateValue = (path, value, HomePage = null, Next = null, refresh = true) => {
     const { OfflineMode } = this.state;
     if (OfflineMode === true && !path.includes("manga")) {
       this.fnDbOffline(
@@ -918,13 +927,14 @@ export default class Home extends Component {
         data: value,
       })
       .then(() => {
-        if (path.includes("manga")) {
-          this.refreshManga();
-        } else if (HomePage !== null) {
-          this.refreshValueFirebase(null, HomePage);
-        } else {
-          this.refreshValueFirebase();
-        }
+        if (refresh === true)
+          if (path.includes("manga")) {
+            this.refreshManga();
+          } else if (HomePage !== null) {
+            this.refreshValueFirebase(null, HomePage);
+          } else {
+            this.refreshValueFirebase();
+          }
 
         if (Next !== null) Next();
       })
@@ -2174,17 +2184,39 @@ export default class Home extends Component {
           let CopyCalledTime = [...NotifFirebase[notifKey].calledTime];
           // LierNotif
           if (NotifFirebase[notifKey].Lier) {
+            const ElemToNotify = document.getElementById(
+              `${this.state.serieFirebase[NotifFirebase[notifKey].Lier].name
+                .split(" ")
+                .join("")}-${NotifFirebase[notifKey].Lier.split("-")[1]
+                .split("")
+                .reverse()
+                .join("")
+                .slice(0, 5)}`
+            );
+            ElemToNotify.classList.add("NewEP");
+            // Add badge
+            const h3 = document.createElement("h3");
+            h3.className = "NEWEPBadge";
+            h3.innerHTML = `<span class="badge badge-danger">NEW</span>`;
+            ElemToNotify.appendChild(h3);
+            // Save DB
             this.updateValue(
               `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
               {
                 NewEpMode: true,
-              }
+              },
+              null,
+              null,
+              false
             );
             if (!OfflineMode) {
               this.fnDbOffline(
                 "PUT",
                 `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
-                { NewEpMode: true }
+                { NewEpMode: true },
+                null,
+                null,
+                false
               );
             }
           }
@@ -2223,13 +2255,26 @@ export default class Home extends Component {
           }
 
           // Save
-          this.updateValue(`${this.state.Pseudo}/Notif/${notifKey}`, {
-            calledTime: CopyCalledTime,
-          });
-          if (!OfflineMode) {
-            this.fnDbOffline("PUT", `${this.state.Pseudo}/Notif/${notifKey}`, {
+          this.updateValue(
+            `${this.state.Pseudo}/Notif/${notifKey}`,
+            {
               calledTime: CopyCalledTime,
-            });
+            },
+            null,
+            null,
+            false
+          );
+          if (!OfflineMode) {
+            this.fnDbOffline(
+              "PUT",
+              `${this.state.Pseudo}/Notif/${notifKey}`,
+              {
+                calledTime: CopyCalledTime,
+              },
+              null,
+              null,
+              false
+            );
           }
         };
         // Make Notif
@@ -2641,7 +2686,6 @@ export default class Home extends Component {
         await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
         await this.getAllTheEpisode(id),
       ]);
-      console.log(result[1]);
       this.setState({
         animToDetails: [{ episodes: result[1] }, result[0].data],
         findAnim: [],
