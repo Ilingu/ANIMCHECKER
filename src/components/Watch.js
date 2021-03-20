@@ -1256,26 +1256,27 @@ class Watch extends Component {
 
   WhitchSeason = () => {
     const Month = new Date().getMonth() + 1;
+    const Day = new Date().getDate();
     let season = null;
-    switch (Month) {
-      case 12:
-      case 1:
-      case 2:
+    switch (true) {
+      case Month === 12 && Day >= 21:
+      case Month === 1:
+      case Month === 2:
         season = "snowflake";
         break;
-      case 3:
-      case 4:
-      case 5:
+      case Month === 3 && Day >= 20:
+      case Month === 4:
+      case Month === 5:
         season = "seedling";
         break;
-      case 6:
-      case 7:
-      case 8:
+      case Month === 6 && Day >= 20:
+      case Month === 7:
+      case Month === 8:
         season = "umbrella-beach";
         break;
-      case 9:
-      case 10:
-      case 11:
+      case Month === 9 && Day >= 22:
+      case Month === 10:
+      case Month === 11:
         season = "tree";
         break;
       default:
