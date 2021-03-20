@@ -416,7 +416,6 @@ class Watch extends Component {
     ];
     let i = 0;
     const fetchOtherEP = async () => {
-      console.log(Episodes.length);
       if (Episodes.length === 100) {
         return axios
           .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i + 2}`)
