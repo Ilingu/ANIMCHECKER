@@ -1726,7 +1726,13 @@ export default class Home extends Component {
     let RepereStop = [];
     AnimEP.forEach((Saison) => {
       Saison.Episodes.forEach((Ep) => {
-        if (Ep.finished) RepereStop = [Saison.name.split(" ")[1], Ep.id];
+        if (Ep.finished && Ep.id !== Saison.Episodes.length)
+          RepereStop = [Saison.name.split(" ")[1], Ep.id];
+        else if (Ep.finished)
+          RepereStop = [
+            (parseInt(Saison.name.split(" ")[1]) + 1).toString(),
+            0,
+          ];
       });
     });
     return RepereStop.length === 0 ? ["1", 0] : RepereStop;
