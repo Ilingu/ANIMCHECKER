@@ -168,8 +168,10 @@ const PosterAnim = ({
       <div
         onMouseEnter={() => setShowOverlay(true)}
         onMouseLeave={() => setShowOverlay(false)}
-        id={`${!title ? null : title.split(" ").join("")}-${
-          !id ? null : id.split("-")[1].split("").reverse().join("").slice(0, 5)
+        id={`${!title || !inMyAnim ? null : title.split(" ").join("")}-${
+          !id || !inMyAnim
+            ? null
+            : id.split("-")[1].split("").reverse().join("").slice(0, 5)
         }`}
         className={
           Skeleton
