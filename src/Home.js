@@ -3298,6 +3298,45 @@ export default class Home extends Component {
         }
         Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
         deleteAnim={this.DeleteAnimVerification}
+        CopyTitle={() => {
+          navigator.permissions
+            .query({ name: "clipboard-write" })
+            .then((result) => {
+              if (result.state === "granted" || result.state === "prompt") {
+                navigator.clipboard
+                  .writeText({ ...serieFirebase, ...filmFireBase }[key].name)
+                  .then(
+                    () => {
+                      console.log("✅Clipboard successfully set✅");
+                      const ElemCopied = document.getElementById(
+                        `${this.state.serieFirebase[key].name
+                          .split(" ")
+                          .join("")}-${key
+                          .split("-")[1]
+                          .split("")
+                          .reverse()
+                          .join("")
+                          .slice(0, 5)}`
+                      );
+                      const ElemBtnCopy = ElemCopied.children[1].children[1];
+                      ElemBtnCopy.style.color = "rgba(38, 255, 0, 0.8)";
+                      ElemBtnCopy.style.width = "75px";
+                      ElemBtnCopy.style.left = "calc(50% - 35px)";
+                      ElemBtnCopy.innerHTML = `<span class="fas fa-copy"></span> <b>Copié !</b>`;
+                      setTimeout(() => {
+                        ElemBtnCopy.innerHTML = `<span class="fas fa-copy"></span>`;
+                        ElemBtnCopy.style.color = "#fff";
+                        ElemBtnCopy.style.width = "32px";
+                        ElemBtnCopy.style.left = "calc(50% - 45px / 3)";
+                      }, 2000);
+                    },
+                    () => {
+                      console.error("❌Clipboard write failed❌");
+                    }
+                  );
+              }
+            });
+        }}
         isAlleged={
           key.split("-")[0] === "serie"
             ? !serieFirebase[key].AnimEP

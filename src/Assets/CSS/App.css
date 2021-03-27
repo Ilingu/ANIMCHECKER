@@ -1163,6 +1163,30 @@ a:hover {
   border-radius: 7px;
 }
 
+#MyAnime .content .MyAnimPoster .ImgInterract .copy {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  z-index: 1000;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  position: absolute;
+  bottom: 2.5px;
+  left: calc(50% - 45px / 3);
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.6);
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  opacity: 0;
+  -webkit-transition: opacity 0.4s;
+  transition: opacity 0.4s;
+}
+
 #MyAnime .content .MyAnimPoster .action {
   -webkit-transition: 0.7s;
   transition: 0.7s;
@@ -1186,6 +1210,7 @@ a:hover {
   height: 35px;
   font-size: 30px;
   border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.55);
   color: #fff;
   border: 3px solid #ccc;
   opacity: 0;
@@ -1202,9 +1227,14 @@ a:hover {
   left: calc(50% - 35px - 30px);
 }
 
+#MyAnime .content .MyAnimPoster .action .watch:hover,
+#MyAnime .content .MyAnimPoster .action .delete:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
 #MyAnime .content .MyAnimPoster .action .watch:hover {
-  color: royalblue;
-  border: 3px solid royalblue;
+  color: #0020c2;
+  border: 3px solid #0020c2;
 }
 
 #MyAnime .content .MyAnimPoster .action .delete:hover {
@@ -1223,6 +1253,10 @@ a:hover {
 }
 
 #MyAnime .content .MyAnimPoster h4 {
+  -webkit-user-select: none !important;
+     -moz-user-select: none !important;
+      -ms-user-select: none !important;
+          user-select: none !important;
   font-size: 1.2rem;
   text-align: center;
   text-decoration: underline;
@@ -1237,8 +1271,13 @@ a:hover {
           transform: scale(1.1);
 }
 
-#MyAnime .content .MyAnimPoster:hover .ImgInterract {
+#MyAnime .content .MyAnimPoster:hover .ImgInterract,
+#MyAnime .content .MyAnimPoster:hover .copy:not() {
   opacity: 0.3;
+}
+
+#MyAnime .content .MyAnimPoster:hover .ImgInterract .copy {
+  opacity: 1;
 }
 
 #MyAnime .content .MyAnimPoster:hover .action .watch,
@@ -1873,9 +1912,18 @@ a:hover {
     height: 222px !important;
     border-radius: 7px;
   }
+  #MyAnime .content .MyAnimPoster .ImgInterract .copy {
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+    left: calc(50% - 37px / 3);
+  }
   #MyAnime .content .MyAnimPoster .action .watch,
   #MyAnime .content .MyAnimPoster .action .delete {
     top: calc(50% - 222px / 4.55);
+  }
+  #MyAnime .content .MyAnimPoster h4 {
+    font-size: 1.05rem;
   }
   #MyAnime .content .MyAnimPoster.Skeleton::before {
     width: 100px;
@@ -1943,6 +1991,9 @@ a:hover {
   }
   #MyAnime .content .MyAnimPoster .action .delete {
     left: calc(50% - 48px);
+  }
+  #MyAnime .content .MyAnimPoster h4 {
+    font-size: 1rem;
   }
   #MyAnime .content .MyAnimPoster.Skeleton::before {
     width: 75px;
