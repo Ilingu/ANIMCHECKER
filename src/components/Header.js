@@ -3,10 +3,48 @@ import { Link } from "react-router-dom";
 // Context
 import ContextForMyAnim from "../Context/ContextSchema";
 // CSS
-import { Navbar, Nav, Form, Button, Dropdown } from "react-bootstrap";
+import {
+  Navbar,
+  Nav,
+  Form,
+  Button,
+  Dropdown,
+  InputGroup,
+} from "react-bootstrap";
 
-const Header = () => {
-  const [Anim, SetAnim] = useState("");
+const WhitchSeason = () => {
+  const Month = new Date().getMonth() + 1;
+  const Day = new Date().getDate();
+  let season = null;
+  switch (true) {
+    case Month === 12 && Day >= 21:
+    case Month === 1:
+    case Month === 2:
+      season = ["snowflake", "#007bff"];
+      break;
+    case Month === 3 && Day >= 20:
+    case Month === 4:
+    case Month === 5:
+      season = ["seedling", "green"];
+      break;
+    case Month === 6 && Day >= 20:
+    case Month === 7:
+    case Month === 8:
+      season = ["umbrella-beach", "gold"];
+      break;
+    case Month === 9 && Day >= 22:
+    case Month === 10:
+    case Month === 11:
+      season = ["tree", "brown"];
+      break;
+    default:
+      break;
+  }
+  return season;
+};
+
+const Header = ({ FnSearchFilter, SearchFilter }) => {
+  const [TitleSearch, SetTitleSearch] = useState("");
   const [IsOpen, SetIsOpen] = useState(false);
   const [ResText, SetResText] = useState("");
   const [ShowMessage, SetShowMessage] = useState(false);
@@ -60,7 +98,9 @@ const Header = () => {
         const current = event.resultIndex;
 
         const transcript = event.results[current][0].transcript;
-        SetAnim(transcript);
+        if (typeof transcript === "string" && transcript.trim().length !== 0)
+          FnSearchFilter[0]("q=", transcript);
+        else FnSearchFilter[1]("q=");
       };
     } catch (e) {
       SetShowMessage(true);
@@ -77,20 +117,6 @@ const Header = () => {
         }, 900);
       }, 6000);
       console.error(e);
-    }
-  };
-
-  const HandleSubmit = (event) => {
-    event.preventDefault();
-
-    if (
-      Anim !== undefined &&
-      Anim !== null &&
-      typeof Anim === "string" &&
-      Anim.trim().length !== 0 &&
-      Anim !== ""
-    ) {
-      Context.search(Anim);
     }
   };
 
@@ -139,16 +165,6 @@ const Header = () => {
                 </Button>
               </Link>
             </Nav.Item>
-            <Nav.Item>
-              <Button
-                id="RdaBtn"
-                title="Choisir un anime aléatoirement parmi toutes taliste de prochain anime"
-                onClick={Context.RdaAnime}
-                variant="outline-primary"
-              >
-                <span className="fas fa-random"></span>
-              </Button>
-            </Nav.Item>
             {window.matchMedia("(display-mode: standalone)").matches ? null : (
               <Nav.Item>
                 <Button
@@ -181,6 +197,27 @@ const Header = () => {
                       style={{ color: "gold" }}
                     ></span>{" "}
                     Palmarès
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    disabled={Context.LoadingMode}
+                    onClick={Context.RdaAnime}
+                    title="Choisir un anime aléatoirement parmi toutes taliste de prochain anime"
+                  >
+                    <span
+                      style={{ color: "#007bff" }}
+                      className="fas fa-random"
+                    ></span>{" "}
+                    Random {Context.PageMode ? "Anime" : "Manga"}
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    disabled={Context.LoadingMode}
+                    onClick={Context.OpenSeasonPage}
+                  >
+                    <span
+                      className={`fas fa-${WhitchSeason()[0]}`}
+                      style={{ color: WhitchSeason()[1] }}
+                    ></span>{" "}
+                    Anime de Saison
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item
@@ -218,34 +255,61 @@ const Header = () => {
             </Nav.Item>
           </Nav>
 
-          <Form onSubmit={HandleSubmit} id="searchForm" inline>
+          <Form
+            onSubmit={(event) => {
+              event.preventDefault();
+              Context.search(Context.PageMode ? null : TitleSearch);
+            }}
+            id="searchForm"
+            inline
+          >
             <Form.Group>
               <Form.Control
                 type="text"
-                required
+                required={Context.PageMode ? false : true}
                 placeholder={
                   Context.PageMode
                     ? "Search Anim To Watch"
                     : "Search Manga To Read"
                 }
-                value={Anim}
-                onChange={(event) => SetAnim(event.target.value)}
+                value={Context.PageMode ? SearchFilter["q="] : TitleSearch}
+                onChange={(event) => {
+                  if (
+                    Context.PageMode &&
+                    typeof event.target.value === "string" &&
+                    event.target.value.trim().length !== 0
+                  )
+                    FnSearchFilter[0]("q=", event.target.value);
+                  else if (Context.PageMode) FnSearchFilter[1]("q=");
+                  else SetTitleSearch(event.target.value);
+                }}
               />
+              <InputGroup.Append>
+                {Context.PageMode ? (
+                  <Button
+                    variant="secondary"
+                    onClick={Context.OpenSearchFilter}
+                    title="Ouvre les différent paramètres de recherches"
+                  >
+                    <span className="fas fa-filter"></span>
+                  </Button>
+                ) : null}
+                <Button
+                  id="SearchFormBtnSubmit"
+                  aria-label="Submit The anime"
+                  type="submit"
+                >
+                  <span className="fas fa-search"></span>
+                </Button>
+              </InputGroup.Append>
+              <div id="SearchFormBtnVoice" onClick={StartSpeechRecognition}>
+                <span
+                  className={
+                    MicOn ? "fas fa-microphone" : "fas fa-microphone-slash"
+                  }
+                ></span>
+              </div>
             </Form.Group>
-            <Button
-              id="SearchFormBtnSubmit"
-              aria-label="Submit The anime"
-              type="submit"
-            >
-              <span className="fas fa-search"></span>
-            </Button>
-            <div id="SearchFormBtnVoice" onClick={StartSpeechRecognition}>
-              <span
-                className={
-                  MicOn ? "fas fa-microphone" : "fas fa-microphone-slash"
-                }
-              ></span>
-            </div>
           </Form>
         </Navbar.Collapse>
       </Navbar>

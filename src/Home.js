@@ -84,12 +84,14 @@ export default class Home extends Component {
     ////
     PalmaresModal: false,
     ScanManga: null,
+    SeasonPage: false,
     NotAskAgain: true,
     ModePreview: false,
     SwitchMyAnim: true,
     SwipeActive: true,
     AddNotifWithAnim: false,
     animToDetails: [],
+    SeasonAnimeDetails: null,
     NextAnimToDelete: null,
     NextMangaToDelete: null,
     SearchInAnimeList: [false, null],
@@ -129,8 +131,12 @@ export default class Home extends Component {
     DurationPerEp: null,
     AntiLostData: true,
     SeasonAnimCheck: false,
+    OpenSearchFilter: false,
     WaitAnimCheck: false,
     ModeCombinaisonSearch: "ET",
+    year: 2021,
+    season: "spring",
+    SearchFilter: {},
     day: new Date().getDay().toString(),
     time:
       new Date().getHours() * 3600 +
@@ -2648,29 +2654,77 @@ export default class Home extends Component {
       .join("");
   };
 
-  SearchAnim = async (name, toReturn = false) => {
-    const { PageMode } = this.state;
-    if (toReturn === true) {
-      return await axios.get(
-        `https://api.jikan.moe/v3/search/${
-          PageMode ? "anime" : "manga"
-        }?q=${name}&limit=1`
-      );
+  GETSeasonAnime = async (year, season) => {
+    try {
+      this.setState({
+        SeasonAnimeDetails: (
+          await axios.get(`https://api.jikan.moe/v3/season/${year}/${season}`)
+        ).data.anime,
+      });
+    } catch (err) {
+      console.error(err);
     }
-    let NameToSend = name;
-    this.setState({ ShowModalSearch: true });
+  };
 
-    if (name.includes(" ")) {
-      NameToSend = this.replaceSpace(name, "%20");
+  SearchAnim = async (name, toReturn = false) => {
+    const { PageMode, SearchFilter } = this.state;
+    if (toReturn === true) {
+      try {
+        return await axios.get(
+          `https://api.jikan.moe/v3/search/${
+            PageMode ? "anime" : "manga"
+          }?q=${name}&limit=1`
+        );
+      } catch (err) {
+        console.error(err);
+        return false;
+      }
+    }
+    this.setState({ ShowModalSearch: true });
+    let Request = null;
+
+    if (name === null && Object.keys(SearchFilter).length !== 0) {
+      let IsLimitsCall = false;
+      Request = `https://api.jikan.moe/v3/search/anime?`;
+      Object.keys(SearchFilter).forEach((key, i) => {
+        if (key === "limit=") IsLimitsCall = true;
+        Request += `${i === 0 ? "" : "&"}${key}${
+          key === "q="
+            ? this.replaceSpace(SearchFilter[key], "%20")
+            : SearchFilter[key]
+        }`;
+      });
+      if (!IsLimitsCall) Request += "&limit=16";
+    } else if (Object.keys(SearchFilter).length === 0) {
+      this.cancelModal();
+      this.setState({
+        ResText: `Veuillez remplir au minimun l'un des filtre...`,
+        typeAlert: "danger",
+      });
+      setTimeout(() => {
+        this.setState({
+          ResText: null,
+          typeAlert: null,
+        });
+      }, 4000);
+      return;
+    } else {
+      Request = `https://api.jikan.moe/v3/search/${
+        PageMode ? "anime" : "manga"
+      }?q=${
+        name.includes(" ") ? this.replaceSpace(name, "%20") : name
+      }&limit=16`;
     }
 
     axios
-      .get(
-        `https://api.jikan.moe/v3/search/${
-          PageMode ? "anime" : "manga"
-        }?q=${NameToSend}&limit=16`
+      .get(Request)
+      .then((result) =>
+        this.setState({
+          findAnim: result.data.results,
+          OpenSearchFilter: false,
+          SearchFilter: {},
+        })
       )
-      .then((result) => this.setState({ findAnim: result.data.results }))
       .catch((err) => {
         console.error(err);
         this.cancelModal();
@@ -3039,6 +3093,8 @@ export default class Home extends Component {
       InfoAnimeToChangeNote: null,
       Rate: 7.5,
       UrlUserImg: "",
+      OpenSearchFilter: false,
+      SearchFilter: {},
       ShowModalChangeNote: false,
       findAnim: [],
       SearchInAnimeList: [false, this.state.SearchInAnimeList[1]],
@@ -3082,6 +3138,7 @@ export default class Home extends Component {
       proprio,
       PageMode,
       AuthenticateMethod,
+      SeasonAnimeDetails,
       ModeDisplayNextAnim,
       AllowUseReAuth,
       ShowModalChooseImgURL,
@@ -3098,6 +3155,8 @@ export default class Home extends Component {
       DeletePathVerif,
       Scan,
       ScanManga,
+      OpenSearchFilter,
+      SearchFilter,
       OfflineMode,
       typeAlert,
       type,
@@ -3112,6 +3171,8 @@ export default class Home extends Component {
       MicOn,
       ShowModalImportFile,
       ShowMessage,
+      year,
+      season,
       UrlUserImg,
       ShowMessageHtml,
       ShowModalAddManga,
@@ -3140,6 +3201,7 @@ export default class Home extends Component {
       SearchInAnimeList,
       WaitAnimCheck,
       ShowModalChangeNote,
+      SeasonPage,
       RefreshRandomizeAnime,
       RefreshRandomizeAnime2,
       RefreshRandomizeAnime3,
@@ -3678,6 +3740,7 @@ export default class Home extends Component {
       });
     }
 
+    // Other Page In Home
     if (animToDetails !== null && animToDetails.length >= 2) {
       return (
         <OneAnim
@@ -3758,6 +3821,98 @@ export default class Home extends Component {
           }}
         />
       );
+    } else if (SeasonPage === true) {
+      let SeasonAnimeRender = "Aucun Anime";
+      let YearRender = [];
+      for (let i = 0; i < new Date().getFullYear() + 1 - 2000; i++) {
+        YearRender = [
+          <option key={i} value={2000 + i}>
+            {2000 + i}
+          </option>,
+          ...YearRender,
+        ];
+      }
+      if (SeasonAnimeDetails !== null && SeasonAnimeDetails.length !== 0) {
+        SeasonAnimeRender = SeasonAnimeDetails.map((SeasonAnime) => (
+          <Poster
+            key={SeasonAnime.mal_id}
+            url={SeasonAnime.image_url}
+            Skeleton={false}
+            score={SeasonAnime.score}
+            title={SeasonAnime.title}
+            SeeInDetails={(id) => {
+              this.SeeInDetails(id);
+              this.ShowMessageInfo(
+                "Chargement de la page... Veuillez patienté...",
+                5000
+              );
+            }}
+            type={SeasonAnime.type}
+            id={SeasonAnime.mal_id}
+            inMyAnim={false}
+            inSeasonAnime={true}
+          />
+        ));
+      }
+      return (
+        <section id="SeasonAnime">
+          <Button
+            variant="primary"
+            onClick={() => {
+              this.setState({ SeasonPage: false, SeasonAnimeDetails: null });
+            }}
+            className="btnBackDesing right"
+          >
+            <span className="fas fa-arrow-left"></span> Retour
+          </Button>
+          <aside>
+            <Form
+              onSubmit={(event) => {
+                event.preventDefault();
+                this.GETSeasonAnime(year, season);
+              }}
+            >
+              <Form.Group>
+                <label htmlFor="YearForm">Années:</label>
+                <Form.Control
+                  id="YearForm"
+                  as="select"
+                  custom
+                  value={year}
+                  onChange={(event) =>
+                    this.setState({ year: event.target.value })
+                  }
+                  placeholder="Années de la Saison"
+                >
+                  {YearRender}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group>
+                <label htmlFor="YearForm">Saison:</label>
+                <Form.Control
+                  id="YearForm"
+                  as="select"
+                  custom
+                  value={season}
+                  onChange={(event) =>
+                    this.setState({ season: event.target.value })
+                  }
+                  placeholder="Saison"
+                >
+                  <option value="summer">Été</option>
+                  <option value="spring">Printemps</option>
+                  <option value="fall">Automne</option>
+                  <option value="winter">Hiver</option>
+                </Form.Control>
+              </Form.Group>
+              <Button variant="success" type="submit">
+                <span className="fas fa-undo-alt"></span>
+              </Button>
+            </Form>
+          </aside>
+          <aside id="resultsSeasonAnime">{SeasonAnimeRender}</aside>
+        </section>
+      );
     } else if (ModePreview === true) {
       return (
         <section id="Preview">
@@ -3808,6 +3963,10 @@ export default class Home extends Component {
               Pseudo,
               search: this.SearchAnim,
               logOut: this.logOut,
+              OpenSearchFilter: () => {
+                this.setState({ OpenSearchFilter: !OpenSearchFilter });
+              },
+              OpenSeasonPage: () => this.setState({ SeasonPage: true }),
               LoadingMode: LoadingMode[0],
               ChangePage: () => {
                 PageMode
@@ -3931,6 +4090,24 @@ export default class Home extends Component {
                   this.setState({ NextAnim: event.target.value })
                 }
                 NextAnim={NextAnim}
+                OpenSearchFilter={OpenSearchFilter}
+                SearchFilter={SearchFilter}
+                FnSearchFilter={[
+                  (add, value) => {
+                    const CopySearchFilter = {
+                      ...SearchFilter,
+                    };
+                    CopySearchFilter[add] = value;
+                    this.setState({ SearchFilter: CopySearchFilter });
+                  },
+                  (rem) => {
+                    const CopySearchFilter = {
+                      ...SearchFilter,
+                    };
+                    delete CopySearchFilter[rem];
+                    this.setState({ SearchFilter: CopySearchFilter });
+                  },
+                ]}
                 fnNextAnimForm={[
                   (LvlImportance) => {
                     this.setState({ ImportanceNA: LvlImportance });

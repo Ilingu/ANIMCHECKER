@@ -11,6 +11,9 @@ const MyAnim = ({
   NextAnimChange,
   ResText,
   LoadingMode,
+  OpenSearchFilter,
+  SearchFilter,
+  FnSearchFilter,
   typeAlert,
   MyAnimList,
   ModeDisplayNextAnim,
@@ -43,7 +46,216 @@ const MyAnim = ({
   // Render
   return (
     <div className="container">
-      <Header />
+      <Header SearchFilter={SearchFilter} FnSearchFilter={FnSearchFilter} />
+
+      {OpenSearchFilter ? (
+        <section id="SearchFilter">
+          <ul>
+            <li>
+              Type:{" "}
+              <Form.Control
+                as="select"
+                custom
+                value={SearchFilter["type="]}
+                onChange={(event) => {
+                  if (event.target.value === "rien") FnSearchFilter[1]("type=");
+                  else FnSearchFilter[0]("type=", event.target.value);
+                }}
+                placeholder="Le Type d'anime"
+              >
+                <option value="rien">
+                  Ne pas prendre ce paramère en compte
+                </option>
+                <option value="tv">TV</option>
+                <option value="ova">OVA</option>
+                <option value="movie">Movie</option>
+                <option value="special">Special</option>
+                <option value="ona">ONA</option>
+                <option value="music">Music</option>
+              </Form.Control>
+            </li>
+            <li>
+              Status:{" "}
+              <Form.Control
+                as="select"
+                custom
+                value={SearchFilter["status="]}
+                onChange={(event) => {
+                  if (event.target.value === "rien")
+                    FnSearchFilter[1]("status=");
+                  else FnSearchFilter[0]("status=", event.target.value);
+                }}
+                placeholder="Le status de l'anime"
+              >
+                <option value="rien">Rien - Le status de l'anime</option>
+                <option value="airing">En cours de diffusion</option>
+                <option value="completed">Fini</option>
+                <option value="upcoming">A venir</option>
+              </Form.Control>
+            </li>
+            <li>
+              Âge:{" "}
+              <Form.Control
+                as="select"
+                custom
+                value={SearchFilter["rated="]}
+                onChange={(event) => {
+                  if (event.target.value === "rien")
+                    FnSearchFilter[1]("rated=");
+                  else FnSearchFilter[0]("rated=", event.target.value);
+                }}
+                placeholder="L'âge requis de l'anime"
+              >
+                <option value="rien">Rien - L'âge requis de l'anime</option>
+                <option value="g">G: Tous âges</option>
+                <option value="pg">PG: Enfant</option>
+                <option value="pg13">PG13: Adolescent 13+</option>
+                <option value="r17">
+                  R17: 17+ recommandé (violence et insulte)
+                </option>
+                <option value="r">
+                  R+: Nudité présente (peut aussi contenir violence et insulte)
+                </option>
+                <option value="rx">
+                  RX: 18+ Hentai (Contenu sexuelle réserver aux majeurs)
+                </option>
+              </Form.Control>
+            </li>
+            <li>
+              Trier par:{" "}
+              <Form.Control
+                as="select"
+                custom
+                value={SearchFilter["order_by="]}
+                onChange={(event) => {
+                  if (event.target.value === "rien")
+                    FnSearchFilter[1]("order_by=");
+                  else FnSearchFilter[0]("order_by=", event.target.value);
+                }}
+                placeholder="Rechercher trier par (apparait en 1er)"
+              >
+                <option value="rien">
+                  Rien - Rechercher trier par (apparait en 1er)
+                </option>
+                <option value="title">Titre</option>
+                <option value="start_date">Commencement</option>
+                <option value="end_date">Fin</option>
+                <option value="score">score</option>
+                <option value="type">type</option>
+                <option value="members">membres</option>
+                <option value="id">id</option>
+                <option value="episodes">episodes</option>
+                <option value="rating">note</option>
+              </Form.Control>
+            </li>
+            <li>
+              Trier par ordre:{" "}
+              <Form.Control
+                as="select"
+                custom
+                value={SearchFilter["sort="]}
+                onChange={(event) => {
+                  if (event.target.value === "rien") FnSearchFilter[1]("sort=");
+                  else FnSearchFilter[0]("sort=", event.target.value);
+                }}
+                placeholder="Ordre de trie"
+              >
+                <option value="rien">Rien - Ordre de trie:</option>
+                <option value="asc">Croissant</option>
+                <option value="desc">Décroissant</option>
+              </Form.Control>
+            </li>
+            <li>
+              Genres:{" "}
+              <Form.Control
+                as="select"
+                custom
+                value={SearchFilter["genre="]}
+                onChange={(event) => {
+                  if (event.target.value === "rien")
+                    FnSearchFilter[1]("genre=");
+                  else
+                    FnSearchFilter[0](
+                      "genre=",
+                      `${
+                        SearchFilter["genre="]
+                          ? SearchFilter["genre="] + ","
+                          : ""
+                      }${event.target.value}`
+                    );
+                }}
+                placeholder="Genre de l'anime"
+              >
+                {SearchFilter["genre="]?.split(",").length > 0 ? (
+                  <option>Multiple</option>
+                ) : null}
+                <option value="rien">Rien/Reset - Genre de l'anime</option>
+                <option value="1">Action</option>
+                <option value="2">Aventure</option>
+                <option value="3">Voiture</option>
+                <option value="4">Comique</option>
+                <option value="5">Démence</option>
+                <option value="6">Démons</option>
+                <option value="7">Mystère</option>
+                <option value="8">Drama</option>
+                <option value="9">Ecchi (R+)</option>
+                <option value="10">Fantastique</option>
+                <option value="11">Jeux</option>
+                <option value="12">Hentai (RX 18+)</option>
+                <option value="13">Historique</option>
+                <option value="14">Horreur</option>
+                <option value="15">Enfants</option>
+                <option value="16">Magique</option>
+                <option value="17">Art Matiaux</option>
+                <option value="18">Mecha</option>
+                <option value="19">Musique</option>
+                <option value="20">Parodie</option>
+                <option value="21">Samurai</option>
+                <option value="22">Romance</option>
+                <option value="23">School Life (School/École)</option>
+                <option value="24">Sci Fi</option>
+                <option value="25">Shoujo</option>
+                <option value="26">Yuri/Girl Love (Shoujo Ai)</option>
+                <option value="27">Shounen</option>
+                <option value="28">BL (Shounen Ai)</option>
+                <option value="29">L'espace</option>
+                <option value="30">Sports</option>
+                <option value="31">Super pouvoirs</option>
+                <option value="32">Vampire</option>
+                <option value="33">Yaoi (RX 18+)</option>
+                <option value="34">Yuri (RX 18+)</option>
+                <option value="35">Harem</option>
+                <option value="36">Slice Of Life</option>
+                <option value="37">Paranormal/Surnaturel</option>
+                <option value="38">Militaire</option>
+                <option value="39">Police</option>
+                <option value="40">Psychologie</option>
+                <option value="41">Thriller</option>
+                <option value="42">Seinen</option>
+                <option value="43">Josei</option>
+              </Form.Control>
+            </li>
+            <li>
+              Nombre de résultats:{" "}
+              <Form.Control
+                type="number"
+                value={SearchFilter["limit="]}
+                min="0"
+                placeholder="Par défaut: 16"
+                autoComplete="off"
+                onChange={(event) => {
+                  if (
+                    parseInt(event.target.value) === 0 ||
+                    isNaN(parseInt(event.target.value))
+                  )
+                    FnSearchFilter[1]("limit=");
+                  else FnSearchFilter[0]("limit=", event.target.value);
+                }}
+              />
+            </li>
+          </ul>
+        </section>
+      ) : null}
 
       <section id="MyAnime">
         <header>

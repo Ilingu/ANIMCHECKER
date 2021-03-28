@@ -43,10 +43,10 @@ const MyManga = ({
     );
 
     function handleGesure() {
-      if (touchendX < touchstartX) {
+      if (touchstartX - touchendX >= window.innerWidth / 3) {
         ChangeSwipe(false); // Left
       }
-      if (touchendX > touchstartX) {
+      if (touchendX - touchstartX >= window.innerWidth / 3) {
         ChangeSwipe(true); // Right
       }
     }

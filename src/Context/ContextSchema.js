@@ -5,6 +5,8 @@ export default createContext({
   Pseudo: String,
   search: Function,
   logOut: Function,
+  OpenSearchFilter: Function,
+  OpenSeasonPage: Function,
   RdaAnime: Function,
   LoadingMode: Boolean,
   ChangePage: Function,
