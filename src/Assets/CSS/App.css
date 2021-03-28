@@ -861,18 +861,46 @@ a:hover {
   }
 }
 
+#MyManga {
+  height: calc(100vh - 56px - 45px);
+}
+
+#MyManga header #BtnSwipe {
+  position: absolute;
+}
+
+#MyManga header #BtnCancelModeFindAnime {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  margin-top: 10px;
+}
+
+#MyManga header #returnAlert {
+  margin-top: 10px;
+}
+
 #MyManga #ContentMangaList {
   position: relative;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   margin-top: 35px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  height: 100%;
 }
 
 #MyManga #ContentMangaList #MyMangaTab,
 #MyManga #ContentMangaList #NextMangaTab {
+  display: none;
   text-align: center;
-  width: 50%;
+  width: 100%;
 }
 
 #MyManga #ContentMangaList #MyMangaTab header,
@@ -890,23 +918,28 @@ a:hover {
   text-decoration: underline;
 }
 
+#MyManga #ContentMangaList #MyMangaTab.active,
+#MyManga #ContentMangaList #NextMangaTab.active {
+  display: block;
+}
+
 #MyManga #ContentMangaList #MyMangaTab aside {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  max-height: 500px;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: (1fr)[5];
+      grid-template-columns: repeat(5, 1fr);
+  justify-items: center;
+  max-height: 94.5%;
+  gap: 10px;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 #MyManga #ContentMangaList #MyMangaTab aside .PosterManga {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   cursor: pointer;
   position: relative;
   width: 200px;
@@ -916,6 +949,45 @@ a:hover {
   border-radius: 5px;
 }
 
+#MyManga #ContentMangaList #MyMangaTab aside .PosterManga .ImgInterract {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+  -webkit-transition: 0.7s;
+  transition: 0.7s;
+}
+
+#MyManga #ContentMangaList #MyMangaTab aside .PosterManga .ImgInterract img {
+  width: 200px !important;
+  height: 290px !important;
+  border-radius: 7px;
+}
+
+#MyManga #ContentMangaList #MyMangaTab aside .PosterManga .ImgInterract .copy {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  position: absolute;
+  z-index: 1000;
+  bottom: 2.5px;
+  left: calc(50% - 45px / 3);
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.6);
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  opacity: 0;
+  -webkit-transition: opacity 0.4s;
+  transition: opacity 0.4s;
+}
+
 #MyManga #ContentMangaList #MyMangaTab aside .PosterManga .content {
   opacity: 1;
   text-decoration: underline;
@@ -923,7 +995,7 @@ a:hover {
   word-break: break-word;
   font-weight: bold;
   letter-spacing: 1px;
-  font-size: 20px;
+  font-size: 1.25rem;
   -webkit-transition: 0.3s;
   transition: 0.3s;
 }
@@ -933,19 +1005,30 @@ a:hover {
   opacity: 0;
   -webkit-transition: 0.3s;
   transition: 0.3s;
-  top: calc(50% - 16px / 2);
-  left: calc(50% - 18px / 2);
+  top: calc(50% - 50px);
+  left: calc(50% - 60px / 2);
   font-size: 20px;
   color: #17a2b8;
+  width: 32px;
+  height: 32px;
+  padding: 30px;
+  font-size: 32px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 #MyManga #ContentMangaList #MyMangaTab aside .PosterManga.finished {
   background-color: rgba(38, 255, 0, 0.041);
   color: rgba(38, 255, 0, 0.8);
-}
-
-#MyManga #ContentMangaList #MyMangaTab aside .PosterManga:hover .content {
-  opacity: 0;
 }
 
 #MyManga #ContentMangaList #MyMangaTab aside .PosterManga:hover .fas.fa-eye {
@@ -988,7 +1071,16 @@ a:hover {
   color: #007bff;
 }
 
-@media screen and (max-width: 767px) {
+#MyManga #ContentMangaList #NextMangaTab aside .PosterNextManga .fa-trash-alt {
+  display: none;
+  color: #fb401f;
+}
+
+#MyManga #ContentMangaList #NextMangaTab aside .PosterNextManga:hover .fa-trash-alt {
+  display: block;
+}
+
+@media screen and (max-width: 1199px) {
   #MyManga #ContentMangaList {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -998,15 +1090,52 @@ a:hover {
         -ms-flex-align: center;
             align-items: center;
   }
-  #MyManga #ContentMangaList #MyMangaTab,
-  #MyManga #ContentMangaList #NextMangaTab {
-    width: 100%;
+  #MyManga #ContentMangaList #MyMangaTab aside {
+    -ms-grid-columns: (1fr)[4];
+        grid-template-columns: repeat(4, 1fr);
   }
-  #MyManga #ContentMangaList #MyMangaTab .PosterManga,
-  #MyManga #ContentMangaList #MyMangaTab .PosterNextManga,
-  #MyManga #ContentMangaList #NextMangaTab .PosterManga,
-  #MyManga #ContentMangaList #NextMangaTab .PosterNextManga {
-    width: 80% !important;
+}
+
+@media screen and (max-width: 991px) {
+  #MyManga #ContentMangaList #MyMangaTab aside {
+    -ms-grid-columns: (1fr)[3];
+        grid-template-columns: repeat(3, 1fr);
+  }
+  #MyManga #ContentMangaList #MyMangaTab aside .PosterManga {
+    -webkit-transform: scale(0.95);
+            transform: scale(0.95);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  #MyManga #ContentMangaList #MyMangaTab aside {
+    -ms-grid-columns: (1fr)[2];
+        grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  #MyManga #ContentMangaList #MyMangaTab aside .PosterManga {
+    width: 150px;
+  }
+  #MyManga #ContentMangaList #MyMangaTab aside .PosterManga .ImgInterract img {
+    width: 150px !important;
+    height: 217.5px !important;
+  }
+  #MyManga #ContentMangaList #MyMangaTab aside .PosterManga .content {
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 330px) {
+  #MyManga #ContentMangaList #MyMangaTab aside {
+    gap: 0;
+    justify-items: left;
+  }
+  #MyManga #ContentMangaList #MyMangaTab aside .PosterManga {
+    -webkit-transform: scale(0.85);
+            transform: scale(0.85);
   }
 }
 
@@ -1966,7 +2095,7 @@ a:hover {
   }
 }
 
-@media screen and (max-width: 340px) {
+@media screen and (max-width: 335px) {
   #MyAnime .content {
     -ms-grid-columns: (1fr)[2];
         grid-template-columns: repeat(2, 1fr);
@@ -1974,33 +2103,35 @@ a:hover {
     gap: 5px;
   }
   #MyAnime .content .MyAnimPoster {
-    width: 100px !important;
+    -webkit-transform: scale(0.99);
+            transform: scale(0.99);
+    width: 145px !important;
   }
   #MyAnime .content .MyAnimPoster .ImgInterract img {
-    width: 100px !important;
-    height: 148px !important;
+    width: 145px !important;
+    height: 214.6px !important;
     border-radius: 7px;
+  }
+  #MyAnime .content .MyAnimPoster .ImgInterract .copy {
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+    left: calc(50% - 37px / 3);
   }
   #MyAnime .content .MyAnimPoster .action .watch,
   #MyAnime .content .MyAnimPoster .action .delete {
-    padding: 20px !important;
-    top: calc(50% - 148px / 3);
-  }
-  #MyAnime .content .MyAnimPoster .action .watch {
-    left: calc(50%);
-  }
-  #MyAnime .content .MyAnimPoster .action .delete {
-    left: calc(50% - 48px);
+    -webkit-transform: scale(0.95);
+            transform: scale(0.95);
   }
   #MyAnime .content .MyAnimPoster h4 {
     font-size: 1rem;
   }
+  #MyAnime .content .MyAnimPoster.Season {
+    background-size: 145px 214.6px !important;
+  }
   #MyAnime .content .MyAnimPoster.Skeleton::before {
     width: 75px;
     left: calc(50% - 75px / 2);
-  }
-  #MyAnime .content .MyAnimPoster.Season {
-    background-size: 100px 148px !important;
   }
   #MyAnime .content.none header form #actionFormAddNA .dropdown {
     position: absolute;
@@ -2013,7 +2144,7 @@ a:hover {
   }
 }
 
-@media screen and (max-width: 240px) {
+@media screen and (max-width: 315px) {
   #MyAnime .content {
     -ms-grid-columns: (1fr)[1];
         grid-template-columns: repeat(1, 1fr);

@@ -69,6 +69,7 @@ const PosterAnim = ({
   inMyManga,
   openDetailsManga,
   isFinishedManga,
+  MangaSearch,
 }) => {
   let Fav = isFav;
   const [ShowOverlay, setShowOverlay] = useState(false);
@@ -80,6 +81,16 @@ const PosterAnim = ({
         className={`PosterManga${isFinishedManga ? " finished" : ""}`}
         onClick={openDetailsManga}
       >
+        <div className="ImgInterract">
+          <img
+            draggable={"false"}
+            src={url === "PlaceHolderImg" ? PlaceHolderImg : url}
+            alt="Img of Manga"
+          />
+          <div className="copy" onClick={CopyTitle}>
+            <span className="fas fa-copy"></span>
+          </div>
+        </div>
         <div className="content">
           {isFinishedManga ? <span className="fas fa-check"> </span> : null}
           {title}
@@ -252,6 +263,7 @@ const PosterAnim = ({
             ) : null}
             <div className="ImgInterract">
               <img
+                draggable={"false"}
                 src={url === "PlaceHolderImg" ? PlaceHolderImg : url}
                 alt="Img of Anim"
                 onError={ReTakeImgFromName}
@@ -346,7 +358,7 @@ const PosterAnim = ({
               <span className="title">{title}</span>,<br />
               <span className="score">{score}/10</span>,{" "}
               <span className="type">
-                {type === "Movie" ? "Movie" : "Anime"}
+                {MangaSearch ? (type === "Movie" ? "Movie" : "Anime") : type}
               </span>
             </h4>
           </Fragment>

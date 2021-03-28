@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 // Components
 import Header from "./Header";
 // Design
@@ -14,13 +14,72 @@ const MyManga = ({
   ResText,
   typeAlert,
   CloseAlert,
+  SwipeActive,
+  ChangeSwipe,
 }) => {
+  useEffect(() => {
+    if (!window.mobileAndTabletCheck()) return;
+    // Mobile Swipe
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    const gesuredZone = document.getElementById("ContentMangaList");
+
+    gesuredZone.addEventListener(
+      "touchstart",
+      function (event) {
+        touchstartX = event.changedTouches[0].screenX;
+      },
+      false
+    );
+
+    gesuredZone.addEventListener(
+      "touchend",
+      function (event) {
+        touchendX = event.changedTouches[0].screenX;
+        handleGesure();
+      },
+      false
+    );
+
+    function handleGesure() {
+      if (touchendX < touchstartX) {
+        ChangeSwipe(false); // Left
+      }
+      if (touchendX > touchstartX) {
+        ChangeSwipe(true); // Right
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="container">
       <Header />
 
       <section id="MyManga">
         <header>
+          {!window.mobileAndTabletCheck() ? (
+            <div id="BtnSwipe">
+              <Button
+                variant="outline-secondary"
+                onClick={() => {
+                  if (SwipeActive) return;
+                  ChangeSwipe(true);
+                }}
+              >
+                <span className="fas fa-long-arrow-alt-left"></span>
+              </Button>
+              <Button
+                variant="outline-secondary"
+                onClick={() => {
+                  if (!SwipeActive) return;
+                  ChangeSwipe(false);
+                }}
+              >
+                <span className="fas fa-long-arrow-alt-right"></span>
+              </Button>
+            </div>
+          ) : null}
           <div id="BtnCancelModeFindAnime">
             {ModeFindManga ? (
               <Button
@@ -45,7 +104,7 @@ const MyManga = ({
           </div>
         </header>
         <div id="ContentMangaList">
-          <div id="MyMangaTab">
+          <div id="MyMangaTab" className={SwipeActive ? "active" : ""}>
             <header>
               Mes Mangas{" "}
               <Dropdown>
@@ -86,7 +145,7 @@ const MyManga = ({
             </header>
             <aside>{MyMangaList[0]}</aside>
           </div>
-          <div id="NextMangaTab">
+          <div id="NextMangaTab" className={!SwipeActive ? "active" : ""}>
             <header>
               My Next Manga{" "}
               <Button

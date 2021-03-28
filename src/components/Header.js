@@ -106,7 +106,17 @@ const Header = () => {
           onClick={Context.ChangePage}
         >
           {Context.PageMode ? "ACK" : "MCK"}
-          <sup>{Context.PageMode ? "V10" : "V1"}</sup>
+          <sup>
+            {Context.PageMode ? (
+              <Fragment>
+                LTS<b>1</b>β<b>1</b>
+              </Fragment>
+            ) : (
+              <Fragment>
+                β<b>2</b>
+              </Fragment>
+            )}
+          </sup>
         </Navbar.Brand>
         <div id="btnBarsMenu" onClick={() => SetIsOpen(!IsOpen)}>
           <span className="fas fa-bars"></span>
@@ -207,33 +217,36 @@ const Header = () => {
               </Dropdown>
             </Nav.Item>
           </Nav>
-          {Context.PageMode ? (
-            <Form onSubmit={HandleSubmit} id="searchForm" inline>
-              <Form.Group>
-                <Form.Control
-                  type="text"
-                  required
-                  placeholder="Search Anim To Watch"
-                  value={Anim}
-                  onChange={(event) => SetAnim(event.target.value)}
-                />
-              </Form.Group>
-              <Button
-                id="SearchFormBtnSubmit"
-                aria-label="Submit The anime"
-                type="submit"
-              >
-                <span className="fas fa-search"></span>
-              </Button>
-              <div id="SearchFormBtnVoice" onClick={StartSpeechRecognition}>
-                <span
-                  className={
-                    MicOn ? "fas fa-microphone" : "fas fa-microphone-slash"
-                  }
-                ></span>
-              </div>
-            </Form>
-          ) : null}
+
+          <Form onSubmit={HandleSubmit} id="searchForm" inline>
+            <Form.Group>
+              <Form.Control
+                type="text"
+                required
+                placeholder={
+                  Context.PageMode
+                    ? "Search Anim To Watch"
+                    : "Search Manga To Read"
+                }
+                value={Anim}
+                onChange={(event) => SetAnim(event.target.value)}
+              />
+            </Form.Group>
+            <Button
+              id="SearchFormBtnSubmit"
+              aria-label="Submit The anime"
+              type="submit"
+            >
+              <span className="fas fa-search"></span>
+            </Button>
+            <div id="SearchFormBtnVoice" onClick={StartSpeechRecognition}>
+              <span
+                className={
+                  MicOn ? "fas fa-microphone" : "fas fa-microphone-slash"
+                }
+              ></span>
+            </div>
+          </Form>
         </Navbar.Collapse>
       </Navbar>
       {ShowMessageHtml ? (

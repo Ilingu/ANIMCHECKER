@@ -87,6 +87,7 @@ export default class Home extends Component {
     NotAskAgain: true,
     ModePreview: false,
     SwitchMyAnim: true,
+    SwipeActive: true,
     AddNotifWithAnim: false,
     animToDetails: [],
     NextAnimToDelete: null,
@@ -157,6 +158,23 @@ export default class Home extends Component {
 
   componentDidMount() {
     const self = this;
+    // Check If Mobile or PC
+    window.mobileAndTabletCheck = () => {
+      let check = false;
+      (function (a) {
+        if (
+          /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(
+            a
+          ) ||
+          // eslint-disable-next-line no-useless-escape
+          /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
+            a.substr(0, 4)
+          )
+        )
+          check = true;
+      })(navigator.userAgent || navigator.vendor || window.opera);
+      return check;
+    };
     // Title
     this.state.PageMode
       ? (document.title = "ACK:Anim-Checker")
@@ -1760,12 +1778,16 @@ export default class Home extends Component {
     title,
     ModeRetake = false,
     id = null,
-    next = null
+    next = null,
+    Manga = false
   ) => {
     try {
       const AnimeID = (await this.SearchAnim(title, true)).data.results[0]
         .mal_id;
       const InfoAnimeRes = await this.SeeInDetails(AnimeID, true);
+      if (Manga) {
+        return this.handleDeleteImageURLParameter(InfoAnimeRes[1].image_url);
+      }
       if (ModeRetake === true) {
         this.updateValue(`${this.state.Pseudo}/${id.split("-")[0]}/${id}`, {
           imageUrl: this.handleDeleteImageURLParameter(
@@ -1798,22 +1820,27 @@ export default class Home extends Component {
     }
   };
 
-  addManga = () => {
+  addManga = async () => {
     const {
       Pseudo,
       MangaFirebase,
       title,
       Scan,
       NextMangaToDelete,
+      imageUrl,
     } = this.state;
     const self = this;
 
+    let imgUrl = imageUrl;
     if (
       typeof title === "string" &&
       title.trim().length !== 0 &&
       typeof Scan === "number" &&
       Scan >= 1
     ) {
+      if (!imgUrl)
+        imgUrl = await this.TakeInfoFromName(title, false, null, null, true);
+
       let IsGoodForPost = true,
         ScanArr = [];
 
@@ -1835,6 +1862,7 @@ export default class Home extends Component {
           [`manga-${Date.now()}`]: {
             name: title,
             Scan: ScanArr,
+            imageUrl: imgUrl,
             finished: false,
           },
         });
@@ -2621,9 +2649,12 @@ export default class Home extends Component {
   };
 
   SearchAnim = async (name, toReturn = false) => {
+    const { PageMode } = this.state;
     if (toReturn === true) {
       return await axios.get(
-        `https://api.jikan.moe/v3/search/anime?q=${name}&limit=1`
+        `https://api.jikan.moe/v3/search/${
+          PageMode ? "anime" : "manga"
+        }?q=${name}&limit=1`
       );
     }
     let NameToSend = name;
@@ -2634,7 +2665,11 @@ export default class Home extends Component {
     }
 
     axios
-      .get(`https://api.jikan.moe/v3/search/anime?q=${NameToSend}&limit=16`)
+      .get(
+        `https://api.jikan.moe/v3/search/${
+          PageMode ? "anime" : "manga"
+        }?q=${NameToSend}&limit=16`
+      )
       .then((result) => this.setState({ findAnim: result.data.results }))
       .catch((err) => {
         console.error(err);
@@ -2676,24 +2711,32 @@ export default class Home extends Component {
   };
 
   SeeInDetails = async (id, toReturn = false) => {
+    const { PageMode } = this.state;
     if (toReturn === true) {
       return (
         await Promise.all([
-          await this.getAllTheEpisode(id),
-          await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
+          PageMode ? await this.getAllTheEpisode(id) : null,
+          await axios.get(
+            `https://api.jikan.moe/v3/${PageMode ? "anime" : "manga"}/${id}`
+          ),
         ])
       ).map((dataAnime, i) =>
-        i > 0 ? dataAnime.data : { episodes: dataAnime }
+        i > 0 ? dataAnime.data : PageMode ? { episodes: dataAnime } : null
       );
     }
     this.setState({ ShowModalSearch: false });
     try {
       const result = await Promise.all([
-        await axios.get(`https://api.jikan.moe/v3/anime/${id}`),
-        await this.getAllTheEpisode(id),
+        await axios.get(
+          `https://api.jikan.moe/v3/${PageMode ? "anime" : "manga"}/${id}`
+        ),
+        PageMode ? await this.getAllTheEpisode(id) : null,
       ]);
       this.setState({
-        animToDetails: [{ episodes: result[1] }, result[0].data],
+        animToDetails: [
+          PageMode ? { episodes: result[1] } : null,
+          result[0].data,
+        ],
         findAnim: [],
       });
     } catch (err) {
@@ -2806,22 +2849,28 @@ export default class Home extends Component {
     return URL;
   };
 
-  TransitionTabsChange = (First) => {
-    const elem = document.getElementById("ContentAnimeList");
-    const elemPos = parseInt(
-      (elem.classList.contains("none")
-        ? elem.style.left
-        : elem.style.marginLeft
-      ).split("vw")[0]
+  TransitionTabsChange = (First, Manga = false, DirectionManga = null) => {
+    const elem = document.getElementById(
+      Manga ? "ContentMangaList" : "ContentAnimeList"
     );
+    const elemPos = parseInt(elem.style.left.split("vw")[0]);
     if (First) {
-      elem.style.left = "80vw";
-      elem.style.marginLeft = "80vw";
-      requestAnimationFrame(() => this.TransitionTabsChange());
+      elem.style.left = `${Manga ? (!DirectionManga ? "80" : "-80") : "80"}vw`;
+      if (!Manga) elem.style.marginLeft = "80vw";
+      requestAnimationFrame(() =>
+        this.TransitionTabsChange(false, Manga, DirectionManga)
+      );
     } else if (elemPos > 0) {
-      elem.style.left = `${elemPos - 1.2}vw`;
-      elem.style.marginLeft = `${elemPos - 1.2}vw`;
-      requestAnimationFrame(() => this.TransitionTabsChange());
+      elem.style.left = `${elemPos - 4}vw`;
+      if (!Manga) elem.style.marginLeft = `${elemPos - 4}vw`;
+      requestAnimationFrame(() =>
+        this.TransitionTabsChange(false, Manga, DirectionManga)
+      );
+    } else if (elemPos < 0 && Manga && DirectionManga) {
+      elem.style.left = `${elemPos + 4}vw`;
+      requestAnimationFrame(() =>
+        this.TransitionTabsChange(false, Manga, DirectionManga)
+      );
     } else {
       elem.style.left = "0";
       elem.style.marginLeft = "0";
@@ -2909,6 +2958,44 @@ export default class Home extends Component {
       );
       console.error(err);
     }
+  };
+
+  CopyText = (text, key = null) => {
+    navigator.permissions.query({ name: "clipboard-write" }).then((result) => {
+      if (result.state === "granted" || result.state === "prompt") {
+        navigator.clipboard.writeText(text).then(
+          () => {
+            console.log("✅Clipboard successfully set✅");
+            if (key !== null) {
+              const ElemCopied = document.getElementById(
+                `${this.state.serieFirebase[key].name
+                  .split(" ")
+                  .join("")}-${key
+                  .split("-")[1]
+                  .split("")
+                  .reverse()
+                  .join("")
+                  .slice(0, 5)}`
+              );
+              const ElemBtnCopy = ElemCopied.children[1].children[1];
+              ElemBtnCopy.style.color = "rgba(38, 255, 0, 0.8)";
+              ElemBtnCopy.style.width = "75px";
+              ElemBtnCopy.style.left = "calc(50% - 35px)";
+              ElemBtnCopy.innerHTML = `<span class="fas fa-copy"></span> <b>Copié !</b>`;
+              setTimeout(() => {
+                ElemBtnCopy.innerHTML = `<span class="fas fa-copy"></span>`;
+                ElemBtnCopy.style.color = "#fff";
+                ElemBtnCopy.style.width = "32px";
+                ElemBtnCopy.style.left = "calc(50% - 45px / 3)";
+              }, 2000);
+            }
+          },
+          () => {
+            console.error("❌Clipboard write failed❌");
+          }
+        );
+      }
+    });
   };
 
   ShowMessageInfo = (text, time) => {
@@ -3032,6 +3119,7 @@ export default class Home extends Component {
       TagNA,
       TagSearchAnime,
       durer,
+      SwipeActive,
       FirstQuerie,
       SwitchMyAnim,
       SeasonAnimCheck,
@@ -3298,45 +3386,9 @@ export default class Home extends Component {
         }
         Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
         deleteAnim={this.DeleteAnimVerification}
-        CopyTitle={() => {
-          navigator.permissions
-            .query({ name: "clipboard-write" })
-            .then((result) => {
-              if (result.state === "granted" || result.state === "prompt") {
-                navigator.clipboard
-                  .writeText({ ...serieFirebase, ...filmFireBase }[key].name)
-                  .then(
-                    () => {
-                      console.log("✅Clipboard successfully set✅");
-                      const ElemCopied = document.getElementById(
-                        `${this.state.serieFirebase[key].name
-                          .split(" ")
-                          .join("")}-${key
-                          .split("-")[1]
-                          .split("")
-                          .reverse()
-                          .join("")
-                          .slice(0, 5)}`
-                      );
-                      const ElemBtnCopy = ElemCopied.children[1].children[1];
-                      ElemBtnCopy.style.color = "rgba(38, 255, 0, 0.8)";
-                      ElemBtnCopy.style.width = "75px";
-                      ElemBtnCopy.style.left = "calc(50% - 35px)";
-                      ElemBtnCopy.innerHTML = `<span class="fas fa-copy"></span> <b>Copié !</b>`;
-                      setTimeout(() => {
-                        ElemBtnCopy.innerHTML = `<span class="fas fa-copy"></span>`;
-                        ElemBtnCopy.style.color = "#fff";
-                        ElemBtnCopy.style.width = "32px";
-                        ElemBtnCopy.style.left = "calc(50% - 45px / 3)";
-                      }, 2000);
-                    },
-                    () => {
-                      console.error("❌Clipboard write failed❌");
-                    }
-                  );
-              }
-            });
-        }}
+        CopyTitle={() =>
+          this.CopyText({ ...serieFirebase, ...filmFireBase }[key].name, key)
+        }
         isAlleged={
           key.split("-")[0] === "serie"
             ? !serieFirebase[key].AnimEP
@@ -3425,6 +3477,7 @@ export default class Home extends Component {
           type={anim.type}
           id={anim.mal_id}
           inMyAnim={false}
+          MangaSearch={PageMode}
         />
       ));
     } else if (ShowModalSearch) {
@@ -3555,6 +3608,8 @@ export default class Home extends Component {
                     isFinishedManga={MangaFirebase[0][key].finished}
                     inMyManga={true}
                     title={MangaFirebase[0][key].name}
+                    url={MangaFirebase[0][key].imageUrl}
+                    CopyTitle={() => this.CopyText(MangaFirebase[0][key].name)}
                     openDetailsManga={() => {
                       let LastScanRead = null;
                       MangaFirebase[0][key].Scan.forEach((val, i) => {
@@ -3597,20 +3652,25 @@ export default class Home extends Component {
                 <div
                   key={key}
                   className="PosterNextManga"
-                  onClick={() =>
+                  onClick={(event) => {
+                    if (event.target.classList[1] === "fa-trash-alt") return;
                     this.setState({
                       title: MangaFirebase[1][key].name,
                       NextMangaToDelete: key,
                       ShowModalAddManga: true,
-                    })
-                  }
+                    });
+                  }}
                 >
                   <span
                     className={`fas fa-long-arrow-alt-${
                       window.innerWidth <= 767 ? "up" : "left"
                     }`}
                   ></span>{" "}
-                  {MangaFirebase[1][key].name}
+                  {MangaFirebase[1][key].name}{" "}
+                  <span
+                    onClick={() => this.deleteValue(`${Pseudo}/manga/1/${key}`)}
+                    className="fas fa-trash-alt"
+                  ></span>
                 </div>
               ))
             : "Vous n'avez aucun Manga à Regarder Prochainement",
@@ -3626,14 +3686,37 @@ export default class Home extends Component {
           ShowMessage={ShowMessage}
           ShowMessageHtml={ShowMessageHtml}
           ResText={ResText}
+          Manga={PageMode ? false : true}
           handleAdd={(typePage) => {
-            if (typePage === "NA") {
+            if (typePage === "NA" && PageMode) {
               this.setState({
                 SwitchMyAnim: false,
                 NextAnim: animToDetails[1].title,
                 TagNA: animToDetails[1].genres
                   .map((genre) => genre.name)
                   .join(","),
+                animToDetails: [],
+              });
+              return;
+            }
+            if (typePage === "NA" && !PageMode) {
+              this.setState(
+                { NextManga: animToDetails[1].title, animToDetails: [] },
+                this.addNextManga
+              );
+              return;
+            }
+
+            if (!PageMode) {
+              this.setState({
+                title: animToDetails[1].title,
+                Scan: !animToDetails[1].chapters
+                  ? 1
+                  : animToDetails[0].chapters.length.toString(),
+                imageUrl: this.handleDeleteImageURLParameter(
+                  animToDetails[1].image_url
+                ),
+                ShowModalAddManga: true,
                 animToDetails: [],
               });
               return;
@@ -3827,6 +3910,11 @@ export default class Home extends Component {
                 openModalAddNextManga={() =>
                   this.setState({ ShowModalAddNM: true })
                 }
+                SwipeActive={SwipeActive}
+                ChangeSwipe={(NewActive) => {
+                  this.setState({ SwipeActive: NewActive });
+                  this.TransitionTabsChange(true, true, NewActive);
+                }}
               />
             ) : (
               <MyAnim
