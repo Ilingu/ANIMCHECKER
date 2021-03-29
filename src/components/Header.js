@@ -135,7 +135,7 @@ const Header = ({ FnSearchFilter, SearchFilter }) => {
           <sup>
             {Context.PageMode ? (
               <Fragment>
-                LTS<b>1</b>β<b>1</b>
+                LTS<b>1</b>
               </Fragment>
             ) : (
               <Fragment>

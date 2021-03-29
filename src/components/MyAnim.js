@@ -238,6 +238,7 @@ const MyAnim = ({
             <li>
               Nombre de résultats:{" "}
               <Form.Control
+                id="SearchFilterNbResult"
                 type="number"
                 value={SearchFilter["limit="]}
                 min="0"

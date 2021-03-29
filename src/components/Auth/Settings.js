@@ -185,7 +185,7 @@ class Settings extends Component {
             });
           });
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
       } else {
         this.cancelState();
@@ -464,6 +464,49 @@ class Settings extends Component {
               >
                 <span className="fas fa-user-times"></span> Supprimer le compte
               </Button>
+            </aside>
+            <aside id="About">
+              <h3>A Propos:</h3>
+              <ul>
+                <li>
+                  <span style={{ textDecoration: "underline" }}>
+                    Version ACK:
+                  </span>{" "}
+                  LTS<b>1</b>β<b>1</b>
+                </li>
+                <li>
+                  <span style={{ textDecoration: "underline" }}>
+                    Version MCK:
+                  </span>{" "}
+                  β<b>2</b>
+                </li>
+              </ul>
+              <p>
+                Vous êtes actuellement sur la version{" "}
+                {window.matchMedia("(display-mode: standalone)").matches ? (
+                  <b>APP</b>
+                ) : (
+                  <b>WEB</b>
+                )}{" "}
+                de MyAnimChecker
+              </p>
+              <h5>Développeur</h5>
+              <ul>
+                <li>
+                  <span style={{ textDecoration: "underline" }}>Pseudo:</span>{" "}
+                  Ilingu
+                </li>
+                <li>
+                  <span style={{ textDecoration: "underline" }}>Email:</span>{" "}
+                  <a
+                    href="mailto:thetitouoff@gmail.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    thetitouoff@gmail.com
+                  </a>
+                </li>
+              </ul>
             </aside>
           </div>
         </section>

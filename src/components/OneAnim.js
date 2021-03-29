@@ -15,7 +15,6 @@ const OneAnim = ({
 }) => {
   if (Manga) {
     // Extra render
-    console.log(details);
     const Genres = details[1]?.genres.map((genre) => genre.name).join(", ");
     const Authors = details[1]?.authors.map((author) => author.name).join(", ");
     return (

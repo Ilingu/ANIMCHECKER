@@ -1834,6 +1834,7 @@ export default class Home extends Component {
       Scan,
       NextMangaToDelete,
       imageUrl,
+      SwipeActive,
     } = this.state;
     const self = this;
 
@@ -1889,6 +1890,7 @@ export default class Home extends Component {
         Scan: 1,
         ShowModalAddManga: false,
         NextMangaToDelete: null,
+        SwipeActive: error ? SwipeActive : true,
         ResText: error ? error : warn ? warn : null,
         typeAlert: error ? "danger" : warn ? "warning" : null,
       });
@@ -2695,7 +2697,7 @@ export default class Home extends Component {
         }`;
       });
       if (!IsLimitsCall) Request += "&limit=16";
-    } else if (Object.keys(SearchFilter).length === 0) {
+    } else if (name === null && Object.keys(SearchFilter).length === 0) {
       this.cancelModal();
       this.setState({
         ResText: `Veuillez remplir au minimun l'un des filtre...`,
@@ -3723,11 +3725,7 @@ export default class Home extends Component {
                     });
                   }}
                 >
-                  <span
-                    className={`fas fa-long-arrow-alt-${
-                      window.innerWidth <= 767 ? "up" : "left"
-                    }`}
-                  ></span>{" "}
+                  <span className="fas fa-long-arrow-alt-left"></span>{" "}
                   {MangaFirebase[1][key].name}{" "}
                   <span
                     onClick={() => this.deleteValue(`${Pseudo}/manga/1/${key}`)}
@@ -3751,25 +3749,18 @@ export default class Home extends Component {
           ResText={ResText}
           Manga={PageMode ? false : true}
           handleAdd={(typePage) => {
-            if (typePage === "NA" && PageMode) {
-              this.setState({
-                SwitchMyAnim: false,
-                NextAnim: animToDetails[1].title,
-                TagNA: animToDetails[1].genres
-                  .map((genre) => genre.name)
-                  .join(","),
-                animToDetails: [],
-              });
-              return;
-            }
+            // Manga
             if (typePage === "NA" && !PageMode) {
               this.setState(
-                { NextManga: animToDetails[1].title, animToDetails: [] },
+                {
+                  NextManga: animToDetails[1].title,
+                  animToDetails: [],
+                  SwipeActive: false,
+                },
                 this.addNextManga
               );
               return;
             }
-
             if (!PageMode) {
               this.setState({
                 title: animToDetails[1].title,
@@ -3780,6 +3771,18 @@ export default class Home extends Component {
                   animToDetails[1].image_url
                 ),
                 ShowModalAddManga: true,
+                animToDetails: [],
+              });
+              return;
+            }
+            // Anime
+            if (typePage === "NA" && PageMode) {
+              this.setState({
+                SwitchMyAnim: false,
+                NextAnim: animToDetails[1].title,
+                TagNA: animToDetails[1].genres
+                  .map((genre) => genre.name)
+                  .join(","),
                 animToDetails: [],
               });
               return;
@@ -3856,15 +3859,6 @@ export default class Home extends Component {
       }
       return (
         <section id="SeasonAnime">
-          <Button
-            variant="primary"
-            onClick={() => {
-              this.setState({ SeasonPage: false, SeasonAnimeDetails: null });
-            }}
-            className="btnBackDesing right"
-          >
-            <span className="fas fa-arrow-left"></span> Retour
-          </Button>
           <aside>
             <Form
               onSubmit={(event) => {
@@ -3872,6 +3866,18 @@ export default class Home extends Component {
                 this.GETSeasonAnime(year, season);
               }}
             >
+              <Button
+                variant="primary"
+                onClick={() => {
+                  this.setState({
+                    SeasonPage: false,
+                    SeasonAnimeDetails: null,
+                  });
+                }}
+                className="btnBackDesing special"
+              >
+                <span className="fas fa-arrow-left"></span>
+              </Button>
               <Form.Group>
                 <label htmlFor="YearForm">Années:</label>
                 <Form.Control

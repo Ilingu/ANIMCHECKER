@@ -67,7 +67,8 @@ hr {
   background-color: #fff;
 }
 
-select {
+select,
+#SearchFilterNbResult {
   background-color: rgba(255, 255, 255, 0.8) !important;
   color: #000 !important;
 }
@@ -93,9 +94,8 @@ a:hover {
   border-radius: 50px;
 }
 
-.btnBackDesing.right {
-  left: unset;
-  right: 0 !important;
+.btnBackDesing.special {
+  position: static;
 }
 
 .btnBackDesing.Foreground {
@@ -1180,6 +1180,20 @@ a:hover {
     -webkit-transform: scale(0.85);
             transform: scale(0.85);
   }
+}
+
+#SearchFilter {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 56px;
+  z-index: 2000;
+  background-color: rgba(33, 33, 33, 0.95);
+  padding: 10px;
+  border-radius: 7px;
+}
+
+#SearchFilter ul {
+  list-style: inside;
 }
 
 #MyAnime {
@@ -3276,7 +3290,7 @@ a:hover {
       flex-wrap: wrap;
   position: absolute;
   top: 5px;
-  left: 50px;
+  left: 0;
 }
 
 #SeasonAnime form .form-group {
@@ -3313,6 +3327,7 @@ a:hover {
 }
 
 #SeasonAnime #resultsSeasonAnime {
+  cursor: pointer;
   width: calc(100% - 125px);
   max-height: calc(100% - 50px);
   margin-top: 50px;
@@ -3391,9 +3406,6 @@ a:hover {
 }
 
 @media screen and (max-width: 500px) {
-  #SeasonAnime form {
-    left: 0;
-  }
   #SeasonAnime #resultsSeasonAnime {
     max-height: calc(100% - 110px);
     margin-top: 110px;
@@ -3530,7 +3542,8 @@ a:hover {
 }
 
 #Settings #ActionAccount #App,
-#Settings #ActionAccount #User {
+#Settings #ActionAccount #User,
+#Settings #ActionAccount #About {
   position: relative;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -3545,18 +3558,21 @@ a:hover {
 }
 
 #Settings #ActionAccount #App h3,
-#Settings #ActionAccount #User h3 {
+#Settings #ActionAccount #User h3,
+#Settings #ActionAccount #About h3 {
   text-decoration: underline;
 }
 
 #Settings #ActionAccount #App button,
-#Settings #ActionAccount #User button {
+#Settings #ActionAccount #User button,
+#Settings #ActionAccount #About button {
   width: 50%;
   margin-bottom: 10px;
 }
 
 #Settings #ActionAccount #App #PersoAppBgc,
-#Settings #ActionAccount #User #PersoAppBgc {
+#Settings #ActionAccount #User #PersoAppBgc,
+#Settings #ActionAccount #About #PersoAppBgc {
   border: none;
   background-color: transparent;
   width: 50px;
@@ -3564,6 +3580,16 @@ a:hover {
   outline: none;
   border: 1px solid #ddd;
   border-radius: 5px;
+}
+
+#Settings #ActionAccount #About ul,
+#Settings #ActionAccount #About p {
+  font-size: 17px;
+}
+
+#Settings #ActionAccount #About h5 {
+  text-decoration: underline;
+  font-size: 22px;
 }
 
 @media screen and (max-width: 1450px) {
