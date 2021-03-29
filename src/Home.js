@@ -1709,15 +1709,30 @@ export default class Home extends Component {
         });
 
     const IDNotif = `notif${Date.now()}`;
+
+    // FN
+    const GenerateCalledTime = () => {
+      let NextDay = new Date();
+      // Get Day to first call notif from now
+      NextDay.setDate(
+        NextDay.getDate() + ((parseInt(day) + 7 - NextDay.getDay()) % 7)
+      );
+      // Set date to 00:00
+      NextDay.setHours(0, 0, 0, 0);
+      // Set Date to TimeStamp
+      NextDay = NextDay.getTime();
+      // Add Time in day to call Notif
+      NextDay += time * 1000;
+      // Return => 604800000 -> Week in ms / 1209600000 -> 2Week in ms
+      return [NextDay, NextDay + 604800000, NextDay + 1209600000];
+    };
+
     const NewNotifTemplate = {
       ...NotifFirebase,
       [IDNotif]: {
-        name: title,
+        calledTime: GenerateCalledTime(),
         Lier: IDSerie,
-        day,
-        time,
-        paused: false,
-        called: false,
+        name: title,
       },
     };
 
