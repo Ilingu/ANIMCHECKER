@@ -127,6 +127,7 @@ a:hover {
   min-width: 200px;
   max-width: 200px;
   background-color: #525252;
+  z-index: 3000;
 }
 
 .popover .popover-header {
@@ -136,6 +137,22 @@ a:hover {
 .popover .popover-body {
   color: #fff;
   line-height: 10px;
+}
+
+.popover .popover-body ul {
+  list-style: none;
+  font-size: 11px;
+  color: #ff6d00;
+}
+
+.popover .popover-body ul li {
+  line-height: 15px;
+}
+
+.popover .popover-body ul li span {
+  color: #fff;
+  font-size: 16px;
+  text-decoration: underline;
 }
 
 .ackmessage {
@@ -3124,7 +3141,6 @@ a:hover {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  top: calc(235px - 204px / 2);
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
@@ -3143,9 +3159,9 @@ a:hover {
 }
 
 #Watch #Objectif {
-  height: 204px;
   width: 170px;
   right: 20%;
+  top: calc(235px - 265px / 2);
 }
 
 #Watch #Objectif .TitleObjectif {
@@ -3160,6 +3176,7 @@ a:hover {
 
 #Watch #DataAnim {
   left: 20%;
+  top: calc(235px - 204px / 2);
 }
 
 #Watch #DataAnim .percent {
@@ -3226,6 +3243,31 @@ a:hover {
 
 #Watch #DataAnim #continuedAnim {
   margin-top: 10px;
+}
+
+#Watch #DataAnim #InfoAnim {
+  margin-top: 5px;
+}
+
+#Watch #DataAnim #InfoAnim ul {
+  margin-bottom: 0;
+  list-style: none;
+  font-size: 11px;
+}
+
+#Watch #DataAnim #InfoAnim ul li span {
+  color: #fff;
+  font-size: 16px;
+  text-decoration: underline;
+}
+
+#Watch #DataAnim.BeginEnd {
+  top: calc(235px - 289px / 2);
+}
+
+#Watch #DataAnim.Begin,
+#Watch #DataAnim.End {
+  top: calc(235px - 249px / 2);
 }
 
 @media screen and (max-width: 1040px) {

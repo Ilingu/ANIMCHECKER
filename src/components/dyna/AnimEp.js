@@ -42,16 +42,15 @@ const AnimEp = ({ ObjInfo, ToOpen, NextToOpen, AddEp, nbTotalSeason }) => {
           <span className="fas fa-check"></span>
         ) : null}{" "}
         <span className="HourAnime">
-          (
           {typeof ContextVar.Duration === "string" &&
-          ContextVar.Duration !== "none"
-            ? parseFloat(
+          ContextVar.Duration !== "none" &&
+          ContextVar.Duration !== "Unknown"
+            ? `(${parseFloat(
                 (ObjInfo.Episodes.length *
                   parseInt(ContextVar.Duration.split(" ")[0])) /
                   60
-              ).toFixed(1)
+              ).toFixed(1)}H)`
             : null}
-          H)
         </span>
         {parseInt(idSaison) === nbTotalSeason ? (
           <span

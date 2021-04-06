@@ -70,6 +70,7 @@ class Watch extends Component {
     nbEpToAddToHave: [1, 1],
     Newtitle: "",
     nbEpObjectif: 1,
+    DateObjectif: new Date().toISOString().split(".")[0],
     NewBadgeName: "",
     ActionEndAnime: [false, false, false],
     nbEpToAdd: 1,
@@ -434,6 +435,7 @@ class Watch extends Component {
 
   ReTakeInfoFromName = async () => {
     const { AnimToWatch, id, type } = this.state;
+    let ChangeAnime = true;
 
     try {
       const AnimeID = (
@@ -445,6 +447,15 @@ class Watch extends Component {
         await this.getAllTheEpisode(AnimeID),
         await axios.get(`https://api.jikan.moe/v3/anime/${AnimeID}`),
       ]);
+
+      if (
+        InfoAnimeRes[1].data.image_url.split("?s=")[0] !==
+          AnimToWatch.imageUrl &&
+        !window.confirm(
+          `⚠ ATTENTION !\nSouhaiter vous changé la photo de cette anime et ses nom d'épisodes ? (OUI = "OK", NON = "Annuler")`
+        )
+      )
+        ChangeAnime = false;
 
       const EpName =
         InfoAnimeRes[0].length !== 0
@@ -458,7 +469,7 @@ class Watch extends Component {
           : "none";
       let AnimSEP = null;
 
-      if (EpName !== "none") {
+      if (EpName !== "none" && ChangeAnime === true) {
         let ArrEpSaison = AnimToWatch.AnimEP.map(
           (saisons) => saisons.Episodes.length
         ).join(",");
@@ -485,8 +496,10 @@ class Watch extends Component {
       }
 
       this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
-        imageUrl: InfoAnimeRes[1].data.image_url.split("?s=")[0],
-        AnimEP: !AnimSEP ? AnimToWatch.AnimEP : AnimSEP,
+        imageUrl: ChangeAnime
+          ? InfoAnimeRes[1].data.image_url.split("?s=")[0]
+          : AnimToWatch.imageUrl,
+        AnimEP: !AnimSEP || !ChangeAnime ? AnimToWatch.AnimEP : AnimSEP,
         DurationPerEP: !InfoAnimeRes[1].data.duration
           ? "none"
           : InfoAnimeRes[1].data.duration,
@@ -494,8 +507,10 @@ class Watch extends Component {
 
       if (!this.state.OfflineMode) {
         this.fnDbOffline("PUT", `${this.state.Pseudo}/${type}/${id}`, {
-          imageUrl: InfoAnimeRes[1].data.image_url.split("?s=")[0],
-          AnimEP: !AnimSEP ? AnimToWatch.AnimEP : AnimSEP,
+          imageUrl: ChangeAnime
+            ? InfoAnimeRes[1].data.image_url.split("?s=")[0]
+            : AnimToWatch.imageUrl,
+          AnimEP: !AnimSEP || !ChangeAnime ? AnimToWatch.AnimEP : AnimSEP,
           DurationPerEP: !InfoAnimeRes[1].data.duration
             ? "none"
             : InfoAnimeRes[1].data.duration,
@@ -692,13 +707,17 @@ class Watch extends Component {
   };
 
   endAnime = () => {
-    const { id } = this.state;
+    const { id, AnimToWatch } = this.state;
 
     this.updateValue(
       `${this.state.Pseudo}/serie/${id}`,
       {
         finishedAnim: true,
         AnimeSeason: null,
+        Info: {
+          Begin: AnimToWatch?.Info?.Begin ? AnimToWatch.Info.Begin : null,
+          End: Date.now(),
+        },
       },
       () => this.setState({ ShowModalRateAnime: true })
     );
@@ -707,6 +726,10 @@ class Watch extends Component {
       this.fnDbOffline("PUT", `${this.state.Pseudo}/serie/${id}`, {
         finishedAnim: true,
         AnimeSeason: null,
+        Info: {
+          Begin: AnimToWatch?.Info?.Begin ? AnimToWatch.Info.Begin : null,
+          End: Date.now(),
+        },
       });
     }
 
@@ -783,7 +806,12 @@ class Watch extends Component {
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
     if (!AnimToWatch.AnimEP[idSaison].Episodes[EpFinishedID - 2].finished) {
-      this.updateValue(`${Pseudo}/serie/${id}`, { NewEpMode: null });
+      if (AnimToWatch.NewEpMode)
+        this.updateValue(`${Pseudo}/serie/${id}`, { NewEpMode: null });
+
+      if (EpFinishedID - 1 === 1)
+        this.updateValue(`${Pseudo}/serie/${id}/Info`, { Begin: Date.now() });
+
       this.updateValue(
         `${Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${EpFinishedID - 2}`,
         { finished: true },
@@ -811,7 +839,14 @@ class Watch extends Component {
       );
 
       if (!this.state.OfflineMode) {
-        this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, { NewEpMode: null });
+        if (AnimToWatch.NewEpMode)
+          this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
+            NewEpMode: null,
+          });
+        if (EpFinishedID - 1 === 1)
+          this.fnDbOffline("POST", `${Pseudo}/serie/${id}/Info`, {
+            Begin: Date.now(),
+          });
         this.fnDbOffline(
           "PUT",
           `${Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
@@ -896,6 +931,49 @@ class Watch extends Component {
     }
 
     this.StopModeWatch();
+  };
+
+  addObjectif = () => {
+    const {
+      Pseudo,
+      AnimToWatch,
+      type,
+      repereSaison,
+      DateObjectif,
+      id,
+      nbEpObjectif,
+    } = this.state;
+    if (
+      type !== "serie" ||
+      AnimToWatch.AnimeSeason === true ||
+      typeof nbEpObjectif !== "number" ||
+      nbEpObjectif <= this.CalculateWhereStop()[1]
+    )
+      return;
+    this.updateValue(`${Pseudo}/serie/${id}`, {
+      Objectif: {
+        Begin: [
+          parseInt(repereSaison.name.split(" ")[1]),
+          this.CalculateWhereStop()[1],
+          Date.now(),
+        ],
+        End: [parseInt(repereSaison.name.split(" ")[1]), nbEpObjectif],
+        EndDate: new Date(DateObjectif).getTime(),
+      },
+    });
+    if (!this.state.OfflineMode) {
+      this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
+        Objectif: {
+          Begin: [
+            parseInt(repereSaison.name.split(" ")[1]),
+            this.CalculateWhereStop()[1],
+            Date.now(),
+          ],
+          End: [parseInt(repereSaison.name.split(" ")[1]), nbEpObjectif],
+        },
+      });
+    }
+    this.setState({ ShowModalAddObjectif: false, nbEpObjectif: 1 });
   };
 
   handleDelete = () => {
@@ -1012,9 +1090,13 @@ class Watch extends Component {
     if (typeof Newtitle === "string" && Newtitle.trim().length !== 0) {
       window.removeEventListener("click", this.ChangeTitle, false);
       this.setState({ ModeEditTitle: false });
-      this.updateValue(`${Pseudo}/${type}/${id}`, {
-        name: Newtitle,
-      });
+      this.updateValue(
+        `${Pseudo}/${type}/${id}`,
+        {
+          name: Newtitle,
+        },
+        this.ReTakeInfoFromName
+      );
       if (!this.state.OfflineMode) {
         this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
           name: Newtitle,
@@ -1132,13 +1214,13 @@ class Watch extends Component {
     let RepereStop = [];
     AnimToWatch.AnimEP.forEach((Saison) => {
       Saison.Episodes.forEach((Ep) => {
-          if (Ep.finished && Ep.id !== Saison.Episodes.length)
-            RepereStop = [Saison.name.split(" ")[1], Ep.id];
-          else if (Ep.finished)
-            RepereStop = [
-              (parseInt(Saison.name.split(" ")[1]) + 1).toString(),
-              0,
-            ];
+        if (Ep.finished && Ep.id !== Saison.Episodes.length)
+          RepereStop = [Saison.name.split(" ")[1], Ep.id];
+        else if (Ep.finished)
+          RepereStop = [
+            (parseInt(Saison.name.split(" ")[1]) + 1).toString(),
+            0,
+          ];
       });
     });
     return RepereStop.length === 0 ? ["1", 0] : RepereStop;
@@ -1306,6 +1388,7 @@ class Watch extends Component {
       ShowFormBadge,
       LetsCelebrate,
       NewBadgeName,
+      DateObjectif,
       nbEpToAddToHave,
       modeWatch,
       ShowModalVerification,
@@ -2046,8 +2129,7 @@ class Watch extends Component {
                         onClick={this.ReTakeInfoFromName}
                       >
                         <span className="fas fa-undo-alt"></span> Mettre à jour
-                        les infos de
-                        {AnimToWatch.name}
+                        les infos de {AnimToWatch.name}
                       </Button>
                     </Dropdown.Item>
                     <Dropdown.Item>
@@ -2160,9 +2242,27 @@ class Watch extends Component {
                         Date.now()
                       )}
                     </aside>
+                    <div className="TitleObjectif">Fin dans:</div>
+                    <aside id="BeginAtObjectif">
+                      <span className="fas fa-hourglass-end"></span>{" "}
+                      {new Date(
+                        AnimToWatch.Objectif.EndDate
+                      ).toLocaleDateString()}
+                    </aside>
                   </div>
                 ) : null}
-                <div id="DataAnim">
+                <div
+                  id="DataAnim"
+                  className={
+                    AnimToWatch?.Info?.Begin && AnimToWatch?.Info?.End
+                      ? "BeginEnd"
+                      : AnimToWatch?.Info?.Begin
+                      ? "Begin"
+                      : AnimToWatch?.Info?.End
+                      ? "End"
+                      : ""
+                  }
+                >
                   <aside id="ProgressCircle">
                     <div className="percent">
                       <svg>
@@ -2184,6 +2284,35 @@ class Watch extends Component {
                       </div>
                     </div>
                   </aside>
+                  {AnimToWatch.Info ? (
+                    <aside id="InfoAnim">
+                      <ul>
+                        {AnimToWatch.Info.Begin ? (
+                          <li>
+                            Commencé le
+                            <br />
+                            <span>
+                              {new Date(
+                                AnimToWatch.Info.Begin
+                              ).toLocaleDateString()}
+                            </span>
+                          </li>
+                        ) : null}
+                        {AnimToWatch.Info.End ? (
+                          <li>
+                            Terminé le
+                            <br />
+                            <span>
+                              {new Date(
+                                AnimToWatch.Info.End
+                              ).toLocaleDateString()}
+                            </span>
+                          </li>
+                        ) : null}
+                      </ul>
+                    </aside>
+                  ) : null}
+
                   <aside id="continuedAnim" onClick={this.StartNextEP}>
                     <span
                       style={{ color: "yellowgreen" }}
@@ -2227,17 +2356,19 @@ class Watch extends Component {
                       ></span>{" "}
                       Anime
                       {typeof AnimToWatch.DurationPerEP === "string" &&
-                      AnimToWatch.DurationPerEP !== "none"
+                      AnimToWatch.DurationPerEP !== "none" &&
+                      AnimToWatch.DurationPerEP !== "Unknown"
                         ? `(${this.CalculateNbTimeAnime()}H)`
-                        : null}
+                        : ""}
                       :
                     </Fragment>
                   ) : (
                     `Anime${
                       typeof AnimToWatch.DurationPerEP === "string" &&
-                      AnimToWatch.DurationPerEP !== "none"
+                      AnimToWatch.DurationPerEP !== "none" &&
+                      AnimToWatch.DurationPerEP !== "Unknown"
                         ? `(${this.CalculateNbTimeAnime()}H)`
-                        : null
+                        : ""
                     }:`
                   )
                 ) : AnimToWatch.finished ? (
@@ -2743,7 +2874,7 @@ class Watch extends Component {
           <Modal.Body id="ModalBody">
             <Form id="Addep">
               <Form.Group controlId="EpToAdd">
-                <Form.Label>Nombres d'ep à rajouter</Form.Label>
+                <Form.Label>Objectif d'ep</Form.Label>
                 <Form.Control
                   type="number"
                   value={nbEpObjectif.toString()}
@@ -2757,6 +2888,19 @@ class Watch extends Component {
                   }
                 />
               </Form.Group>
+              <Form.Group>
+                <label htmlFor="DateForStopObjectif">A terminer avant:</label>
+                <input
+                  type="datetime-local"
+                  id="DateForStopObjectif"
+                  value={DateObjectif}
+                  onChange={(event) =>
+                    this.setState({ DateObjectif: event.target.value })
+                  }
+                  min={new Date().toISOString().split(".")[0]}
+                  className="form-control"
+                />
+              </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer id="ModalFooter">
@@ -2767,44 +2911,7 @@ class Watch extends Component {
               Annuler
             </Button>
             <Button
-              onClick={() => {
-                if (
-                  type !== "serie" ||
-                  AnimToWatch.AnimeSeason === true ||
-                  typeof nbEpObjectif !== "number" ||
-                  nbEpObjectif <= this.CalculateWhereStop()[1]
-                )
-                  return;
-                this.updateValue(`${Pseudo}/serie/${id}`, {
-                  Objectif: {
-                    Begin: [
-                      parseInt(repereSaison.name.split(" ")[1]),
-                      this.CalculateWhereStop()[1],
-                      Date.now(),
-                    ],
-                    End: [
-                      parseInt(repereSaison.name.split(" ")[1]),
-                      nbEpObjectif,
-                    ],
-                  },
-                });
-                if (!this.state.OfflineMode) {
-                  this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-                    Objectif: {
-                      Begin: [
-                        parseInt(repereSaison.name.split(" ")[1]),
-                        this.CalculateWhereStop()[1],
-                        Date.now(),
-                      ],
-                      End: [
-                        parseInt(repereSaison.name.split(" ")[1]),
-                        nbEpObjectif,
-                      ],
-                    },
-                  });
-                }
-                this.setState({ ShowModalAddObjectif: false, nbEpObjectif: 1 });
-              }}
+              onClick={this.addObjectif}
               style={{ backgroundColor: "#301c4d", border: "none" }}
             >
               <span className="fas fa-bullseye"></span> Ajouter

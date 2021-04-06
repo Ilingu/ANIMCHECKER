@@ -3425,17 +3425,41 @@ export default class Home extends Component {
               </Fragment>
             ) : serieFirebase[key].finishedAnim &&
               !serieFirebase[key].AnimEP ? (
-              ["✅ Fini et 💯 Allégé !"]
+              [
+                "✅ Fini et 💯 Allégé !",
+                {
+                  InfoBeginEnd: serieFirebase[key].Info
+                    ? serieFirebase[key].Info
+                    : null,
+                },
+              ]
             ) : serieFirebase[key].finishedAnim ? (
-              ["✅ Fini !"]
+              [
+                "✅ Fini !",
+                {
+                  InfoBeginEnd: serieFirebase[key].Info
+                    ? serieFirebase[key].Info
+                    : null,
+                },
+              ]
             ) : !serieFirebase[key].AnimEP ? (
-              ["💯 Allégé."]
+              [
+                "💯 Allégé.",
+                {
+                  InfoBeginEnd: serieFirebase[key].Info
+                    ? serieFirebase[key].Info
+                    : null,
+                },
+              ]
             ) : (
               {
                 Progress: this.CalculateProgressionAnime(
                   serieFirebase[key].AnimEP
                 ),
                 WhereStop: this.CalculateWhereStop(serieFirebase[key].AnimEP),
+                InfoBeginEnd: serieFirebase[key].Info
+                  ? serieFirebase[key].Info
+                  : null,
               }
             )
           ) : filmFireBase[key].finished ? (

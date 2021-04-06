@@ -113,6 +113,28 @@ const PosterAnim = ({
   if (url === "PlaceHolderImg" && !NotAskAgain) ReTakeImgFromName();
   else if (url && inMyAnim) CheckNotUrlParams(url);
 
+  const templateInfoBeginEnd = (data) => (
+    <Fragment>
+      <br />
+      <ul>
+        {data.Begin ? (
+          <li>
+            Commencé le
+            <br />
+            <span>{new Date(data.Begin).toLocaleDateString()}</span>
+          </li>
+        ) : null}
+        {data.End ? (
+          <li>
+            Terminé le
+            <br />
+            <span>{new Date(data.End).toLocaleDateString()}</span>
+          </li>
+        ) : null}
+      </ul>
+    </Fragment>
+  );
+
   const templatePoster = (
     <OverlayTrigger
       show={ShowOverlay}
@@ -128,7 +150,12 @@ const PosterAnim = ({
           <Popover.Content>
             {type === "serie" ? (
               Array.isArray(InfoTooltip) ? (
-                InfoTooltip[0]
+                <Fragment>
+                  {InfoTooltip[0]}
+                  {InfoTooltip[1].InfoBeginEnd
+                    ? templateInfoBeginEnd(InfoTooltip[1].InfoBeginEnd)
+                    : null}
+                </Fragment>
               ) : InfoTooltip.WhereStop !== undefined ? (
                 <Fragment>
                   <ProgressBar
@@ -146,7 +173,11 @@ const PosterAnim = ({
                     now={InfoTooltip.Progress}
                     label={`${InfoTooltip.Progress}%`}
                   />{" "}
-                  <br />
+                  {InfoTooltip.InfoBeginEnd ? (
+                    templateInfoBeginEnd(InfoTooltip.InfoBeginEnd)
+                  ) : (
+                    <br />
+                  )}
                   <Link push="false" to={`/Watch/${Pseudo}/${id}/true`}>
                     <span
                       style={{ color: "yellowgreen" }}
