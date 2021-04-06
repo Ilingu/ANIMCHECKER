@@ -355,10 +355,14 @@ const PosterAnim = ({
                 </div>
               ) : (
                 <Link push="false" to={`/Watch/${Pseudo}/${id}`}>
-                  <div className={`watch${Objectif[0] ? " Objectif" : ""}`}>
+                  <div
+                    className={`watch${
+                      inMyAnim && Objectif[0] ? " Objectif" : ""
+                    }`}
+                  >
                     <span
                       className={`fas ${
-                        Objectif[0] ? "fa-bullseye" : "fa-eye"
+                        inMyAnim && Objectif[0] ? "fa-bullseye" : "fa-eye"
                       }`}
                     ></span>
                   </div>
