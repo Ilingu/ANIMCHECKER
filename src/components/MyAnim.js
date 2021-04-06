@@ -341,6 +341,25 @@ const MyAnim = ({
                       </Dropdown.Item>
                       <Dropdown.Divider />
                       <Dropdown.Item
+                        active={ModeFilter === "BySeries" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "BySeries") return;
+                          NewFilter("BySeries");
+                        }}
+                      >
+                        Séries
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={ModeFilter === "ByFilm" ? true : false}
+                        onClick={() => {
+                          if (ModeFilter === "ByFilm") return;
+                          NewFilter("ByFilm");
+                        }}
+                      >
+                        Film
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
                         active={ModeFilter === "Rate" ? true : false}
                         onClick={() => {
                           if (ModeFilter === "Rate") return;

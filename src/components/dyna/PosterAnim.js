@@ -52,6 +52,7 @@ const PosterAnim = ({
   ChangeNote,
   deleteAnim,
   CopyTitle,
+  Objectif,
   isFav,
   Paused,
   Drop,
@@ -178,6 +179,16 @@ const PosterAnim = ({
                   ) : (
                     <br />
                   )}
+                  {Objectif[0] ? (
+                    <p style={{ color: "#c59fff" }}>
+                      Objectif en cours (EP{Objectif[1].End[1]}).
+                      <br />
+                      <br /> Fin le{" "}
+                      <span style={{ textDecoration: "underline" }}>
+                        {new Date(Objectif[1].End[2]).toLocaleDateString()}
+                      </span>
+                    </p>
+                  ) : null}
                   <Link push="false" to={`/Watch/${Pseudo}/${id}/true`}>
                     <span
                       style={{ color: "yellowgreen" }}
@@ -202,6 +213,25 @@ const PosterAnim = ({
               ) : (
                 InfoTooltip
               )
+            ) : Array.isArray(InfoTooltip) ? (
+              <Fragment>
+                {InfoTooltip[0]}
+
+                <div id="WatchedFilmWhen">
+                  {InfoTooltip[1] ? (
+                    <Fragment>
+                      <br />
+                      <br />
+                      Regardé le
+                      <br />
+                      <br />
+                      <span>
+                        {new Date(InfoTooltip[1].Watched).toLocaleDateString()}
+                      </span>
+                    </Fragment>
+                  ) : null}
+                </div>
+              </Fragment>
             ) : (
               InfoTooltip
             )}
@@ -325,8 +355,12 @@ const PosterAnim = ({
                 </div>
               ) : (
                 <Link push="false" to={`/Watch/${Pseudo}/${id}`}>
-                  <div className="watch">
-                    <span className="fas fa-eye"></span>
+                  <div className={`watch${Objectif[0] ? " Objectif" : ""}`}>
+                    <span
+                      className={`fas ${
+                        Objectif[0] ? "fa-bullseye" : "fa-eye"
+                      }`}
+                    ></span>
                   </div>
                 </Link>
               )}
@@ -436,6 +470,10 @@ const PosterAnim = ({
     return Drop ? templatePoster : null;
   } else if (ModeFilter === "WaitAnim") {
     return InWait ? templatePoster : null;
+  } else if (ModeFilter === "BySeries") {
+    return type === "serie" ? templatePoster : null;
+  } else if (ModeFilter === "ByFilm") {
+    return type === "film" ? templatePoster : null;
   } else {
     return templatePoster;
   }

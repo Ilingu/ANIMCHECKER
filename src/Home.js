@@ -3328,6 +3328,11 @@ export default class Home extends Component {
             title: serieFirebase[key].name,
           });
         }}
+        Objectif={
+          key.split("-")[0] === "serie" && serieFirebase[key].Objectif
+            ? [true, serieFirebase[key].Objectif]
+            : [false]
+        }
         ReTakeImgFromName={() => {
           this.TakeInfoFromName(
             this.replaceSpace(
@@ -3463,7 +3468,10 @@ export default class Home extends Component {
               }
             )
           ) : filmFireBase[key].finished ? (
-            "✅ Fini !"
+            [
+              "✅ Fini !",
+              filmFireBase[key].Info ? filmFireBase[key].Info : null,
+            ]
           ) : (
             <Fragment>
               <span

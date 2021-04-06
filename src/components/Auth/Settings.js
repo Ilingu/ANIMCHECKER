@@ -420,6 +420,12 @@ class Settings extends Component {
                         <option value="Rate">
                           Page d'accueil sur tes animes Notés
                         </option>
+                        <option value="BySeries">
+                          Page d'accueil sur tes séries
+                        </option>
+                        <option value="ByFilm">
+                          Page d'accueil sur tes films
+                        </option>
                         <option value="fav">
                           Page d'accueil sur tes animes Favoris
                         </option>
@@ -472,7 +478,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline" }}>
                     Version ACK:
                   </span>{" "}
-                  LTS<b>1</b>β<b>1</b>
+                  LTS<b>1</b>β<b>2</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline" }}>

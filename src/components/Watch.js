@@ -61,6 +61,7 @@ class Watch extends Component {
     ResText: null,
     // Fun
     LetsCelebrate: false,
+    LetsNotCelebrate: false,
     // Repere
     repereSaison: {},
     repereEpisode: [],
@@ -199,7 +200,20 @@ class Watch extends Component {
           LoadingMode: false,
         },
         () => {
-          if (AnimToWatch.Objectif !== undefined) this.StartNextEP();
+          if (
+            AnimToWatch.Objectif !== undefined &&
+            AnimToWatch.Objectif.End[2] < Date.now()
+          ) {
+            this.DisplayMsg("Vous avez râté votre objectif", 6000);
+            this.setState({ LetsNotCelebrate: true });
+            this.deleteValue(`${this.state.Pseudo}/serie/${id}/Objectif`);
+            if (!this.state.OfflineMode) {
+              this.fnDbOffline(
+                "DELETE",
+                `${this.state.Pseudo}/serie/${id}/Objectif`
+              );
+            }
+          } else if (AnimToWatch.Objectif !== undefined) this.StartNextEP();
           if (this.state.WatchModeNow === "true") {
             this.StartNextEP();
             this.setState({ WatchModeNow: null });
@@ -354,9 +368,11 @@ class Watch extends Component {
 
   addValue = (path, value) => {
     const { OfflineMode } = this.state;
-    this.setState({
-      ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
-    });
+    try {
+      this.setState({
+        ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
+      });
+    } catch (err) {}
     if (OfflineMode === true) {
       this.fnDbOffline("POST", path, value);
       return;
@@ -372,9 +388,11 @@ class Watch extends Component {
 
   deleteValue = (path) => {
     const { OfflineMode } = this.state;
-    this.setState({
-      ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
-    });
+    try {
+      this.setState({
+        ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
+      });
+    } catch (err) {}
     if (OfflineMode === true) {
       this.fnDbOffline("DELETE", path);
       return;
@@ -390,9 +408,7 @@ class Watch extends Component {
       this.setState({
         ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
       });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) {}
     // Update
     if (OfflineMode === true) {
       this.fnDbOffline("PUT", path, value, next);
@@ -920,13 +936,21 @@ class Watch extends Component {
 
     this.updateValue(
       `${this.state.Pseudo}/film/${id}`,
-      { finished: true },
+      {
+        finished: true,
+        Info: {
+          Watched: Date.now(),
+        },
+      },
       () => this.setState({ ShowModalRateAnime: true })
     );
 
     if (!this.state.OfflineMode) {
       this.fnDbOffline("PUT", `${this.state.Pseudo}/film/${id}`, {
         finished: true,
+        Info: {
+          Watched: Date.now(),
+        },
       });
     }
 
@@ -957,8 +981,11 @@ class Watch extends Component {
           this.CalculateWhereStop()[1],
           Date.now(),
         ],
-        End: [parseInt(repereSaison.name.split(" ")[1]), nbEpObjectif],
-        EndDate: new Date(DateObjectif).getTime(),
+        End: [
+          parseInt(repereSaison.name.split(" ")[1]),
+          nbEpObjectif,
+          new Date(DateObjectif).getTime(),
+        ],
       },
     });
     if (!this.state.OfflineMode) {
@@ -969,7 +996,11 @@ class Watch extends Component {
             this.CalculateWhereStop()[1],
             Date.now(),
           ],
-          End: [parseInt(repereSaison.name.split(" ")[1]), nbEpObjectif],
+          End: [
+            parseInt(repereSaison.name.split(" ")[1]),
+            nbEpObjectif,
+            new Date(DateObjectif).getTime(),
+          ],
         },
       });
     }
@@ -1390,6 +1421,7 @@ class Watch extends Component {
       NewBadgeName,
       DateObjectif,
       nbEpToAddToHave,
+      LetsNotCelebrate,
       modeWatch,
       ShowModalVerification,
       ShowMessage,
@@ -2203,7 +2235,7 @@ class Watch extends Component {
             {type === "serie" ? (
               <Fragment>
                 {AnimToWatch.Objectif !== undefined ? (
-                  <div id="Objectif">
+                  <div id="Objectif" className="ObjectifSectionID">
                     <div className="TitleObjectif">Objectif:</div>
                     <aside id="ObjectifEnd" title="Fin de l'objectif">
                       <span className="fas fa-bullseye"></span> S
@@ -2246,7 +2278,7 @@ class Watch extends Component {
                     <aside id="BeginAtObjectif">
                       <span className="fas fa-hourglass-end"></span>{" "}
                       {new Date(
-                        AnimToWatch.Objectif.EndDate
+                        AnimToWatch.Objectif.End[2]
                       ).toLocaleDateString()}
                     </aside>
                   </div>
@@ -2435,6 +2467,15 @@ class Watch extends Component {
             <h1 onClick={() => this.setState({ LetsCelebrate: false })}>
               <span style={{ color: "gold" }} className="fas fa-trophy"></span>{" "}
               Bravo Votre Objectif est fini !{" "}
+              <span className="fas fa-times-circle"></span>
+            </h1>
+          </div>
+        ) : null}
+        {LetsNotCelebrate ? (
+          <div id="NotCelebrate">
+            <h1 onClick={() => this.setState({ LetsNotCelebrate: false })}>
+              <span style={{ color: "#f00" }} className="fas fa-frown"></span>{" "}
+              Vous avez râté votre Objectif 💩{" "}
               <span className="fas fa-times-circle"></span>
             </h1>
           </div>

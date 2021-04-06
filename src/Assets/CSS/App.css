@@ -139,6 +139,17 @@ a:hover {
   line-height: 10px;
 }
 
+.popover .popover-body #WatchedFilmWhen {
+  font-size: 11px;
+  color: #ff6d00;
+}
+
+.popover .popover-body #WatchedFilmWhen span {
+  color: #fff;
+  font-size: 16px;
+  text-decoration: underline;
+}
+
 .popover .popover-body ul {
   list-style: none;
   font-size: 11px;
@@ -1426,6 +1437,11 @@ a:hover {
   left: calc(50% + 3px);
 }
 
+#MyAnime .content .MyAnimPoster .action .watch.Objectif {
+  color: #a366ff;
+  border: 3px solid #a366ffe8;
+}
+
 #MyAnime .content .MyAnimPoster .action .delete {
   left: calc(50% - 35px - 30px);
 }
@@ -1438,6 +1454,11 @@ a:hover {
 #MyAnime .content .MyAnimPoster .action .watch:hover {
   color: #0020c2;
   border: 3px solid #0020c2;
+}
+
+#MyAnime .content .MyAnimPoster .action .watch.Objectif:hover {
+  color: #6600ff;
+  border: 3px solid #6600ffe1;
 }
 
 #MyAnime .content .MyAnimPoster .action .delete:hover {
@@ -2377,9 +2398,17 @@ a:hover {
   padding: 0;
 }
 
+#Watch .nonStartMod::after {
+  content: "";
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  background-color: rgba(24, 24, 24, 0.5);
+  top: 0;
+}
+
 #Watch .nonStartMod {
   position: relative;
-  opacity: 0.3;
   pointer-events: none;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -2962,7 +2991,8 @@ a:hover {
           user-select: unset;
 }
 
-#Watch #Celebrate {
+#Watch #Celebrate,
+#Watch #NotCelebrate {
   position: absolute;
   top: 0;
   width: 100%;
@@ -3159,6 +3189,8 @@ a:hover {
 }
 
 #Watch #Objectif {
+  z-index: 7000000;
+  opacity: 1;
   width: 170px;
   right: 20%;
   top: calc(235px - 265px / 2);
