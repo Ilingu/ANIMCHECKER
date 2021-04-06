@@ -2982,6 +2982,10 @@ a:hover {
   }
 }
 
+#Watch .nonStartMod.active::after {
+  content: none;
+}
+
 #Watch .nonStartMod.active {
   opacity: 1;
   pointer-events: unset;
