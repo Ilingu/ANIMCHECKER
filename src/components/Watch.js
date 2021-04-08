@@ -822,10 +822,17 @@ class Watch extends Component {
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
     if (!AnimToWatch.AnimEP[idSaison].Episodes[EpFinishedID - 2].finished) {
+      let IsFirstWatch = true;
       if (AnimToWatch.NewEpMode)
         this.updateValue(`${Pseudo}/serie/${id}`, { NewEpMode: null });
 
-      if (EpFinishedID - 1 === 1)
+      AnimToWatch.AnimEP.forEach((Season) => {
+        Season.Episodes.forEach((EP) => {
+          if (EP.finished) IsFirstWatch = false;
+        });
+      });
+
+      if (IsFirstWatch)
         this.updateValue(`${Pseudo}/serie/${id}/Info`, { Begin: Date.now() });
 
       this.updateValue(
@@ -859,7 +866,7 @@ class Watch extends Component {
           this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
             NewEpMode: null,
           });
-        if (EpFinishedID - 1 === 1)
+        if (IsFirstWatch)
           this.fnDbOffline("POST", `${Pseudo}/serie/${id}/Info`, {
             Begin: Date.now(),
           });
