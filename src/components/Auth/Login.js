@@ -1,9 +1,10 @@
 // React
 import React, { Fragment, useState } from "react";
 // Design
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Spinner } from "react-bootstrap";
 
 const Login = ({
+  UserOnLogin,
   forForm,
   verificateCode,
   SubmitLogin,
@@ -76,24 +77,35 @@ const Login = ({
   }
 
   return (
-    <section className="loginForm">
-      {JustDefined ? (
-        <Button
-          variant="primary"
-          onClick={resetPseudo}
-          className="btnBackDesing"
-        >
-          <span className="fas fa-arrow-left"></span> Retour (mon Pseudo est pas
-          le bon)
-        </Button>
-      ) : null}
+    <section id="loginForm">
+      {UserOnLogin ? (
+        <div id="OnUserLogin">
+          <Spinner animation="grow" variant="success" />
+          Connection à votre compte...
+        </div>
+      ) : (
+        <Fragment>
+          {" "}
+          {JustDefined ? (
+            <Button
+              variant="primary"
+              onClick={resetPseudo}
+              className="btnBackDesing"
+            >
+              <span className="fas fa-arrow-left"></span> Retour (mon Pseudo est
+              pas le bon)
+            </Button>
+          ) : null}
+          <Button variant="danger" id="resetVpnBtn" onClick={OfflineMode}>
+            <span className="fas fa-exclamation-triangle"></span> Mode hors
+            ligne
+          </Button>
+          {forForm[1] === 1 ? <div id="recaptcha-container"></div> : null}
+          <h2>Connecte toi pour faire des list d'anime:</h2>
+          {stepToShow}
+        </Fragment>
+      )}
 
-      <Button variant="danger" id="resetVpnBtn" onClick={OfflineMode}>
-        <span className="fas fa-exclamation-triangle"></span> Mode hors ligne
-      </Button>
-      {forForm[1] === 1 ? <div id="recaptcha-container"></div> : null}
-      <h2>Connecte toi pour faire des list d'anime:</h2>
-      {stepToShow}
       {ShowMessageHtml ? (
         <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
           <span className="fas fa-info"></span> {ResText}

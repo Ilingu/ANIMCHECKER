@@ -43,6 +43,7 @@ export default class Home extends Component {
     uid: null,
     proprio: null,
     ReConnectionFirebase: false,
+    UserOnLogin: false,
     // Bon fonctionnement de l'app
     PageMode:
       JSON.parse(window.localStorage.getItem("PageMode")) === null ||
@@ -284,9 +285,11 @@ export default class Home extends Component {
     if (this.state.Pseudo) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
+          // User Detected
+          this.setState({ UserOnLogin: true });
           self.handleAuth({ user });
         }
-
+        // No User detected -> Login with phone number
         self.setState({ AuthenticateMethod: true });
       });
     } else {
@@ -337,6 +340,7 @@ export default class Home extends Component {
     // reAuth
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
+        this.setState({ UserOnLogin: true });
         this.handleAuth({ user });
       }
 
@@ -1039,11 +1043,16 @@ export default class Home extends Component {
           clearInterval(this.setIntervalVar);
           this.setIntervalVar = null;
           this.setState({ ReConnectionFirebase: false });
+          this.ShowMessageInfo("Reconnecté avec succès !", 5000);
           console.warn("Firebase Connexion (re)establish");
         }
       } else {
         this.reconectFirebase();
         this.setState({ ReConnectionFirebase: true });
+        this.ShowMessageInfo(
+          "Connection aux serveurs perdues -> Reconnection...",
+          5000
+        );
         console.warn(
           "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
         );
@@ -1059,6 +1068,7 @@ export default class Home extends Component {
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
+      UserOnLogin: false,
     });
   };
 
@@ -1600,6 +1610,8 @@ export default class Home extends Component {
 
     function Error() {
       self.setState({
+        ModeFindAnime: [false, null],
+        ToReSearchAfterRefresh: false,
         ResText: "Veuillez remplir au minimum le(s) champs",
         typeAlert: "danger",
       });
@@ -1978,7 +1990,10 @@ export default class Home extends Component {
     }
 
     async function next() {
-      self.setState({ ModeFindAnime: [false, null] });
+      self.setState({
+        ModeFindAnime: [false, null],
+        ToReSearchAfterRefresh: false,
+      });
       let IsGood = false,
         IsGoodForPost = true;
       if (type === "serie") {
@@ -3155,6 +3170,7 @@ export default class Home extends Component {
       proprio,
       PageMode,
       AuthenticateMethod,
+      UserOnLogin,
       SeasonAnimeDetails,
       ModeDisplayNextAnim,
       AllowUseReAuth,
@@ -3254,6 +3270,7 @@ export default class Home extends Component {
     if (!uid && OfflineMode === false) {
       return (
         <Login
+          UserOnLogin={UserOnLogin}
           verificateCode={this.verificateCode}
           SubmitLogin={(NumTel) => {
             this.setState({ NumTel }, () => this.authenticate());
@@ -4213,6 +4230,7 @@ export default class Home extends Component {
                   this.setState({
                     SearchInAnimeList: [false, null],
                     ModeFindAnime: [false, null],
+                    ToReSearchAfterRefresh: false,
                   })
                 }
                 handleSubmit={this.addNextAnim}

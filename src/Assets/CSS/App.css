@@ -490,7 +490,7 @@ a:hover {
   color: gold;
 }
 
-.loginForm {
+#loginForm {
   margin-left: calc(50% - 150px);
   padding: 10px;
   width: 300px;
@@ -498,22 +498,35 @@ a:hover {
           box-shadow: 4px 4px 8px #000;
 }
 
-.loginForm #resetVpnBtn {
+#loginForm #OnUserLogin {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  font-size: 18px;
+}
+
+#loginForm #resetVpnBtn {
   position: absolute;
   right: 0;
   top: 0px;
 }
 
-.loginForm h2 {
+#loginForm h2 {
   font-size: 20px !important;
 }
 
-.loginForm h2 {
+#loginForm h2 {
   font-size: 0.89rem;
   font-weight: bold;
 }
 
-.loginForm .google-button {
+#loginForm .google-button {
   cursor: pointer;
   background-color: #f7f7f7;
   color: #212121;
@@ -2405,6 +2418,7 @@ a:hover {
   position: absolute;
   background-color: rgba(24, 24, 24, 0.5);
   top: 0;
+  z-index: 100;
 }
 
 #Watch .nonStartMod {
@@ -2559,7 +2573,7 @@ a:hover {
   position: absolute;
   top: 2.5px;
   right: -15px;
-  z-index: 1000;
+  z-index: 50;
   -webkit-transform: rotateZ(45deg);
           transform: rotateZ(45deg);
 }
@@ -3016,9 +3030,23 @@ a:hover {
 
 #Watch .StartMod.active header {
   position: absolute;
+  z-index: 155;
   top: 29vh;
-  left: calc(50% - 250px);
-  width: 500px;
+  left: calc(50% - var(--size) / 2);
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 5px;
+  border-radius: 5px;
+  min-width: 300px;
+  height: 100px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   -webkit-transition: 0.7s;
   transition: 0.7s;
 }
@@ -3039,6 +3067,7 @@ a:hover {
   display: -ms-flexbox;
   display: flex;
   position: absolute;
+  z-index: 155;
   bottom: 19vh;
   left: calc(50% - 246px);
   width: 500px;
@@ -3125,6 +3154,7 @@ a:hover {
       -ms-flex-align: center;
           align-items: center;
   position: absolute;
+  z-index: 155;
   top: calc(50% - 66px / 2);
   width: 35px;
   height: 35px;
@@ -3193,7 +3223,7 @@ a:hover {
 }
 
 #Watch #Objectif {
-  z-index: 7000000;
+  z-index: 150;
   opacity: 1;
   width: 170px;
   right: 20%;

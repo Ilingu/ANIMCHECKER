@@ -6,7 +6,7 @@ const Pseudo = ({ Submit }) => {
   const [Pseudo, setPseudo] = useState("");
 
   return (
-    <section className="loginForm">
+    <section id="loginForm">
       <h2>0. Identifiant</h2>
       <Form
         onSubmit={(event) => {

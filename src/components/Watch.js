@@ -83,6 +83,7 @@ class Watch extends Component {
 
   setIntervalVar = null;
   FirstBadge = true;
+  DynamicSize = 0;
 
   componentDidMount() {
     const self = this;
@@ -157,12 +158,18 @@ class Watch extends Component {
         // Fast Loading Anime before FnRefresh
         this.fnDbOffline("GET");
 
+        // Reconected
         if (this.setIntervalVar !== null) {
           clearInterval(this.setIntervalVar);
+          this.DisplayMsg("Reconnecté avec succès !", 5000);
           console.warn("Firebase Connexion retablished");
         }
       } else {
         this.reconectFirebase();
+        this.DisplayMsg(
+          "Connection aux serveurs perdues -> Reconnection...",
+          5000
+        );
         console.warn(
           "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
         );
@@ -2512,7 +2519,17 @@ class Watch extends Component {
           </div>
           {type === "serie" ? (
             <Fragment>
-              <header>
+              <header
+                id="HeaderStartModSizeDyna"
+                ref={(el) => {
+                  try {
+                    el.style.setProperty(
+                      "--size",
+                      `${el.getBoundingClientRect().width}px`
+                    );
+                  } catch (err) {}
+                }}
+              >
                 <h2>
                   Épisode{" "}
                   {repereEpisode[1] === undefined ? null : repereEpisode[1].id}{" "}

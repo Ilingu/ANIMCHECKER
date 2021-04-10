@@ -247,7 +247,7 @@ const Header = ({ FnSearchFilter, SearchFilter }) => {
                         className="fas fa-cog fa-spin"
                         style={{ color: "grey" }}
                       ></span>{" "}
-                      Parametres
+                      Paramètres
                     </Link>
                   </div>
                 </Dropdown.Menu>

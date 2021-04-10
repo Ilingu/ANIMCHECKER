@@ -475,16 +475,22 @@ class Settings extends Component {
               <h3>A Propos:</h3>
               <ul>
                 <li>
-                  <span style={{ textDecoration: "underline" }}>
+                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  LTS<b>1</b>β<b>2</b>
+                  Stable (LTS)<b>1</b>β<b>3</b>(F4)
                 </li>
                 <li>
-                  <span style={{ textDecoration: "underline" }}>
+                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version MCK:
                   </span>{" "}
                   β<b>2</b>
+                </li>
+                <li>
+                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
+                    Version Globale:
+                  </span>{" "}
+                  Stable (LTS)<b>1.1</b>
                 </li>
               </ul>
               <p>
@@ -499,11 +505,15 @@ class Settings extends Component {
               <h5>Développeur</h5>
               <ul>
                 <li>
-                  <span style={{ textDecoration: "underline" }}>Pseudo:</span>{" "}
+                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
+                    Pseudo:
+                  </span>{" "}
                   Ilingu
                 </li>
                 <li>
-                  <span style={{ textDecoration: "underline" }}>Email:</span>{" "}
+                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
+                    Email:
+                  </span>{" "}
                   <a
                     href="mailto:thetitouoff@gmail.com"
                     target="_blank"
