@@ -257,12 +257,17 @@ export default class Home extends Component {
           break;
         case "7":
           ResText =
-            "Impossible d'accéder à cette page car vous avez drop (laisser tombé) cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+            "Impossible d'accéder à cette page car vous avez drop (arrêtez) cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
           typeAlert = "danger";
           break;
         case "8":
           ResText =
             "Impossible d'accéder à cette page car vous avez mis en attente cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+          typeAlert = "danger";
+          break;
+        case "9":
+          ResText =
+            "Impossible d'accéder à cette page car cette anime est allégée.";
           typeAlert = "danger";
           break;
         default:

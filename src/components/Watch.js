@@ -1458,6 +1458,8 @@ class Watch extends Component {
 
     if (!Pseudo || typeof Pseudo !== "string")
       return <Redirect to="/notifuser/2" />;
+    if (!AnimToWatch.AnimEP && type === "serie")
+      return <Redirect to="/notifuser/9" />;
     if (AnimToWatch.Paused) return <Redirect to="/notifuser/1" />;
     if (AnimToWatch.Drop) return <Redirect to="/notifuser/7" />;
     if (AnimToWatch.InWait) return <Redirect to="/notifuser/8" />;
