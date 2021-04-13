@@ -59,7 +59,6 @@ const PosterAnim = ({
   NewEpMode,
   AnimeSeason,
   ModeFilter,
-  inSeasonAnime,
   isAlleged,
   InWait,
   CheckNotUrlParams,
@@ -425,13 +424,13 @@ const PosterAnim = ({
           <Fragment>
             <img src={url} alt="Img of Anim" />
             <h4>
-              <span className="title">{title}</span>,
-              {inSeasonAnime ? null : <br />}
-              {inSeasonAnime ? null : (
-                <Fragment>
-                  <span className="score">{score}/10</span>,
-                </Fragment>
-              )}{" "}
+              <span className="title">{title}</span>
+              <br />
+              {!score ? null : (
+                <span className="score" style={{ fontWeight: "bold" }}>
+                  {score}/10{" "}
+                </span>
+              )}
               <span className="type">
                 {MangaSearch
                   ? type === "Movie"

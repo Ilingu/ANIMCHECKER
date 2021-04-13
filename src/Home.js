@@ -135,7 +135,7 @@ export default class Home extends Component {
     OpenSearchFilter: false,
     WaitAnimCheck: false,
     ModeCombinaisonSearch: "ET",
-    year: 2021,
+    year: new Date().getFullYear(),
     season: "spring",
     SearchFilter: {},
     day: new Date().getDay().toString(),
@@ -3104,6 +3104,37 @@ export default class Home extends Component {
     }, time);
   };
 
+  WhitchSeason = () => {
+    const Month = new Date().getMonth() + 1;
+    const Day = new Date().getDate();
+    let season = null;
+    switch (true) {
+      case Month === 12 && Day >= 21:
+      case Month === 1:
+      case Month === 2:
+        season = "winter";
+        break;
+      case Month === 3 && Day >= 20:
+      case Month === 4:
+      case Month === 5:
+        season = "spring";
+        break;
+      case Month === 6 && Day >= 20:
+      case Month === 7:
+      case Month === 8:
+        season = "summer";
+        break;
+      case Month === 9 && Day >= 22:
+      case Month === 10:
+      case Month === 11:
+        season = "fall";
+        break;
+      default:
+        break;
+    }
+    return season;
+  };
+
   cancelModal = () => {
     this.setState({
       ShowModalSearch: false,
@@ -3896,10 +3927,10 @@ export default class Home extends Component {
     } else if (SeasonPage === true) {
       let SeasonAnimeRender = "Aucun Anime";
       let YearRender = [];
-      for (let i = 0; i < new Date().getFullYear() + 1 - 2000; i++) {
+      for (let i = 0; i < new Date().getFullYear() + 13 - 2000; i++) {
         YearRender = [
-          <option key={i} value={2000 + i}>
-            {2000 + i}
+          <option key={i} value={1990 + i}>
+            {1990 + i}
           </option>,
           ...YearRender,
         ];
@@ -3922,7 +3953,6 @@ export default class Home extends Component {
             type={SeasonAnime.type}
             id={SeasonAnime.mal_id}
             inMyAnim={false}
-            inSeasonAnime={true}
           />
         ));
       }
@@ -4041,7 +4071,11 @@ export default class Home extends Component {
               OpenSearchFilter: () => {
                 this.setState({ OpenSearchFilter: !OpenSearchFilter });
               },
-              OpenSeasonPage: () => this.setState({ SeasonPage: true }),
+              OpenSeasonPage: () =>
+                this.setState({
+                  SeasonPage: true,
+                  season: this.WhitchSeason(),
+                }),
               LoadingMode: LoadingMode[0],
               ChangePage: () => {
                 PageMode

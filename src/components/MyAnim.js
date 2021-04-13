@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { useEffect, Fragment } from "react";
 // Components
 import Header from "./Header";
 // CSS
@@ -31,6 +31,43 @@ const MyAnim = ({
   ModeImportant,
   Tag,
 }) => {
+  useEffect(() => {
+    if (!window.mobileAndTabletCheck()) return;
+    // Mobile Swipe
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    const gesuredZone = document.getElementById("ContentAnimeList");
+
+    gesuredZone.addEventListener(
+      "touchstart",
+      function (event) {
+        touchstartX = event.changedTouches[0].screenX;
+      },
+      false
+    );
+
+    gesuredZone.addEventListener(
+      "touchend",
+      function (event) {
+        touchendX = event.changedTouches[0].screenX;
+        handleGesure();
+      },
+      false
+    );
+
+    function handleGesure() {
+      if (touchstartX - touchendX >= window.innerWidth / 3.5) {
+        // Left
+        SwitchMyNextAnim();
+      }
+      if (touchendX - touchstartX >= window.innerWidth / 3.5) {
+        // Right
+        SwitchMyAnim();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Dyna Components
   let NbTemplate = [],
     NbFois = !ModeImportant ? 1 : ModeImportant;
