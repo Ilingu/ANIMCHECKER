@@ -99,6 +99,9 @@ export default class Home extends Component {
     RefreshRandomizeAnime: true,
     RefreshRandomizeAnime2: true,
     RefreshRandomizeAnime3: true,
+    HaveAlreadyBeenMix: [false, false],
+    NextReRenderOrderSerie: null,
+    NextReRenderOrderNA: null,
     MyMangaListSaved: [
       "Vous n'avez aucun Manga En Cours",
       "Vous n'avez aucun Manga à Regarder Prochainement",
@@ -3052,6 +3055,7 @@ export default class Home extends Component {
   };
 
   CopyText = (text, key = null) => {
+    const { serieFirebase, filmFireBase } = this.state;
     navigator.permissions.query({ name: "clipboard-write" }).then((result) => {
       if (result.state === "granted" || result.state === "prompt") {
         navigator.clipboard.writeText(text).then(
@@ -3059,7 +3063,7 @@ export default class Home extends Component {
             console.log("✅Clipboard successfully set✅");
             if (key !== null) {
               const ElemCopied = document.getElementById(
-                `${this.state.serieFirebase[key].name
+                `${{ ...serieFirebase, ...filmFireBase }[key].name
                   .split(" ")
                   .join("")}-${key
                   .split("-")[1]
@@ -3183,17 +3187,16 @@ export default class Home extends Component {
       minute = parseInt(str.split(" ")[2]);
 
     if (isNaN(minute)) {
-      return hour;
+      return hour * 60;
     }
 
     return hour * 60 + minute;
   };
 
-  shuffleArray = (array) => {
-    return array.sort(() => {
+  shuffleArray = (array) =>
+    array.sort(() => {
       return Math.random() - 0.5;
     });
-  };
 
   render() {
     const {
@@ -3230,6 +3233,9 @@ export default class Home extends Component {
       typeAlert,
       type,
       ModeFilter,
+      HaveAlreadyBeenMix,
+      NextReRenderOrderSerie,
+      NextReRenderOrderNA,
       ShowModalAddNM,
       ShowModalAddFilm,
       PalmaresModal,
@@ -3550,9 +3556,14 @@ export default class Home extends Component {
         }
         Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
         deleteAnim={this.DeleteAnimVerification}
-        CopyTitle={() =>
-          this.CopyText({ ...serieFirebase, ...filmFireBase }[key].name, key)
-        }
+        CopyTitle={() => {
+          console.log(
+            { ...serieFirebase, ...filmFireBase },
+            key,
+            { ...serieFirebase, ...filmFireBase }[key]
+          );
+          this.CopyText({ ...serieFirebase, ...filmFireBase }[key].name, key);
+        }}
         isAlleged={
           key.split("-")[0] === "serie"
             ? !serieFirebase[key].AnimEP
@@ -3701,24 +3712,51 @@ export default class Home extends Component {
       }
 
       // Render Components
-      const MyAnimListTemplate = (ModeFilter === "Rate"
-        ? AnimeKeySort
-        : Object.keys({
-            ...serieFirebase,
-            ...filmFireBase,
-          })
-      ).map((key) => TemplateGAnime(key));
+      let MyAnimListTemplateKey = (ModeFilter === "Rate"
+          ? AnimeKeySort
+          : Object.keys({
+              ...serieFirebase,
+              ...filmFireBase,
+            })
+        ).map((key) => key),
+        NewValHaveAlreadyBeenMix = HaveAlreadyBeenMix[0];
+
+      if (
+        ModeFilter !== "Rate" &&
+        (!HaveAlreadyBeenMix[0] ||
+          (HaveAlreadyBeenMix[0] &&
+            NextReRenderOrderSerie.length !== MyAnimListTemplateKey.length)) &&
+        (!ParamsOptn || ParamsOptn.MyAnimRandom)
+      ) {
+        NewValHaveAlreadyBeenMix = true;
+        MyAnimListTemplateKey = this.shuffleArray(MyAnimListTemplateKey);
+      }
+
+      let MyAnimListTemplate = MyAnimListTemplateKey.map((key) =>
+        TemplateGAnime(key)
+      );
+
+      if (
+        ModeFilter !== "Rate" &&
+        HaveAlreadyBeenMix[0] &&
+        NextReRenderOrderSerie &&
+        NextReRenderOrderSerie.length === MyAnimListTemplateKey.length
+      ) {
+        MyAnimListTemplate = NextReRenderOrderSerie.map((key) =>
+          TemplateGAnime(key)
+        );
+      }
 
       this.setState({
         RefreshRandomizeAnime: false,
-        MyAnimListSaved:
-          ModeFilter === "Rate"
-            ? MyAnimListTemplate
-            : !ParamsOptn
-            ? this.shuffleArray(MyAnimListTemplate)
-            : !ParamsOptn.MyAnimRandom
-            ? MyAnimListTemplate
-            : this.shuffleArray(MyAnimListTemplate),
+        NextReRenderOrderSerie:
+          !HaveAlreadyBeenMix[0] ||
+          (HaveAlreadyBeenMix[0] &&
+            NextReRenderOrderSerie.length !== MyAnimListTemplateKey.length)
+            ? MyAnimListTemplateKey
+            : NextReRenderOrderSerie,
+        HaveAlreadyBeenMix: [NewValHaveAlreadyBeenMix, HaveAlreadyBeenMix[1]],
+        MyAnimListSaved: MyAnimListTemplate,
       });
     } else if (
       PageMode === true &&
@@ -3728,16 +3766,47 @@ export default class Home extends Component {
       !LoadingMode[1] &&
       RefreshRandomizeAnime2
     ) {
-      const MyNextAnimListTemplate = Object.keys(NextAnimFireBase).map((key) =>
+      let MyNextAnimListTemplateKey = Object.keys(NextAnimFireBase).map(
+          (key) => key
+        ),
+        NewValHaveAlreadyBeenMix = HaveAlreadyBeenMix[1];
+
+      if (
+        (!HaveAlreadyBeenMix[1] ||
+          (HaveAlreadyBeenMix[1] &&
+            NextReRenderOrderNA.length !== MyNextAnimListTemplateKey.length)) &&
+        (!ParamsOptn || ParamsOptn.MyAnimRandom)
+      ) {
+        NewValHaveAlreadyBeenMix = true;
+        MyNextAnimListTemplateKey = this.shuffleArray(
+          MyNextAnimListTemplateKey
+        );
+      }
+
+      let MyNextAnimListTemplate = MyNextAnimListTemplateKey.map((key) =>
         TemplateGNextAnim(key)
       );
+
+      if (
+        HaveAlreadyBeenMix[1] &&
+        NextReRenderOrderNA &&
+        NextReRenderOrderNA.length === MyNextAnimListTemplateKey.length
+      ) {
+        MyNextAnimListTemplate = NextReRenderOrderNA.map((key) =>
+          TemplateGNextAnim(key)
+        );
+      }
+
       this.setState({
         RefreshRandomizeAnime2: false,
-        MyNextAnimListSaved: !ParamsOptn
-          ? this.shuffleArray(MyNextAnimListTemplate)
-          : ParamsOptn.MyAnimRandom === false
-          ? MyNextAnimListTemplate
-          : this.shuffleArray(MyNextAnimListTemplate),
+        NextReRenderOrderNA:
+          !HaveAlreadyBeenMix[1] ||
+          (HaveAlreadyBeenMix[1] &&
+            NextReRenderOrderNA.length !== MyNextAnimListTemplateKey.length)
+            ? MyNextAnimListTemplateKey
+            : NextReRenderOrderNA,
+        HaveAlreadyBeenMix: [HaveAlreadyBeenMix[0], NewValHaveAlreadyBeenMix],
+        MyNextAnimListSaved: MyNextAnimListTemplate,
       });
     } else if (
       PageMode === true &&

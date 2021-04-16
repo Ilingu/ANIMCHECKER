@@ -188,7 +188,7 @@ const NextAnim = ({
 
               <Dropdown.Menu id="RepereMenuImportantNextAnime">
                 <Dropdown.Item
-                  style={{ "pointer-events": "none" }}
+                  style={{ pointerEvents: "none" }}
                   id="RepereImportantNextAnime"
                 >
                   Importance pour regarder l'anime ({name})

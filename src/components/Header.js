@@ -272,7 +272,9 @@ const Header = ({ FnSearchFilter, SearchFilter }) => {
                     ? "Search Anim To Watch"
                     : "Search Manga To Read"
                 }
-                value={Context.PageMode ? SearchFilter["q="] : TitleSearch}
+                value={
+                  Context.PageMode ? SearchFilter["q="] || "" : TitleSearch
+                }
                 onChange={(event) => {
                   if (
                     Context.PageMode &&
