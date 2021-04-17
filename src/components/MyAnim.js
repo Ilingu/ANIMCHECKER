@@ -57,11 +57,11 @@ const MyAnim = ({
     );
 
     function handleGesure() {
-      if (touchstartX - touchendX >= window.innerWidth / 3.5) {
+      if (touchstartX - touchendX >= window.innerWidth / 3) {
         // Left
         SwitchMyNextAnim();
       }
-      if (touchendX - touchstartX >= window.innerWidth / 3.5) {
+      if (touchendX - touchstartX >= window.innerWidth / 3) {
         // Right
         SwitchMyAnim();
       }

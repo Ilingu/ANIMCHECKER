@@ -484,6 +484,7 @@ export default class Notif extends Component {
       AnimeList,
       name,
       MyAnimNameStocked,
+      UpdateNotif,
       day,
       time,
       ResText,
@@ -548,6 +549,7 @@ export default class Notif extends Component {
       let FirstKey = null;
       MyAnimName = Object.keys(AnimeList).map((key, i) => {
         if (i === 0) FirstKey = key;
+        if (!AnimeList[key].AnimeSeason) return null;
         return (
           <option key={i} value={key}>
             {AnimeList[key].name}
@@ -626,10 +628,25 @@ export default class Notif extends Component {
         {/* MODAL */}
         <Modal
           show={ShowModalAddNotif}
-          onHide={() => this.setState({ ShowModalAddNotif: false })}
+          onHide={() =>
+            this.setState({
+              ShowModalAddNotif: false,
+              UpdateNotif: null,
+              name: "",
+              day: new Date().getDay().toString(),
+              time:
+                new Date().getHours() * 3600 +
+                Math.round(new Date().getMinutes() / 10) * 10 * 60,
+              Lier: null,
+            })
+          }
         >
           <Modal.Header id="ModalTitle" closeButton>
-            <Modal.Title>Ajouter une notifications d'anime</Modal.Title>
+            <Modal.Title>
+              {UpdateNotif !== null
+                ? "Modifié une notification"
+                : "Ajouter une notification d'anime"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body id="ModalBody">
             <Form id="AddNotif">
@@ -688,6 +705,12 @@ export default class Notif extends Component {
                         event.target.value === "Aucun"
                           ? null
                           : event.target.value,
+                      name:
+                        name.trim().length !== 0
+                          ? name
+                          : event.target.value === "Aucun"
+                          ? name
+                          : AnimeList[event.target.value].name,
                     })
                   }
                 >
@@ -699,12 +722,31 @@ export default class Notif extends Component {
           <Modal.Footer id="ModalFooter">
             <Button
               variant="secondary"
-              onClick={() => this.setState({ ShowModalAddNotif: false })}
+              onClick={() =>
+                this.setState({
+                  ShowModalAddNotif: false,
+                  UpdateNotif: null,
+                  name: "",
+                  day: new Date().getDay().toString(),
+                  time:
+                    new Date().getHours() * 3600 +
+                    Math.round(new Date().getMinutes() / 10) * 10 * 60,
+                  Lier: null,
+                })
+              }
             >
               Annuler
             </Button>
-            <Button variant="success" onClick={this.addNotif}>
-              <span className="fas fa-plus"></span> Créer la notif
+            <Button
+              variant={UpdateNotif !== null ? "info" : "success"}
+              onClick={this.addNotif}
+            >
+              {UpdateNotif !== null ? (
+                <span className="fas fa-pencil-alt"></span>
+              ) : (
+                <span className="fas fa-plus"></span>
+              )}{" "}
+              {UpdateNotif !== null ? "Modifier la notif" : "Créer la notif"}
             </Button>
           </Modal.Footer>
         </Modal>
