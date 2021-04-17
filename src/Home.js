@@ -3719,13 +3719,12 @@ export default class Home extends Component {
               ...filmFireBase,
             })
         ).map((key) => key),
+        NewNextReRenderOrderSerie = null,
         NewValHaveAlreadyBeenMix = HaveAlreadyBeenMix[0];
 
       if (
         ModeFilter !== "Rate" &&
-        (!HaveAlreadyBeenMix[0] ||
-          (HaveAlreadyBeenMix[0] &&
-            NextReRenderOrderSerie.length !== MyAnimListTemplateKey.length)) &&
+        !HaveAlreadyBeenMix[0] &&
         (!ParamsOptn || ParamsOptn.MyAnimRandom)
       ) {
         NewValHaveAlreadyBeenMix = true;
@@ -3739,22 +3738,49 @@ export default class Home extends Component {
       if (
         ModeFilter !== "Rate" &&
         HaveAlreadyBeenMix[0] &&
-        NextReRenderOrderSerie &&
-        NextReRenderOrderSerie.length === MyAnimListTemplateKey.length
+        NextReRenderOrderSerie
       ) {
-        MyAnimListTemplate = NextReRenderOrderSerie.map((key) =>
-          TemplateGAnime(key)
-        );
-      }
+        if (MyAnimListTemplateKey.length < NextReRenderOrderSerie.length) {
+          // Delete Anime
+          const CopyNextReRenderOrderSerie = [...NextReRenderOrderSerie];
+          let KeyIndexDelete = null;
+          NextReRenderOrderSerie.forEach((Key, i) => {
+            if (MyAnimListTemplateKey.indexOf(Key) === -1) KeyIndexDelete = i;
+          });
+          CopyNextReRenderOrderSerie.splice(KeyIndexDelete, 1);
+          NewNextReRenderOrderSerie = CopyNextReRenderOrderSerie;
+        }
 
+        if (MyAnimListTemplateKey.length > NextReRenderOrderSerie.length) {
+          // New Anime
+          const CopyNextReRenderOrderSerie = [...NextReRenderOrderSerie];
+          let NewValAnime = null;
+          MyAnimListTemplateKey.forEach((Key) => {
+            if (NextReRenderOrderSerie.indexOf(Key) === -1) NewValAnime = Key;
+          });
+          CopyNextReRenderOrderSerie.splice(
+            Math.round(Math.random() * CopyNextReRenderOrderSerie.length),
+            0,
+            NewValAnime
+          );
+          NewNextReRenderOrderSerie = CopyNextReRenderOrderSerie;
+        }
+
+        MyAnimListTemplate = (MyAnimListTemplateKey.length !==
+        NextReRenderOrderSerie.length
+          ? NewNextReRenderOrderSerie
+          : NextReRenderOrderSerie
+        ).map((key) => TemplateGAnime(key));
+      }
+      console.log(NewNextReRenderOrderSerie);
       this.setState({
         RefreshRandomizeAnime: false,
-        NextReRenderOrderSerie:
-          !HaveAlreadyBeenMix[0] ||
-          (HaveAlreadyBeenMix[0] &&
-            NextReRenderOrderSerie.length !== MyAnimListTemplateKey.length)
-            ? MyAnimListTemplateKey
-            : NextReRenderOrderSerie,
+        NextReRenderOrderSerie: !HaveAlreadyBeenMix[0]
+          ? MyAnimListTemplateKey
+          : HaveAlreadyBeenMix[0] &&
+            NextReRenderOrderSerie.length !== MyAnimListTemplateKey.length
+          ? NewNextReRenderOrderSerie
+          : NextReRenderOrderSerie,
         HaveAlreadyBeenMix: [NewValHaveAlreadyBeenMix, HaveAlreadyBeenMix[1]],
         MyAnimListSaved: MyAnimListTemplate,
       });
@@ -3769,14 +3795,10 @@ export default class Home extends Component {
       let MyNextAnimListTemplateKey = Object.keys(NextAnimFireBase).map(
           (key) => key
         ),
+        NewNextReRenderOrderNA = null,
         NewValHaveAlreadyBeenMix = HaveAlreadyBeenMix[1];
 
-      if (
-        (!HaveAlreadyBeenMix[1] ||
-          (HaveAlreadyBeenMix[1] &&
-            NextReRenderOrderNA.length !== MyNextAnimListTemplateKey.length)) &&
-        (!ParamsOptn || ParamsOptn.MyAnimRandom)
-      ) {
+      if (!HaveAlreadyBeenMix[1] && (!ParamsOptn || ParamsOptn.MyAnimRandom)) {
         NewValHaveAlreadyBeenMix = true;
         MyNextAnimListTemplateKey = this.shuffleArray(
           MyNextAnimListTemplateKey
@@ -3787,24 +3809,49 @@ export default class Home extends Component {
         TemplateGNextAnim(key)
       );
 
-      if (
-        HaveAlreadyBeenMix[1] &&
-        NextReRenderOrderNA &&
-        NextReRenderOrderNA.length === MyNextAnimListTemplateKey.length
-      ) {
-        MyNextAnimListTemplate = NextReRenderOrderNA.map((key) =>
-          TemplateGNextAnim(key)
-        );
+      if (HaveAlreadyBeenMix[1] && NextReRenderOrderNA) {
+        if (MyNextAnimListTemplateKey.length < NextReRenderOrderNA.length) {
+          // Delete NA
+          const CopyNextReRenderOrderNA = [...NextReRenderOrderNA];
+          let KeyIndexDelete = null;
+          NextReRenderOrderNA.forEach((Key, i) => {
+            if (MyNextAnimListTemplateKey.indexOf(Key) === -1)
+              KeyIndexDelete = i;
+          });
+          CopyNextReRenderOrderNA.splice(KeyIndexDelete, 1);
+          NewNextReRenderOrderNA = CopyNextReRenderOrderNA;
+        }
+
+        if (MyNextAnimListTemplateKey.length > NextReRenderOrderNA.length) {
+          // New NA
+          const CopyNextReRenderOrderNA = [...NextReRenderOrderNA];
+          let NewValAnime = null;
+          MyNextAnimListTemplateKey.forEach((Key) => {
+            if (NextReRenderOrderNA.indexOf(Key) === -1) NewValAnime = Key;
+          });
+          CopyNextReRenderOrderNA.splice(
+            Math.round(Math.random() * CopyNextReRenderOrderNA.length),
+            0,
+            NewValAnime
+          );
+          NewNextReRenderOrderNA = CopyNextReRenderOrderNA;
+        }
+
+        MyNextAnimListTemplate = (MyNextAnimListTemplateKey.length !==
+        NextReRenderOrderNA.length
+          ? NewNextReRenderOrderNA
+          : NextReRenderOrderNA
+        ).map((key) => TemplateGNextAnim(key));
       }
 
       this.setState({
         RefreshRandomizeAnime2: false,
-        NextReRenderOrderNA:
-          !HaveAlreadyBeenMix[1] ||
-          (HaveAlreadyBeenMix[1] &&
-            NextReRenderOrderNA.length !== MyNextAnimListTemplateKey.length)
-            ? MyNextAnimListTemplateKey
-            : NextReRenderOrderNA,
+        NextReRenderOrderNA: !HaveAlreadyBeenMix[1]
+          ? MyNextAnimListTemplateKey
+          : HaveAlreadyBeenMix[1] &&
+            NextReRenderOrderNA.length !== MyNextAnimListTemplateKey.length
+          ? NewNextReRenderOrderNA
+          : NextReRenderOrderNA,
         HaveAlreadyBeenMix: [HaveAlreadyBeenMix[0], NewValHaveAlreadyBeenMix],
         MyNextAnimListSaved: MyNextAnimListTemplate,
       });
