@@ -20,8 +20,10 @@ const MyManga = ({
   useEffect(() => {
     if (!window.mobileAndTabletCheck()) return;
     // Mobile Swipe
-    let touchstartX = 0;
-    let touchendX = 0;
+    let touchstartX = 0,
+      touchendX = 0;
+    let touchstartY = 0,
+      touchendY = 0;
 
     const gesuredZone = document.getElementById("ContentMangaList");
 
@@ -29,6 +31,7 @@ const MyManga = ({
       "touchstart",
       function (event) {
         touchstartX = event.changedTouches[0].screenX;
+        touchstartY = event.changedTouches[0].screenY;
       },
       false
     );
@@ -37,16 +40,23 @@ const MyManga = ({
       "touchend",
       function (event) {
         touchendX = event.changedTouches[0].screenX;
+        touchendY = event.changedTouches[0].screenY;
         handleGesure();
       },
       false
     );
 
     function handleGesure() {
-      if (touchstartX - touchendX >= window.innerWidth / 3) {
+      if (
+        touchstartX - touchendX >= window.innerWidth / 3 &&
+        touchstartY - touchendY < window.innerHeight / 6
+      ) {
         ChangeSwipe(false); // Left
       }
-      if (touchendX - touchstartX >= window.innerWidth / 3) {
+      if (
+        touchendX - touchstartX >= window.innerWidth / 3 &&
+        touchendY - touchstartY < window.innerHeight / 6
+      ) {
         ChangeSwipe(true); // Right
       }
     }
