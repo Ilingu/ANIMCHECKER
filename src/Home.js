@@ -3556,14 +3556,9 @@ export default class Home extends Component {
         }
         Rate={{ ...serieFirebase, ...filmFireBase }[key].Rate}
         deleteAnim={this.DeleteAnimVerification}
-        CopyTitle={() => {
-          console.log(
-            { ...serieFirebase, ...filmFireBase },
-            key,
-            { ...serieFirebase, ...filmFireBase }[key]
-          );
-          this.CopyText({ ...serieFirebase, ...filmFireBase }[key].name, key);
-        }}
+        CopyTitle={() =>
+          this.CopyText({ ...serieFirebase, ...filmFireBase }[key].name, key)
+        }
         isAlleged={
           key.split("-")[0] === "serie"
             ? !serieFirebase[key].AnimEP
@@ -3731,9 +3726,7 @@ export default class Home extends Component {
         MyAnimListTemplateKey = this.shuffleArray(MyAnimListTemplateKey);
       }
 
-      let MyAnimListTemplate = MyAnimListTemplateKey.map((key) =>
-        TemplateGAnime(key)
-      );
+      let MyAnimListTemplate = null;
 
       if (
         ModeFilter !== "Rate" &&
@@ -3771,8 +3764,12 @@ export default class Home extends Component {
           ? NewNextReRenderOrderSerie
           : NextReRenderOrderSerie
         ).map((key) => TemplateGAnime(key));
+      } else {
+        MyAnimListTemplate = MyAnimListTemplateKey.map((key) =>
+          TemplateGAnime(key)
+        );
       }
-      console.log(NewNextReRenderOrderSerie);
+
       this.setState({
         RefreshRandomizeAnime: false,
         NextReRenderOrderSerie: !HaveAlreadyBeenMix[0]
@@ -3805,9 +3802,7 @@ export default class Home extends Component {
         );
       }
 
-      let MyNextAnimListTemplate = MyNextAnimListTemplateKey.map((key) =>
-        TemplateGNextAnim(key)
-      );
+      let MyNextAnimListTemplate = null;
 
       if (HaveAlreadyBeenMix[1] && NextReRenderOrderNA) {
         if (MyNextAnimListTemplateKey.length < NextReRenderOrderNA.length) {
@@ -3842,6 +3837,10 @@ export default class Home extends Component {
           ? NewNextReRenderOrderNA
           : NextReRenderOrderNA
         ).map((key) => TemplateGNextAnim(key));
+      } else {
+        MyNextAnimListTemplate = MyNextAnimListTemplateKey.map((key) =>
+          TemplateGNextAnim(key)
+        );
       }
 
       this.setState({
@@ -4766,7 +4765,9 @@ export default class Home extends Component {
                 {DeletePathVerif !== null && ShowModalVerification
                   ? filmFireBase[DeletePathVerif.split("/")[2]] !== undefined
                     ? filmFireBase[DeletePathVerif.split("/")[2]].name
-                    : serieFirebase[DeletePathVerif.split("/")[2]].name
+                    : serieFirebase[DeletePathVerif.split("/")[2]] !== undefined
+                    ? serieFirebase[DeletePathVerif.split("/")[2]].name
+                    : null
                   : null}
               </Modal.Title>
             </Modal.Header>
