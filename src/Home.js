@@ -3736,26 +3736,27 @@ export default class Home extends Component {
         if (MyAnimListTemplateKey.length < NextReRenderOrderSerie.length) {
           // Delete Anime
           const CopyNextReRenderOrderSerie = [...NextReRenderOrderSerie];
-          let KeyIndexDelete = null;
+          let NumberOfDelete = 0;
           NextReRenderOrderSerie.forEach((Key, i) => {
-            if (MyAnimListTemplateKey.indexOf(Key) === -1) KeyIndexDelete = i;
+            if (MyAnimListTemplateKey.indexOf(Key) === -1) {
+              CopyNextReRenderOrderSerie.splice(i - NumberOfDelete, 1);
+              NumberOfDelete += 1;
+            }
           });
-          CopyNextReRenderOrderSerie.splice(KeyIndexDelete, 1);
           NewNextReRenderOrderSerie = CopyNextReRenderOrderSerie;
         }
 
         if (MyAnimListTemplateKey.length > NextReRenderOrderSerie.length) {
           // New Anime
           const CopyNextReRenderOrderSerie = [...NextReRenderOrderSerie];
-          let NewValAnime = null;
           MyAnimListTemplateKey.forEach((Key) => {
-            if (NextReRenderOrderSerie.indexOf(Key) === -1) NewValAnime = Key;
+            if (NextReRenderOrderSerie.indexOf(Key) === -1)
+              CopyNextReRenderOrderSerie.splice(
+                Math.round(Math.random() * CopyNextReRenderOrderSerie.length),
+                0,
+                Key
+              );
           });
-          CopyNextReRenderOrderSerie.splice(
-            Math.round(Math.random() * CopyNextReRenderOrderSerie.length),
-            0,
-            NewValAnime
-          );
           NewNextReRenderOrderSerie = CopyNextReRenderOrderSerie;
         }
 
@@ -3808,27 +3809,28 @@ export default class Home extends Component {
         if (MyNextAnimListTemplateKey.length < NextReRenderOrderNA.length) {
           // Delete NA
           const CopyNextReRenderOrderNA = [...NextReRenderOrderNA];
-          let KeyIndexDelete = null;
+          let NumberOfDelete = 0;
           NextReRenderOrderNA.forEach((Key, i) => {
-            if (MyNextAnimListTemplateKey.indexOf(Key) === -1)
-              KeyIndexDelete = i;
+            if (MyNextAnimListTemplateKey.indexOf(Key) === -1) {
+              CopyNextReRenderOrderNA.splice(i - NumberOfDelete, 1);
+              NumberOfDelete += 1;
+            }
           });
-          CopyNextReRenderOrderNA.splice(KeyIndexDelete, 1);
+
           NewNextReRenderOrderNA = CopyNextReRenderOrderNA;
         }
 
         if (MyNextAnimListTemplateKey.length > NextReRenderOrderNA.length) {
           // New NA
           const CopyNextReRenderOrderNA = [...NextReRenderOrderNA];
-          let NewValAnime = null;
           MyNextAnimListTemplateKey.forEach((Key) => {
-            if (NextReRenderOrderNA.indexOf(Key) === -1) NewValAnime = Key;
+            if (NextReRenderOrderNA.indexOf(Key) === -1)
+              CopyNextReRenderOrderNA.splice(
+                Math.round(Math.random() * CopyNextReRenderOrderNA.length),
+                0,
+                Key
+              );
           });
-          CopyNextReRenderOrderNA.splice(
-            Math.round(Math.random() * CopyNextReRenderOrderNA.length),
-            0,
-            NewValAnime
-          );
           NewNextReRenderOrderNA = CopyNextReRenderOrderNA;
         }
 
