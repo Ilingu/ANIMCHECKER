@@ -190,7 +190,7 @@ const MyAnim = ({
                 <option value="members">membres</option>
                 <option value="id">id</option>
                 <option value="episodes">episodes</option>
-                <option value="rating">note</option>
+                <option value="rating">Evaluation</option>
               </Form.Control>
             </li>
             <li>

@@ -490,7 +490,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version Globale:
                   </span>{" "}
-                  Stable (LTS)<b>1.1</b>
+                  Stable (LTS)<b>1.2</b>
                 </li>
               </ul>
               <p>
