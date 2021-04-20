@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { openDB } from "idb";
 import { Redirect, Link } from "react-router-dom";
+import { ChromePicker } from "react-color";
 // CSS
 import { Spinner, Alert, Button, Modal, Form } from "react-bootstrap";
 // DB
@@ -27,6 +28,7 @@ class Settings extends Component {
     ShowModalChangePseudo: false,
     newPseudo: "",
     ACKColor: null,
+    ShowColorPicker: false,
     ResText: null,
     typeAlert: null,
   };
@@ -35,7 +37,7 @@ class Settings extends Component {
 
   componentDidMount() {
     const self = this;
-
+    /* FB Conn */
     this.refreshParamsOptn();
     if (this.state.Pseudo) {
       firebase.auth().onAuthStateChanged((user) => {
@@ -43,6 +45,12 @@ class Settings extends Component {
           self.handleAuth({ user });
         }
       });
+    }
+    /* Color */
+    if (window.localStorage.getItem("BGC-ACK")) {
+      document.body.style.backgroundColor = window.localStorage.getItem(
+        "BGC-ACK"
+      );
     }
   }
 
@@ -220,6 +228,7 @@ class Settings extends Component {
       OfflineMode,
       ResText,
       typeAlert,
+      ShowColorPicker,
       ShowModalChangePseudo,
       ShowModalDeleteUser,
       ShowModalResetData,
@@ -279,24 +288,50 @@ class Settings extends Component {
           <h1>Action:</h1>
           <div id="ActionAccount">
             <aside id="App">
-              <h3>
-                Application
-                {!ParamsOptn ? null : (
+              <h3>Application:</h3>
+              {ShowColorPicker ? (
+                <Fragment>
+                  <ChromePicker
+                    color={ACKColor}
+                    onChangeComplete={(color) =>
+                      this.setState({ ACKColor: color.hex })
+                    }
+                  />
+                  <br />
+                </Fragment>
+              ) : null}
+
+              <Button
+                variant="warning"
+                style={{ backgroundColor: "#7700ff40", color: "#fff" }}
+                onClick={() => {
+                  if (window.localStorage.getItem("BGC-ACK")) {
+                    document.body.style.backgroundColor = "#212121";
+                    window.localStorage.removeItem("BGC-ACK");
+                    this.setState({ ShowColorPicker });
+                    return;
+                  }
+                  if (ACKColor) {
+                    document.body.style.backgroundColor = ACKColor;
+                    window.localStorage.setItem("BGC-ACK", ACKColor);
+                    this.setState({ ShowColorPicker });
+                    return;
+                  }
+                  this.setState({ ShowColorPicker: !ShowColorPicker });
+                }}
+              >
+                {window.localStorage.getItem("BGC-ACK") ? (
                   <Fragment>
-                    :
-                    <input
-                      type="color"
-                      value={ACKColor ? ACKColor : "#212121"}
-                      onChange={(event) => {
-                        document.body.style.backgroundColor =
-                          event.target.value;
-                      }}
-                      id="PersoAppBgc"
-                    />
+                    <span className="far fa-times-circle"></span> Annuler
                   </Fragment>
+                ) : ACKColor ? (
+                  <Fragment>
+                    <span className="fas fa-check"></span> Valider
+                  </Fragment>
+                ) : (
+                  "Changer la couleur"
                 )}
-                :
-              </h3>
+              </Button>
               {ParamsOptn === null ? null : (
                 <Fragment>
                   <Button
@@ -315,7 +350,6 @@ class Settings extends Component {
                         this.refreshParamsOptn
                       )
                     }
-                    className="BtnActionAccount"
                   >
                     {ParamsOptn.NotifState === false ? (
                       <Fragment>
@@ -332,7 +366,6 @@ class Settings extends Component {
                   </Button>
                   <Button
                     variant="outline-light"
-                    className="BtnActionAccount"
                     onClick={() =>
                       this.updateValue(
                         `${Pseudo}/ParamsOptn`,
@@ -349,7 +382,6 @@ class Settings extends Component {
                   </Button>
                   <Button
                     variant="outline-info"
-                    className="BtnActionAccount"
                     onClick={() =>
                       this.updateValue(
                         `${Pseudo}/ParamsOptn`,
@@ -442,7 +474,6 @@ class Settings extends Component {
               <h3>Utilisateur:</h3>
               <Button
                 variant="outline-primary"
-                className="BtnActionAccount"
                 disabled={OfflineMode}
                 onClick={() => this.setState({ ShowModalChangePseudo: true })}
               >
@@ -452,7 +483,6 @@ class Settings extends Component {
                 variant="outline-dark"
                 disabled={OfflineMode}
                 style={{ color: "#ddd" }}
-                className="BtnActionAccount"
                 onClick={() => {
                   this.cancelState();
                   if (OfflineMode) return;
@@ -465,7 +495,6 @@ class Settings extends Component {
               <Button
                 variant="outline-danger"
                 disabled={OfflineMode}
-                className="BtnActionAccount"
                 onClick={() => this.setState({ ShowModalDeleteUser: true })}
               >
                 <span className="fas fa-user-times"></span> Supprimer le compte
@@ -478,7 +507,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>4</b> (F5)
+                  Stable (LTS)<b>1</b>β<b>5</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
@@ -488,9 +517,9 @@ class Settings extends Component {
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
-                    Version Globale:
+                    Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.2</b>
+                  Stable (LTS)<b>1.2.1</b>
                 </li>
               </ul>
               <p>

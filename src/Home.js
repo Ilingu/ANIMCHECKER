@@ -168,6 +168,47 @@ export default class Home extends Component {
 
   componentDidMount() {
     const self = this;
+    // Title
+    this.state.PageMode
+      ? (document.title = "ACK:Anim-Checker")
+      : (document.title = "MCK:Manga-Checker");
+    // Color
+    if (window.localStorage.getItem("BGC-ACK")) {
+      document.body.style.backgroundColor = window.localStorage.getItem(
+        "BGC-ACK"
+      );
+    }
+    // Firebase
+    if (this.state.Pseudo) {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          // User Detected
+          this.setState({ UserOnLogin: true });
+          self.handleAuth({ user });
+        }
+        // No User detected -> Login with phone number
+        self.setState({ AuthenticateMethod: true });
+      });
+    } else {
+      self.setState({ AllowUseReAuth: true });
+    }
+    // Verified Conn
+    this.AllowVpn();
+    // Offline Mode
+    if (!JSON.parse(window.localStorage.getItem("OfflineMode")))
+      window.localStorage.setItem("OfflineMode", JSON.stringify(false));
+    else if (JSON.parse(window.localStorage.getItem("OfflineMode")) === true)
+      this.OfflineMode(null, true);
+    // AntiLostData
+    const VarAntiLostData = JSON.parse(
+      window.localStorage.getItem("LastSecurityAntiLostData")
+    );
+    if (VarAntiLostData !== false && VarAntiLostData !== true) {
+      window.localStorage.setItem(
+        "LastSecurityAntiLostData",
+        JSON.stringify(false)
+      );
+    }
     // Check If Mobile or PC
     window.mobileAndTabletCheck = () => {
       let check = false;
@@ -185,25 +226,13 @@ export default class Home extends Component {
       })(navigator.userAgent || navigator.vendor || window.opera);
       return check;
     };
-    // Title
-    this.state.PageMode
-      ? (document.title = "ACK:Anim-Checker")
-      : (document.title = "MCK:Manga-Checker");
-    // Offline Mode
-    if (!JSON.parse(window.localStorage.getItem("OfflineMode")))
-      window.localStorage.setItem("OfflineMode", JSON.stringify(false));
-    else if (JSON.parse(window.localStorage.getItem("OfflineMode")) === true)
-      this.OfflineMode(null, true);
-    // AntiLostData
-    const VarAntiLostData = JSON.parse(
-      window.localStorage.getItem("LastSecurityAntiLostData")
-    );
-    if (VarAntiLostData !== false && VarAntiLostData !== true) {
-      window.localStorage.setItem(
-        "LastSecurityAntiLostData",
-        JSON.stringify(false)
-      );
-    }
+    // A2HS
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      self.setState({
+        AddToHomeScreen: e,
+      });
+    });
     // Recup templateAnim
     if (this.props.match.params.token !== undefined && this.state.Pseudo) {
       const Token = this.props.match.params.token;
@@ -282,29 +311,6 @@ export default class Home extends Component {
         this.setState({ ResText: null, typeAlert: null });
       }, 10000);
     }
-    // A2HS
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      self.setState({
-        AddToHomeScreen: e,
-      });
-    });
-    // Firebase
-    if (this.state.Pseudo) {
-      firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-          // User Detected
-          this.setState({ UserOnLogin: true });
-          self.handleAuth({ user });
-        }
-        // No User detected -> Login with phone number
-        self.setState({ AuthenticateMethod: true });
-      });
-    } else {
-      self.setState({ AllowUseReAuth: true });
-    }
-    // Verified Conn
-    this.AllowVpn();
   }
 
   OfflineMode = (forced, auto = false) => {
@@ -2855,6 +2861,7 @@ export default class Home extends Component {
   };
 
   findPalmares = () => {
+    const sizeof = require("object-sizeof");
     const CopyState = { ...this.state };
     const DurerTotal = Object.values(CopyState.filmFireBase).reduce(
       (acc, currentVal) => acc + currentVal.durer,
@@ -2893,7 +2900,21 @@ export default class Home extends Component {
         return acc + add;
       }, 0);
 
+    const SizeOfAll = [
+      (sizeof(this.state.serieFirebase) / 1000).toFixed(2),
+      (sizeof(this.state.filmFireBase) / 1000).toFixed(2),
+      (sizeof(this.state.NextAnimFireBase) / 1000).toFixed(2),
+      (
+        sizeof({
+          ...this.state.serieFirebase,
+          ...this.state.filmFireBase,
+          ...this.state.NextAnimFireBase,
+        }) / 1000
+      ).toFixed(2),
+    ];
+
     return {
+      SizeOfUserInDB: SizeOfAll,
       nbNextAnime: Object.keys(CopyState.NextAnimFireBase).length,
       nbFilm: [Object.keys(CopyState.filmFireBase).length, FinishedTotalFilm],
       nbSeries: [
@@ -4815,6 +4836,13 @@ export default class Home extends Component {
               {palmares ? (
                 <ul id="palamaresUl">
                   <li>
+                    <span className="palma">Taille pris:</span> Tous:{" "}
+                    {palmares.SizeOfUserInDB[3]}KB (Anime:{" "}
+                    {palmares.SizeOfUserInDB[0]}KB\Film:{" "}
+                    {palmares.SizeOfUserInDB[1]}KB\NextAnime:{" "}
+                    {palmares.SizeOfUserInDB[2]}KB)
+                  </li>
+                  <li>
                     <span className="palma">
                       Animes en cours (Serie + Film):
                     </span>{" "}
@@ -4823,6 +4851,18 @@ export default class Home extends Component {
                   <li>
                     <span className="palma">Animes finis (Serie + Film):</span>{" "}
                     {palmares.Finished}
+                  </li>
+                  <li>
+                    <span className="palma">
+                      Nombre Total de tes prochains animes:
+                    </span>{" "}
+                    {palmares.nbNextAnime}
+                  </li>
+                  <li>
+                    <span className="palma">
+                      Nombre Total d'anime (Serie + Film) au total:
+                    </span>{" "}
+                    {palmares.nbFilm[0] + palmares.nbSeries[0]}
                   </li>
                   <li>
                     <span className="palma">Nombre d'Animes Notée:</span>{" "}
@@ -4867,16 +4907,6 @@ export default class Home extends Component {
                       (palmares.nbSeries[1] / palmares.nbSeries[0]) * 100
                     )}
                     % de séries finis
-                  </li>
-                  <li>
-                    <span className="palma">
-                      Nombre Total de tes prochains anime:
-                    </span>{" "}
-                    {palmares.nbNextAnime}
-                  </li>
-                  <li>
-                    <span className="palma">Nombre Total d'anime:</span>{" "}
-                    {palmares.nbFilm[0] + palmares.nbSeries[0]}
                   </li>
                   <li>
                     <span className="palma">

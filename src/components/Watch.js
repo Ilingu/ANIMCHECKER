@@ -87,17 +87,15 @@ class Watch extends Component {
 
   componentDidMount() {
     const self = this;
-
+    /* Var From URL */
+    // Pseudo
     if (
       this.state.Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo"))
     ) {
       this.setState({ uid: null, RedirectHome: true });
       return;
     }
-
-    if (this.props.match.params.watchmode !== undefined)
-      this.setState({ WatchModeNow: this.props.match.params.watchmode });
-
+    // ID
     if (this.props.match.params.id !== undefined) {
       this.setState(
         {
@@ -114,13 +112,22 @@ class Watch extends Component {
         }
       );
     }
-
+    // WatchMode
+    if (this.props.match.params.watchmode !== undefined)
+      this.setState({ WatchModeNow: this.props.match.params.watchmode });
+    /* FB Conn */
     if (this.state.Pseudo && !this.state.OfflineMode) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           self.handleAuth({ user });
         }
       });
+    }
+    /* Color */
+    if (window.localStorage.getItem("BGC-ACK")) {
+      document.body.style.backgroundColor = window.localStorage.getItem(
+        "BGC-ACK"
+      );
     }
   }
 
@@ -656,12 +663,12 @@ class Watch extends Component {
 
   StartModeWatch = () => {
     window.scrollTo(0, 0);
-    document.body.style.cssText = "overflow: hidden;";
+    document.body.style.overflow = "hidden";
     this.setState({ modeWatch: true });
   };
 
   StopModeWatch = () => {
-    document.body.style.cssText = "overflow: unset;";
+    document.body.style.overflow = "unset";
     this.setState({ modeWatch: false });
   };
 

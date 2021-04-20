@@ -41,13 +41,16 @@ export default class Notif extends Component {
     // Alerts
     ResText: null,
     typeAlert: null,
+    // Fun
+    ShowTheChangeNotifColorBtn: false,
   };
 
   setIntervalVar = null;
+  NumberOfClick = [0, 0];
 
   componentDidMount() {
     const self = this;
-
+    /* FB Conn */
     this.refreshNotif();
     if (this.state.Pseudo) {
       firebase.auth().onAuthStateChanged((user) => {
@@ -55,6 +58,12 @@ export default class Notif extends Component {
           self.handleAuth({ user });
         }
       });
+    }
+    /* Color */
+    if (window.localStorage.getItem("BGC-ACK")) {
+      document.body.style.backgroundColor = window.localStorage.getItem(
+        "BGC-ACK"
+      );
     }
   }
 
@@ -480,6 +489,7 @@ export default class Notif extends Component {
       Lier,
       OfflineMode,
       RefreshAnimListRenderer,
+      ShowTheChangeNotifColorBtn,
       ShowModalAddNotif,
       AnimeList,
       name,
@@ -585,8 +595,46 @@ export default class Notif extends Component {
           </Link>
 
           <h2>
-            <span className="fas fa-cog fa-spin"></span> Notif params{" "}
-            <span className="fas fa-cog fa-spin"></span>
+            <span
+              className="fas fa-cog fa-spin"
+              onClick={() => {
+                this.NumberOfClick = [
+                  this.NumberOfClick[0] + 1,
+                  this.NumberOfClick[1],
+                ];
+                if (
+                  this.NumberOfClick[0] === 14 &&
+                  this.NumberOfClick[1] === 14
+                ) {
+                  this.NumberOfClick[0] = this.NumberOfClick[1] = 0;
+                  this.setState({
+                    ShowTheChangeNotifColorBtn: !ShowTheChangeNotifColorBtn,
+                  });
+                }
+              }}
+            ></span>
+            <span style={{ userSelect: "none", color: "#ff6d00" }}>
+              {" "}
+              Notif params{" "}
+            </span>
+            <span
+              className="fas fa-cog fa-spin"
+              onClick={() => {
+                this.NumberOfClick = [
+                  this.NumberOfClick[0],
+                  this.NumberOfClick[1] + 1,
+                ];
+                if (
+                  this.NumberOfClick[0] === 14 &&
+                  this.NumberOfClick[1] === 14
+                ) {
+                  this.NumberOfClick[0] = this.NumberOfClick[1] = 0;
+                  this.setState({
+                    ShowTheChangeNotifColorBtn: !ShowTheChangeNotifColorBtn,
+                  });
+                }
+              }}
+            ></span>
           </h2>
           <h4>
             Ici, vous pouvez ajouter les dates de sortie hebdomadaire des anime
@@ -599,13 +647,19 @@ export default class Notif extends Component {
           >
             <span className="fas fa-plus-circle"></span> Notif
           </Button>
-          <Button
-            variant="outline-secondary"
-            block
-            onClick={() => this.setState({ ShowModalAddNotif: false })}
-          >
-            Changer la couleurs des notif
-          </Button>
+          {ShowTheChangeNotifColorBtn ? (
+            <Button
+              variant="outline-secondary"
+              block
+              onClick={() =>
+                this.setState({
+                  ShowTheChangeNotifColorBtn: ShowTheChangeNotifColorBtn,
+                })
+              }
+            >
+              🥚 Changer la couleurs des notif
+            </Button>
+          ) : null}
           <div id="returnAlert">
             {ResText === null && typeAlert === null ? null : (
               <Alert
