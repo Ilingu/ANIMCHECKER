@@ -365,6 +365,9 @@ export default class Home extends Component {
   reconectFirebase = () => {
     let i = 0;
     this.setIntervalVar = setInterval(() => {
+      if (window.localStorage.getItem("firebase:previous_websocket_failure")) {
+        window.localStorage.removeItem("firebase:previous_websocket_failure");
+      }
       if (i === 5) this.reAuth();
       if (i === 10) this.OfflineMode(null, true);
       // Allow Vpn
@@ -374,9 +377,11 @@ export default class Home extends Component {
   };
 
   AllowVpn = () => {
-    // Allow Vpn
     let i = 0;
     this.setIntervalVar = setInterval(() => {
+      if (window.localStorage.getItem("firebase:previous_websocket_failure")) {
+        window.localStorage.removeItem("firebase:previous_websocket_failure");
+      }
       if (i === 5) this.reAuth();
       if (i === 10) this.OfflineMode(null, true);
       if (this.state.uid === null && this.state.proprio === null) {
