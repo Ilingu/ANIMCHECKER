@@ -1,8 +1,7 @@
 # Groupe 1
 User-agent: Googlebot
 Disallow: /static/
-Disallow: /Icon.png/
-Disallow: /favicon.ico/
+Disallow: /Img/
 Disallow: /index.html
 
 # Groupe 2

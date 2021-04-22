@@ -219,7 +219,7 @@ const OneAnim = ({
                 title={`Trailer de ${details[1].title}`}
                 src={details[1].trailer_url?.split("?")[0]}
                 frameborder="0"
-                allowfullscreen={true}
+                allowFullScreen={true}
               ></iframe>
             </ResponsiveEmbed>
           </div>

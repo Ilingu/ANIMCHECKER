@@ -1,7 +1,6 @@
 import Rebase from "re-base";
 import firebase from "firebase/app";
 import "firebase/database";
-import "firebase/messaging";
 
 const firebaseApp = firebase.initializeApp({
   apiKey: "AIzaSyDclxea6ZTVkBX4PJlUJEJhSVbhpsM4PiI",

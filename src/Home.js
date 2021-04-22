@@ -131,6 +131,7 @@ export default class Home extends Component {
     UrlUserImg: "",
     FileToImport: null,
     imageUrl: null,
+    AnimateFasIcon: [false, false],
     EpisodeName: null,
     DurationPerEp: null,
     AntiLostData: true,
@@ -1820,6 +1821,31 @@ export default class Home extends Component {
       : Math.round((TotalEpWhereStop / TotalEP) * 100);
   };
 
+  FindEPBtn = async () => {
+    this.setState({ AnimateFasIcon: [true, false] });
+    const { title, nbEP, durer } = this.state;
+    try {
+      const AnimeID = (await this.SearchAnim(title, true)).data.results[0]
+        .mal_id;
+      console.log(AnimeID);
+      const InfoAnimeRes = await this.SeeInDetails(AnimeID, true, true);
+      this.setState({
+        AnimateFasIcon: [false, false],
+        nbEP: InfoAnimeRes?.length ? `${InfoAnimeRes.length}` : nbEP,
+        durer: InfoAnimeRes?.data?.duration
+          ? this.durerStrToIntMin(InfoAnimeRes.data.duration)
+          : durer,
+      });
+    } catch (err) {
+      this.setState({ AnimateFasIcon: [true, true] }, () => {
+        setTimeout(() => {
+          this.setState({ AnimateFasIcon: [false, false] });
+        }, 4000);
+      });
+      console.error(err);
+    }
+  };
+
   TakeInfoFromName = async (
     title,
     ModeRetake = false,
@@ -2700,13 +2726,20 @@ export default class Home extends Component {
   };
 
   GETSeasonAnime = async (year, season) => {
+    this.setState({ AnimateFasIcon: [true, false] });
     try {
       this.setState({
+        AnimateFasIcon: [false, false],
         SeasonAnimeDetails: (
           await axios.get(`https://api.jikan.moe/v3/season/${year}/${season}`)
         ).data.anime,
       });
     } catch (err) {
+      this.setState({ AnimateFasIcon: [true, true] }, () => {
+        setTimeout(() => {
+          this.setState({ AnimateFasIcon: [false, false] });
+        }, 4000);
+      });
       console.error(err);
     }
   };
@@ -2718,7 +2751,7 @@ export default class Home extends Component {
         return await axios.get(
           `https://api.jikan.moe/v3/search/${
             PageMode ? "anime" : "manga"
-          }?q=${name}&limit=1`
+          }?q=${name}&limit=2`
         );
       } catch (err) {
         console.error(err);
@@ -2809,8 +2842,12 @@ export default class Home extends Component {
     return await fetchOtherEP();
   };
 
-  SeeInDetails = async (id, toReturn = false) => {
+  SeeInDetails = async (id, toReturn = false, toReturnAndJustEP = false) => {
     const { PageMode } = this.state;
+    if (toReturnAndJustEP === true) {
+      if (this.state.type === "serie") return await this.getAllTheEpisode(id);
+      else return await axios.get(`https://api.jikan.moe/v3/anime/${id}`);
+    }
     if (toReturn === true) {
       return (
         await Promise.all([
@@ -3173,6 +3210,7 @@ export default class Home extends Component {
       ShowModalAddNotifLier: false,
       ShowModalImportFile: false,
       FileToImport: null,
+      AnimateFasIcon: [false, false],
       AntiLostData: true,
       AddNotifWithAnim: false,
       ScanManga: null,
@@ -3275,6 +3313,7 @@ export default class Home extends Component {
       TagNA,
       TagSearchAnime,
       durer,
+      AnimateFasIcon,
       SwipeActive,
       FirstQuerie,
       SwitchMyAnim,
@@ -4148,7 +4187,13 @@ export default class Home extends Component {
                 </Form.Control>
               </Form.Group>
               <Button variant="success" type="submit">
-                <span className="fas fa-undo-alt"></span>
+                <span
+                  className={`fas ${
+                    AnimateFasIcon[0] && AnimateFasIcon[1]
+                      ? "fa-times"
+                      : `fa-sync${AnimateFasIcon[0] ? " fa-spin" : ""}`
+                  }`}
+                ></span>
               </Button>
             </Form>
           </aside>
@@ -5284,6 +5329,18 @@ export default class Home extends Component {
               <Button variant="secondary" onClick={this.cancelModal}>
                 <span className="fas fa-window-close"></span> Annuler
               </Button>
+              {title.trim().length !== 0 && nbEP.trim().length === 0 ? (
+                <Button variant="info" onClick={this.FindEPBtn}>
+                  <span
+                    className={`fas ${
+                      AnimateFasIcon[0] && AnimateFasIcon[1]
+                        ? "fa-times"
+                        : `fa-sync${AnimateFasIcon[0] ? " fa-spin" : ""}`
+                    }`}
+                  ></span>{" "}
+                  Find Ep for {title}
+                </Button>
+              ) : null}
               <Button
                 variant="success"
                 onClick={(event) => {
@@ -5336,7 +5393,7 @@ export default class Home extends Component {
                   <Form.Control
                     type="number"
                     value={durer.toString()}
-                    min="1"
+                    min={1}
                     placeholder="Durée en minutes"
                     autoComplete="off"
                     onChange={(event) => {
@@ -5353,6 +5410,18 @@ export default class Home extends Component {
               <Button variant="secondary" onClick={this.cancelModal}>
                 <span className="fas fa-window-close"></span> Annuler
               </Button>
+              {title.trim().length !== 0 ? (
+                <Button variant="info" onClick={this.FindEPBtn}>
+                  <span
+                    className={`fas ${
+                      AnimateFasIcon[0] && AnimateFasIcon[1]
+                        ? "fa-times"
+                        : `fa-sync${AnimateFasIcon[0] ? " fa-spin" : ""}`
+                    }`}
+                  ></span>{" "}
+                  Find durer of {title}
+                </Button>
+              ) : null}
               <Button variant="success" onClick={this.addAnime}>
                 <span className="fas fa-plus"></span> Créer {title}
               </Button>

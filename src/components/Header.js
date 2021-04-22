@@ -98,9 +98,14 @@ const Header = ({ FnSearchFilter, SearchFilter }) => {
         const current = event.resultIndex;
 
         const transcript = event.results[current][0].transcript;
-        if (typeof transcript === "string" && transcript.trim().length !== 0)
+        SetTitleSearch(transcript);
+        if (
+          typeof transcript === "string" &&
+          transcript.trim().length !== 0 &&
+          FnSearchFilter
+        )
           FnSearchFilter[0]("q=", transcript);
-        else FnSearchFilter[1]("q=");
+        else if (FnSearchFilter) FnSearchFilter[1]("q=");
       };
     } catch (e) {
       SetShowMessage(true);
