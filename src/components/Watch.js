@@ -297,15 +297,6 @@ class Watch extends Component {
         () => {
           if (this.state.WatchModeNow === "true") this.StartNextEP();
           if (next !== null) next();
-          // Scroll EP
-          if (
-            document.getElementById("EpisodesList") !== undefined &&
-            document.getElementById("EpisodesList") !== null
-          ) {
-            document
-              .getElementById("EpisodesList")
-              .scrollTo(0, this.state.ScrollPosAccordeon);
-          }
         }
       );
     } else if (type === "POST") {
@@ -927,16 +918,21 @@ class Watch extends Component {
       this.finishedEp(Saison, EpFinishedID);
       this.setRepere(Saison, EpFinishedID, true);
     } else {
-      const { AnimToWatch } = this.state;
-      let lastOne = null;
+      const { AnimToWatch, SmartRepere } = this.state;
+      let lastOne = null,
+        BackUpLastOne = null;
 
       AnimToWatch.AnimEP.forEach((Season) => {
         Season.Episodes.forEach((Ep) => {
+          if (SmartRepere && lastOne !== null && Ep.finished) lastOne = null;
           if (!Ep.finished && lastOne === null) {
-            lastOne = [Season, Ep.id];
+            lastOne = BackUpLastOne = [Season, Ep.id];
           }
         });
       });
+
+      if (!lastOne && !BackUpLastOne) return this.endAnime();
+      if (!lastOne && BackUpLastOne) lastOne = BackUpLastOne;
 
       try {
         this.setRepere(lastOne[0], lastOne[1]);
@@ -1283,18 +1279,15 @@ class Watch extends Component {
     const TotalEP = AnimToWatch.AnimEP.reduce((acc, currentValue) => {
       return acc + currentValue.Episodes.length;
     }, 0);
-    const WhereStop = this.CalculateWhereStop();
 
-    const TotalEpWhereStop = AnimToWatch.AnimEP.reduce((acc, currentValue) => {
-      if (parseInt(currentValue.name.split(" ")[1]) < parseInt(WhereStop[0])) {
-        return acc + currentValue.Episodes.length;
-      }
-      return acc + 0;
-    }, WhereStop[1]);
+    let nbEpFinished = 0;
+    AnimToWatch.AnimEP.forEach((Season) => {
+      Season.Episodes.forEach((Ep) => {
+        if (Ep.finished) nbEpFinished++;
+      });
+    });
 
-    return TotalEpWhereStop === 0
-      ? 0
-      : Math.round((TotalEpWhereStop / TotalEP) * 100);
+    return nbEpFinished === 0 ? 0 : Math.round((nbEpFinished / TotalEP) * 100);
   };
 
   CalculateNbTimeAnime = () => {

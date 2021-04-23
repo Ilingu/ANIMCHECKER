@@ -1807,18 +1807,15 @@ export default class Home extends Component {
     const TotalEP = AnimEP.reduce((acc, currentValue) => {
       return acc + currentValue.Episodes.length;
     }, 0);
-    const WhereStop = this.CalculateWhereStop(AnimEP);
 
-    const TotalEpWhereStop = AnimEP.reduce((acc, currentValue) => {
-      if (parseInt(currentValue.name.split(" ")[1]) < parseInt(WhereStop[0])) {
-        return acc + currentValue.Episodes.length;
-      }
-      return acc + 0;
-    }, WhereStop[1]);
+    let nbEpFinished = 0;
+    AnimEP.forEach((Season) => {
+      Season.Episodes.forEach((Ep) => {
+        if (Ep.finished) nbEpFinished++;
+      });
+    });
 
-    return TotalEpWhereStop === 0
-      ? 0
-      : Math.round((TotalEpWhereStop / TotalEP) * 100);
+    return nbEpFinished === 0 ? 0 : Math.round((nbEpFinished / TotalEP) * 100);
   };
 
   FindEPBtn = async () => {
