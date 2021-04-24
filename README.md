@@ -11,8 +11,7 @@
 #### Up ⬆ Or Down ⬇
 
 [![SITE](https://img.shields.io/website-up-down-green-red/https/myanimchecker.netlify.app.svg?style=for-the-badge)](https://myanimchecker.netlify.app/)  
-[![SITE](https://img.shields.io/netlify/034816b9-c9d3-4fd5-800f-2b4ba804bcfc?style=for-the-badge)](https://www.netlify.com/)  
-[![SITE](https://forthebadge.com/images/badges/contains-17-coffee-cups.svg)](https://www.youtube.com/watch?v=BsIa_LKojJI)
+[![SITE](https://img.shields.io/netlify/034816b9-c9d3-4fd5-800f-2b4ba804bcfc?style=for-the-badge)](https://www.netlify.com/)
 
 #### Release
 
