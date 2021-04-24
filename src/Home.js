@@ -2113,6 +2113,7 @@ export default class Home extends Component {
                 name: title,
                 durer,
                 imageUrl: imgUrl,
+                InWait: !WaitAnimCheck ? null : true,
                 finished: false,
               },
             });
@@ -5370,6 +5371,18 @@ export default class Home extends Component {
                       if (value < 1) return;
                       this.setState({ durer: value });
                     }}
+                  />
+                </Form.Group>
+                <Form.Group controlId="WaitAnimFilm">
+                  <Form.Check
+                    type="checkbox"
+                    checked={WaitAnimCheck}
+                    label={`Anime en attente de visionnage: ${
+                      WaitAnimCheck === true ? "Oui" : "Non"
+                    }`}
+                    onChange={(event) =>
+                      this.setState({ WaitAnimCheck: event.target.checked })
+                    }
                   />
                 </Form.Group>
               </Form>
