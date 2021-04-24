@@ -501,6 +501,7 @@ export default class Home extends Component {
         filmFireBase,
         SwitchMyAnim,
         ToReSearchAfterRefresh,
+        ModeFilter,
       } = this.state;
 
       this.setState(
@@ -518,7 +519,7 @@ export default class Home extends Component {
               (this.state.FirstQuerie &&
                 GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage !==
                   "NotFinished" &&
-                this.state.ModeFilter === "NotFinished"))
+                ModeFilter === "NotFinished"))
               ? false
               : true,
           RefreshRandomizeAnime2:
@@ -544,11 +545,10 @@ export default class Home extends Component {
               : false,
           ],
           ModeFilter:
-            HomePage !== null
-              ? HomePage
-              : GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
+            GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage &&
+            !this.state.FirstQuerie
               ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
-              : "NotFinished",
+              : ModeFilter,
           FirstQuerie: true,
           NextAnimFireBase: !GlobalInfoUser.NextAnim
             ? {}
@@ -693,14 +693,7 @@ export default class Home extends Component {
     }
   };
 
-  fnDbOffline = async (
-    type,
-    path,
-    value,
-    next = null,
-    next2 = null,
-    refresh = true
-  ) => {
+  fnDbOffline = async (type, path, value, next = null, refresh = true) => {
     const db = await openDB("AckDb", 1);
     if (type === "GET") {
       // Get Data IndexedDB
@@ -768,18 +761,15 @@ export default class Home extends Component {
           RefreshRandomizeAnime: true,
           RefreshRandomizeAnime2: true,
           ModeFilter:
-            typeof next === "string"
-              ? next
-              : results[3] &&
-                results[3][0] &&
-                results[3][0]?.data?.TypeAnimeHomePage
+            results[3] &&
+            results[3][0] &&
+            results[3][0]?.data?.TypeAnimeHomePage &&
+            !this.state.FirstQuerie
               ? results[3][0].data.TypeAnimeHomePage
-              : "NotFinished",
-          FirstQuerie: true,
+              : this.state.ModeFilter,
         },
         () => {
-          if (typeof next === "string" && next !== null) next();
-          if (next2 !== null) next2();
+          if (next !== null) next();
         }
       );
     } else if (type === "GETReturn") {
@@ -865,7 +855,7 @@ export default class Home extends Component {
         data: CopyData,
       })
         .then(() => {
-          if (refresh) this.fnDbOffline("GET", null, null, next, next2);
+          if (refresh) this.fnDbOffline("GET", null, null, next);
         })
         .catch(console.error);
     } else if (type === "DELETE") {
@@ -951,16 +941,10 @@ export default class Home extends Component {
     }, 2500);
   };
 
-  updateValue = (path, value, HomePage = null, Next = null, refresh = true) => {
+  updateValue = (path, value, Next = null) => {
     const { OfflineMode } = this.state;
     if (OfflineMode === true && !path.includes("manga")) {
-      this.fnDbOffline(
-        "PUT",
-        path,
-        value,
-        HomePage !== null ? HomePage : null,
-        Next !== null ? Next : null
-      );
+      this.fnDbOffline("PUT", path, value, Next !== null ? Next : null);
       return;
     }
 
@@ -969,14 +953,11 @@ export default class Home extends Component {
         data: value,
       })
       .then(() => {
-        if (refresh === true)
-          if (path.includes("manga")) {
-            this.refreshManga();
-          } else if (HomePage !== null) {
-            this.refreshValueFirebase(null, HomePage);
-          } else {
-            this.refreshValueFirebase();
-          }
+        if (path.includes("manga")) {
+          this.refreshManga();
+        } else {
+          this.refreshValueFirebase();
+        }
 
         if (Next !== null) Next();
       })
@@ -1702,20 +1683,16 @@ export default class Home extends Component {
           Rate: null,
         });
       }
-      this.updateValue(
-        `${Pseudo}/serie/${IdToAddEp}`,
-        {
-          AnimEP: AnimSEP,
-          finishedAnim: false,
-          AnimeSeason: !SeasonAnimCheck ? null : true,
-          InWait: !WaitAnimCheck ? null : true,
-          Lier: null,
-          Drop: null,
-          Paused: null,
-          Rate: null,
-        },
-        null
-      );
+      this.updateValue(`${Pseudo}/serie/${IdToAddEp}`, {
+        AnimEP: AnimSEP,
+        finishedAnim: false,
+        AnimeSeason: !SeasonAnimCheck ? null : true,
+        InWait: !WaitAnimCheck ? null : true,
+        Lier: null,
+        Drop: null,
+        Paused: null,
+        Rate: null,
+      });
       this.setState({ RedirectPage: `/Watch/${Pseudo}/${IdToAddEp}` });
     }
   };
@@ -2314,7 +2291,6 @@ export default class Home extends Component {
                 NewEpMode: true,
               },
               null,
-              null,
               false
             );
             if (!OfflineMode) {
@@ -2368,7 +2344,6 @@ export default class Home extends Component {
             {
               calledTime: CopyCalledTime,
             },
-            null,
             null,
             false
           );
@@ -3478,13 +3453,9 @@ export default class Home extends Component {
             : false
         }
         fnFav={(id, FavVal) => {
-          this.updateValue(
-            `${Pseudo}/${key.split("-")[0]}/${id}`,
-            {
-              Fav: FavVal,
-            },
-            ModeFilter
-          );
+          this.updateValue(`${Pseudo}/${key.split("-")[0]}/${id}`, {
+            Fav: FavVal,
+          });
         }}
         NotAskAgain={
           { ...serieFirebase, ...filmFireBase }[key].NotAskAgain
@@ -3832,6 +3803,7 @@ export default class Home extends Component {
         NextReRenderOrderSerie: !HaveAlreadyBeenMix[0]
           ? MyAnimListTemplateKey
           : HaveAlreadyBeenMix[0] &&
+            NextReRenderOrderSerie &&
             NextReRenderOrderSerie.length !== MyAnimListTemplateKey.length
           ? NewNextReRenderOrderSerie
           : NextReRenderOrderSerie,
@@ -4746,8 +4718,7 @@ export default class Home extends Component {
                       }/${InfoAnimeToChangeNote}`,
                       {
                         Rate,
-                      },
-                      ModeFilter
+                      }
                     );
 
                   this.cancelModal();

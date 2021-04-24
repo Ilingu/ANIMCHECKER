@@ -85,6 +85,10 @@ a:hover {
   color: inherit;
 }
 
+.dropdown-menu {
+  z-index: 1005;
+}
+
 .btnBackDesing {
   position: absolute;
   left: 0;
