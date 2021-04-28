@@ -2,7 +2,7 @@ import React from "react";
 // CSS
 import { Button } from "react-bootstrap";
 
-const OneNotif = ({ name, calledTime, paused, fn }) => {
+const OneNotif = ({ name, calledTime, paused, fn, color }) => {
   const toDayString = () => {
     let dayVar = null;
     switch (new Date(calledTime).getDay()) {
@@ -48,9 +48,7 @@ const OneNotif = ({ name, calledTime, paused, fn }) => {
       className="notif"
       onDoubleClick={fn[2]}
       style={{
-        border: `2px solid rgb(${Math.round(Math.random() * 255)}, ${Math.round(
-          Math.random() * 255
-        )}, ${Math.round(Math.random() * 255)})`,
+        border: `2px solid rgb(${color[0]}, ${color[1]}, ${color[2]})`,
       }}
     >
       <div className="name">{name}</div>

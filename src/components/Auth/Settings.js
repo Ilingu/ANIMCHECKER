@@ -14,6 +14,7 @@ class Settings extends Component {
     // FireBase
     Pseudo: this.props.match.params.pseudo,
     ParamsOptn: null,
+    TemplateAnimeFirebase: {},
     // Auth
     uid: null,
     proprio: null,
@@ -22,6 +23,7 @@ class Settings extends Component {
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
     isFirstTime: true,
+    IndexForTemplateAnim: 0,
     RedirectHome: null,
     ShowModalDeleteUser: false,
     ShowModalResetData: false,
@@ -79,12 +81,21 @@ class Settings extends Component {
       const Store = db.transaction("ParamsOptn").objectStore("ParamsOptn");
       const results = await Store.getAll();
 
-      const ParamsOptn = OfflineMode
-        ? results[0].data
-        : await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
-            context: this,
-          });
-      this.setState({ ParamsOptn, ACKColor: ParamsOptn.ACKColor });
+      const DataRequired = await Promise.all([
+        OfflineMode
+          ? results[0].data
+          : await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
+              context: this,
+            }),
+        await base.fetch(`${this.state.Pseudo}/TemplateAnim`, {
+          context: this,
+        }),
+      ]);
+      this.setState({
+        ParamsOptn: DataRequired[0],
+        TemplateAnimeFirebase: DataRequired[1],
+        ACKColor: DataRequired[0].ACKColor,
+      });
     } catch (err) {
       console.error(err);
     }
@@ -219,8 +230,10 @@ class Settings extends Component {
     const {
       Pseudo,
       ParamsOptn,
+      TemplateAnimeFirebase,
       uid,
       proprio,
+      IndexForTemplateAnim,
       RedirectHome,
       newPseudo,
       isFirstTime,
@@ -258,6 +271,21 @@ class Settings extends Component {
     }
 
     if (uid !== proprio) return <Redirect to="/notifuser/3" />;
+
+    let TemplateAnime = "Tu n'as aucun template d'anime";
+
+    if (Object.keys(TemplateAnimeFirebase)?.length !== 0) {
+      TemplateAnime = Object.keys(TemplateAnimeFirebase).map((key) => (
+        <div className="TemplateAnim">
+          <span
+            className="fas fa-trash"
+            onClick={() => this.deleteValue(`${Pseudo}/TemplateAnim/${key}`)}
+            style={{ color: "#f00" }}
+          ></span>{" "}
+          {TemplateAnimeFirebase[key].title}
+        </div>
+      ));
+    }
 
     return (
       <Fragment>
@@ -430,6 +458,7 @@ class Settings extends Component {
                         }}
                         as="select"
                         custom
+                        block
                       >
                         <option value="NotFinished">
                           Page d'accueil sur tes animes En Cours
@@ -467,6 +496,28 @@ class Settings extends Component {
                       </Form.Control>
                     </Form.Group>
                   </Form>
+                  <h4>
+                    T'es Template d'anime{" "}
+                    <Button
+                      variant="outline-primary"
+                      style={{ width: "38px" }}
+                      onClick={() => {
+                        this.setState({
+                          IndexForTemplateAnim:
+                            TemplateAnime.length - 1 === IndexForTemplateAnim
+                              ? 0
+                              : IndexForTemplateAnim + 1,
+                        });
+                      }}
+                    >
+                      <span className="fas fa-long-arrow-alt-right"></span>
+                    </Button>
+                  </h4>
+                  <div id="TemplateAnimContainer">
+                    {typeof TemplateAnime === "string"
+                      ? TemplateAnime
+                      : TemplateAnime[IndexForTemplateAnim]}
+                  </div>
                 </Fragment>
               )}
             </aside>
@@ -507,7 +558,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>6</b> (F3)(N1)
+                  Stable (LTS)<b>1</b>β<b>6</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>

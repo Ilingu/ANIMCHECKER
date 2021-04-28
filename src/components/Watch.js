@@ -1327,55 +1327,50 @@ class Watch extends Component {
   ShareFinishedAnime = () => {
     if (this.state.OfflineMode === false) {
       try {
+        const rand = () => Math.random(0).toString(36).substr(2);
+        const token = (length) => {
+          let ToReturn = (rand() + rand() + rand() + rand()).substr(0, length);
+          while (ToReturn.includes("-")) {
+            ToReturn = (rand() + rand() + rand() + rand()).substr(0, length);
+          }
+          return ToReturn;
+        };
         const { Pseudo, AnimToWatch, type } = this.state;
-        const TokenTemplate = `${Pseudo}-Template-${Date.now()}${
-          [
-            "UsntXqEYEw",
-            "mgbYwpVXXd",
-            "NgpàHzuh|J",
-            "é6fXlN5D3R",
-            "2GEQ5RfyVK",
-            "OLq7§5sXjb",
-            "àtdWXyHé7q",
-            "9Kdl3PHW&à",
-            "e21zé&E3zO",
-            "jlKIwIU&le",
-            "35AJ3sFLIA",
-            "hD0OApiToz",
-            "RUGh0Foxx5",
-            "y6x0cn2uJg",
-            "23&QYE2fva",
-          ][Math.round(Math.random() * 14)]
-        }${(Math.random() * 100000000).toString().split(".").join("")}`;
+        const TokenTemplate = `${Pseudo.split("")
+          .reverse()
+          .join("")}-Template-${Date.now()}${token(30)}${(Math.random() * 1000)
+          .toString()
+          .split(".")
+          .join("")}`;
 
+        let ArrEpSaison = null,
+          durer = null;
+        if (type === "serie") {
+          ArrEpSaison = AnimToWatch.AnimEP.map((saisons) => {
+            return saisons.Episodes.length;
+          });
+        } else {
+          durer = AnimToWatch.durer;
+        }
+        this.addValue(`${Pseudo}/TemplateAnim/${TokenTemplate}`, {
+          type,
+          AnimEP: ArrEpSaison,
+          durer,
+          title: AnimToWatch.name,
+          imageUrl: AnimToWatch.imageUrl,
+        });
+        // Share
         navigator
           .share({
-            title: document.title,
+            title: AnimToWatch.name,
             text: `${Pseudo} a fini ${AnimToWatch.name} ! Clické sur le lien pour vous aussi commencer cette anime !`,
             url: `https://myanimchecker.netlify.app/Template/${TokenTemplate}`,
           })
-          .then(() => {
-            // Successful share !
-            let ArrEpSaison = null,
-              durer = null;
-            if (type === "serie") {
-              ArrEpSaison = AnimToWatch.AnimEP.map((saisons) => {
-                return saisons.Episodes.length;
-              });
-            } else {
-              durer = AnimToWatch.durer;
-            }
-            this.addValue(`${Pseudo}/TemplateAnim`, {
-              [TokenTemplate]: {
-                type,
-                AnimEP: ArrEpSaison,
-                durer,
-                name: AnimToWatch.name,
-                imageUrl: AnimToWatch.imageUrl,
-              },
-            });
-          })
-          .catch(console.error);
+          .then(() => console.log("Successful share !"))
+          .catch((err) => {
+            console.error(err);
+            this.deleteValue(`${Pseudo}/TemplateAnim/${TokenTemplate}`);
+          });
       } catch (err) {
         console.error(
           "Share Failed: " +

@@ -3598,10 +3598,21 @@ a:hover {
   margin-bottom: 10px;
 }
 
+#Notif .fas.fa-bell {
+  -webkit-animation: TurnNotif 1s linear infinite;
+          animation: TurnNotif 1s linear infinite;
+}
+
 #Notif #returnNotif {
   margin-top: 50px;
   max-height: 700px;
   overflow: auto;
+}
+
+#Notif #returnNotif h3 {
+  text-align: center;
+  text-decoration: underline;
+  font-weight: bold;
 }
 
 #Notif #returnNotif .notif {
@@ -3692,6 +3703,11 @@ a:hover {
   outline: none;
   border: 1px solid #ddd;
   border-radius: 5px;
+}
+
+#Settings #ActionAccount #App #TemplateAnimContainer .TemplateAnim {
+  height: 30px;
+  font-size: 18px;
 }
 
 #Settings #ActionAccount #About ul,
@@ -3797,6 +3813,20 @@ a:hover {
   }
   to {
     left: 100%;
+  }
+}
+
+@-webkit-keyframes TurnNotif {
+  to {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+  }
+}
+
+@keyframes TurnNotif {
+  to {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
   }
 }
 /*# sourceMappingURL=App.css.map */

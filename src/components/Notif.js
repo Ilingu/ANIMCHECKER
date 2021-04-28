@@ -17,6 +17,8 @@ export default class Notif extends Component {
     Notif: {},
     Pseudo: this.props.match.params.pseudo,
     AnimeList: null,
+    RefreshNotif: true,
+    NotifRenderSaved: "Vous avez aucune notif d'anime, rajoutez-en !",
     // Auth
     uid: null,
     proprio: null,
@@ -155,7 +157,7 @@ export default class Notif extends Component {
         this.FetchAnime();
       }
 
-      this.setState({ Notif, PickAnime: false });
+      this.setState({ Notif, PickAnime: false, RefreshNotif: true });
     } catch (err) {
       console.error(err);
     }
@@ -298,7 +300,15 @@ export default class Notif extends Component {
       name.trim().length !== 0 &&
       name !== ""
     ) {
-      const IDNotif = `notif${Date.now()}`;
+      const token = (length) => {
+        const rand = () => Math.random(0).toString(36).substr(2);
+        let ToReturn = (rand() + rand() + rand() + rand()).substr(0, length);
+        while (ToReturn.includes("-")) {
+          ToReturn = (rand() + rand() + rand() + rand()).substr(0, length);
+        }
+        return ToReturn;
+      };
+      const IDNotif = `notif${token(10)}${Date.now()}`;
       let NewNotifTemplate = {
         ...Notif,
         [IDNotif]: {
@@ -484,6 +494,8 @@ export default class Notif extends Component {
       Pseudo,
       uid,
       proprio,
+      RefreshNotif,
+      NotifRenderSaved,
       isFirstTime,
       Notif,
       Lier,
@@ -525,33 +537,89 @@ export default class Notif extends Component {
     if (uid !== proprio) return <Redirect to="/notifuser/3" />;
 
     let MyAnimName = "Vous n'avez pas d'anime, rajoutez-en !";
-    let MyNotif = "Vous avez aucune notif d'anime, rajoutez-en !";
 
-    if (Object.keys(Notif).length !== 0) {
-      MyNotif = Object.keys(Notif).map((key, i) => {
-        return (
-          <OneNotif
-            key={key}
-            name={Notif[key].name}
-            calledTime={Notif[key].calledTime[0]}
-            paused={Notif[key].paused}
-            fn={[
-              () => this.updatePaused(key, !Notif[key].paused),
-              () => this.handleDelete(key),
-              () =>
-                this.setState({
-                  UpdateNotif: key,
-                  ShowModalAddNotif: true,
-                  name: Notif[key].name,
-                  day: new Date(Notif[key].calledTime[0]).getDay().toString(),
-                  time:
-                    new Date(Notif[key].calledTime[0]).getHours() * 3600 +
-                    new Date(Notif[key].calledTime[0]).getMinutes() * 60,
-                  Lier: Notif[key].Lier,
-                }),
-            ]}
-          />
-        );
+    if (Object.keys(Notif)?.length !== 0 && RefreshNotif) {
+      // Render Notif
+      let ResultInComponents = [];
+      [1, 2, 3, 4, 5, 6, 0].forEach((days) => {
+        let dayInLetter = null,
+          nbOfNotif = 0,
+          color = [
+            Math.round(Math.random() * 255),
+            Math.round(Math.random() * 255),
+            Math.round(Math.random() * 255),
+          ];
+        let NewNotifToStore = [];
+        Object.keys(Notif).forEach((key) => {
+          if (new Date(Notif[key].calledTime[0]).getDay() === days) {
+            nbOfNotif++;
+            NewNotifToStore = [
+              ...NewNotifToStore,
+              <OneNotif
+                key={key}
+                color={color}
+                name={Notif[key].name}
+                calledTime={Notif[key].calledTime[0]}
+                paused={Notif[key].paused}
+                fn={[
+                  () => this.updatePaused(key, !Notif[key].paused),
+                  () => this.handleDelete(key),
+                  () =>
+                    this.setState({
+                      UpdateNotif: key,
+                      ShowModalAddNotif: true,
+                      name: Notif[key].name,
+                      day: new Date(Notif[key].calledTime[0])
+                        .getDay()
+                        .toString(),
+                      time:
+                        new Date(Notif[key].calledTime[0]).getHours() * 3600 +
+                        new Date(Notif[key].calledTime[0]).getMinutes() * 60,
+                      Lier: Notif[key].Lier,
+                    }),
+                ]}
+              />,
+            ];
+          }
+        });
+        switch (days) {
+          case 0:
+            dayInLetter = "Dimanche";
+            break;
+          case 1:
+            dayInLetter = "Lundi";
+            break;
+          case 2:
+            dayInLetter = "Mardi";
+            break;
+          case 3:
+            dayInLetter = "Mercredi";
+            break;
+          case 4:
+            dayInLetter = "Jeudi";
+            break;
+          case 5:
+            dayInLetter = "Vendredi";
+            break;
+          case 6:
+            dayInLetter = "Samedi";
+            break;
+          default:
+            dayInLetter = "Fatal Error";
+            break;
+        }
+        ResultInComponents = [
+          ...ResultInComponents,
+          <h3>
+            {dayInLetter} ({nbOfNotif})<br />
+          </h3>,
+          ...NewNotifToStore,
+        ];
+      });
+      // Save Notif
+      this.setState({
+        RefreshNotif: false,
+        NotifRenderSaved: ResultInComponents,
       });
     }
 
@@ -596,7 +664,7 @@ export default class Notif extends Component {
 
           <h2>
             <span
-              className="fas fa-cog fa-spin"
+              className="fas fa-bell"
               onClick={() => {
                 this.NumberOfClick = [
                   this.NumberOfClick[0] + 1,
@@ -615,10 +683,10 @@ export default class Notif extends Component {
             ></span>
             <span style={{ userSelect: "none", color: "#ff6d00" }}>
               {" "}
-              Notif params{" "}
+              Notif ({Object.keys(Notif)?.length}){" "}
             </span>
             <span
-              className="fas fa-cog fa-spin"
+              className="fas fa-bell"
               onClick={() => {
                 this.NumberOfClick = [
                   this.NumberOfClick[0],
@@ -653,7 +721,7 @@ export default class Notif extends Component {
               block
               onClick={() =>
                 this.setState({
-                  ShowTheChangeNotifColorBtn: ShowTheChangeNotifColorBtn,
+                  RefreshNotif: true,
                 })
               }
             >
@@ -677,7 +745,7 @@ export default class Notif extends Component {
             )}
           </div>
         </header>
-        <div id="returnNotif">{MyNotif}</div>
+        <div id="returnNotif">{NotifRenderSaved}</div>
 
         {/* MODAL */}
         <Modal

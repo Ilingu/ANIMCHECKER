@@ -119,7 +119,6 @@ export default class Home extends Component {
     palmares: null,
     ToReSearchAfterRefresh: false,
     MicOn: false,
-    DeleteTemplateAnim: null,
     addEPToAlleged: false,
     ShowMessage: false,
     ShowMessageHtml: false,
@@ -239,7 +238,10 @@ export default class Home extends Component {
       const Token = this.props.match.params.token;
       (async () => {
         const TemplateFirebase = await base.fetch(
-          `${Token.split("-")[0]}/TemplateAnim/${Token}`,
+          `${Token.split("-")[0]
+            .split("")
+            .reverse()
+            .join("")}/TemplateAnim/${Token}`,
           {
             context: this,
           }
@@ -247,7 +249,7 @@ export default class Home extends Component {
 
         this.setState({
           ShowModalAddAnim: true,
-          title: TemplateFirebase.name,
+          title: TemplateFirebase.title,
           type: TemplateFirebase.type,
           nbEP:
             TemplateFirebase.type === "serie"
@@ -255,7 +257,7 @@ export default class Home extends Component {
               : "",
           durer:
             TemplateFirebase.type === "film" ? TemplateFirebase.durer : 110,
-          DeleteTemplateAnim: Token,
+          RedirectPage: "/",
         });
       })();
     }
@@ -1206,7 +1208,6 @@ export default class Home extends Component {
             palmares: null,
             ToReSearchAfterRefresh: false,
             MicOn: false,
-            DeleteTemplateAnim: null,
             addEPToAlleged: false,
             ShowMessage: false,
             ShowMessageHtml: false,
@@ -1711,7 +1712,7 @@ export default class Home extends Component {
           context: this,
         });
 
-    const IDNotif = `notif${Date.now()}`;
+    const IDNotif = `notif${this.token(10)}${Date.now()}`;
 
     // FN
     const GenerateCalledTime = () => {
@@ -1906,7 +1907,7 @@ export default class Home extends Component {
       if (IsGoodForPost) {
         this.addValue(`${Pseudo}/manga/0`, {
           ...MangaFirebase[0],
-          [`manga-${Date.now()}`]: {
+          [`manga-${this.token(10)}${Date.now()}`]: {
             name: title,
             Scan: ScanArr,
             imageUrl: imgUrl,
@@ -1961,7 +1962,6 @@ export default class Home extends Component {
       EpisodeName,
       DurationPerEp,
       OfflineMode,
-      DeleteTemplateAnim,
     } = this.state;
     const self = this;
 
@@ -2019,7 +2019,7 @@ export default class Home extends Component {
           nbEP !== ""
         ) {
           IsGood = true;
-          const IDSerie = `serie-${Date.now()}`;
+          const IDSerie = `serie-${self.token(10)}${Date.now()}`;
           let IDNotif = null;
           if (AddNotifWithAnim) {
             IDNotif = await self.AddNotifLier(IDSerie);
@@ -2109,7 +2109,7 @@ export default class Home extends Component {
           if (IsGoodForPost) {
             self.addValue(`${self.state.Pseudo}/film`, {
               ...self.state.filmFireBase,
-              [`film-${Date.now()}`]: {
+              [`film-${self.token(10)}${Date.now()}`]: {
                 name: title,
                 durer,
                 imageUrl: imgUrl,
@@ -2148,17 +2148,6 @@ export default class Home extends Component {
         self.deleteValue(`${self.state.Pseudo}/NextAnim/${NextAnimToDelete}`);
         self.setState({
           NextAnimToDelete: null,
-        });
-      }
-
-      if (IsGood && DeleteTemplateAnim !== null) {
-        self.deleteValue(
-          `${
-            DeleteTemplateAnim.split("-")[0]
-          }/TemplateAnim/${DeleteTemplateAnim}`
-        );
-        self.setState({
-          DeleteTemplateAnim: null,
         });
       }
 
@@ -2507,43 +2496,56 @@ export default class Home extends Component {
         return results[0].data;
       };
 
+      const GiveNewKey = (data, type) => {
+        let DataToReturn = {};
+        Object.keys(data).forEach((key) => {
+          DataToReturn = {
+            ...DataToReturn,
+            [`${type}-${this.token(10)}${Date.now()}`]: {
+              ...data[key],
+            },
+          };
+        });
+        return DataToReturn;
+      };
+
       this.updateValue(`${Pseudo}`, {
         serie: AntiLostData
           ? !fileContent.serie
             ? !serieFirebase
               ? null
               : serieFirebase
-            : fileContent.serie
+            : GiveNewKey(fileContent.serie, "serie")
           : !fileContent.serie
           ? null
-          : fileContent.serie,
+          : GiveNewKey(fileContent.serie, "serie"),
         film: AntiLostData
           ? !fileContent.film
             ? !filmFireBase
               ? null
               : filmFireBase
-            : fileContent.film
+            : GiveNewKey(fileContent.film, "film")
           : !fileContent.film
           ? null
-          : fileContent.film,
+          : GiveNewKey(fileContent.film, "film"),
         NextAnim: AntiLostData
           ? !fileContent.NextAnim
             ? !NextAnimFireBase
               ? null
               : NextAnimFireBase
-            : fileContent.NextAnim
+            : GiveNewKey(fileContent.NextAnim, "NextAnim")
           : !fileContent.NextAnim
           ? null
-          : fileContent.NextAnim,
+          : GiveNewKey(fileContent.NextAnim, "NextAnim"),
         Notif: AntiLostData
           ? !fileContent.Notif
             ? !(await GetNotifIndexedDB())
               ? null
               : await GetNotifIndexedDB()
-            : fileContent.Notif
+            : GiveNewKey(fileContent.Notif, "Notif")
           : !fileContent.Notif
           ? null
-          : fileContent.Notif,
+          : GiveNewKey(fileContent.Notif, "Notif"),
       });
     };
 
@@ -2580,7 +2582,7 @@ export default class Home extends Component {
       if (IsGoodForPost) {
         this.addValue(`${Pseudo}/manga/1`, {
           ...MangaFirebase[1],
-          [`NM-${Date.now()}`]: { name: NextManga },
+          [`NM-${this.token(10)}${Date.now()}`]: { name: NextManga },
         });
         reset();
       } else {
@@ -2954,6 +2956,15 @@ export default class Home extends Component {
         parseInt((AllegedTotalFinished / FinishedTotalSerie) * 100),
       ],
     };
+  };
+
+  token = (length) => {
+    const rand = () => Math.random(0).toString(36).substr(2);
+    let ToReturn = (rand() + rand() + rand() + rand()).substr(0, length);
+    while (ToReturn.includes("-")) {
+      ToReturn = (rand() + rand() + rand() + rand()).substr(0, length);
+    }
+    return ToReturn;
   };
 
   handleDeleteImageURLParameter = (URL, IfurlParamUpdateInDB = null) => {
@@ -3792,7 +3803,13 @@ export default class Home extends Component {
         NextReRenderOrderSerie.length
           ? NewNextReRenderOrderSerie
           : NextReRenderOrderSerie
-        ).map((key) => TemplateGAnime(key));
+        ).flatMap((key) => {
+          try {
+            return TemplateGAnime(key);
+          } catch (err) {
+            return [];
+          }
+        });
       } else {
         MyAnimListTemplate = MyAnimListTemplateKey.map((key) =>
           TemplateGAnime(key)
