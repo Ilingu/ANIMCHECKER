@@ -165,6 +165,8 @@ export default class Home extends Component {
   };
 
   setIntervalVar = null;
+  setTimeOutMsgInfo = null;
+  setTimeOutMsgInfo2 = null;
 
   componentDidMount() {
     const self = this;
@@ -2259,21 +2261,6 @@ export default class Home extends Component {
           let CopyCalledTime = [...NotifFirebase[notifKey].calledTime];
           // LierNotif
           if (NotifFirebase[notifKey].Lier) {
-            const ElemToNotify = document.getElementById(
-              `${this.state.serieFirebase[NotifFirebase[notifKey].Lier].name
-                .split(" ")
-                .join("")}-${NotifFirebase[notifKey].Lier.split("-")[1]
-                .split("")
-                .reverse()
-                .join("")
-                .slice(0, 5)}`
-            );
-            ElemToNotify.classList.add("NewEP");
-            // Add badge
-            const h3 = document.createElement("h3");
-            h3.className = "NEWEPBadge";
-            h3.innerHTML = `<span class="badge badge-danger">NEW</span>`;
-            ElemToNotify.appendChild(h3);
             // Save DB
             this.updateValue(
               `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
@@ -3135,15 +3122,18 @@ export default class Home extends Component {
   };
 
   ShowMessageInfo = (text, time) => {
+    clearTimeout(this.setTimeOutMsgInfo);
+    clearTimeout(this.setTimeOutMsgInfo2);
+    
     this.setState({
       ShowMessage: true,
       ShowMessageHtml: true,
       ResText: text,
     });
-    setTimeout(() => {
+    this.setTimeOutMsgInfo = setTimeout(() => {
       this.setState({ ShowMessage: false });
 
-      setTimeout(() => {
+      this.setTimeOutMsgInfo2 = setTimeout(() => {
         this.setState({ ShowMessageHtml: false, ResText: null });
       }, 900);
     }, time);

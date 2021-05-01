@@ -82,6 +82,8 @@ class Watch extends Component {
   };
 
   setIntervalVar = null;
+  setTimeOutMsgInfo = null;
+  setTimeOutMsgInfo2 = null;
   FirstBadge = true;
   DynamicSize = 0;
 
@@ -1154,13 +1156,15 @@ class Watch extends Component {
   };
 
   DisplayMsg = (msg, time) => {
+    clearTimeout(this.setTimeOutMsgInfo);
+    clearTimeout(this.setTimeOutMsgInfo2);
+
     this.setState({
       ShowMessage: true,
       ShowMessageHtml: true,
       ResText: msg,
     });
-
-    setTimeout(() => {
+    this.setTimeOutMsgInfo = setTimeout(() => {
       if (this.state.SecondMessage) {
         this.setState({ SecondMessage: false });
         return;
@@ -1171,7 +1175,7 @@ class Watch extends Component {
         AlreadyClicked: false,
       });
 
-      setTimeout(() => {
+      this.setTimeOutMsgInfo2 = setTimeout(() => {
         this.setState({
           ShowMessageHtml: false,
           ResText: null,
