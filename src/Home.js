@@ -3102,7 +3102,10 @@ export default class Home extends Component {
                   .join("")
                   .slice(0, 5)}`
               );
-              const ElemBtnCopy = ElemCopied.children[1].children[1];
+              let ElemBtnCopy = null;
+              Array.from(ElemCopied.children).forEach((child) => {
+                if (child.className === "copy") ElemBtnCopy = child;
+              });
               ElemBtnCopy.style.color = "rgba(38, 255, 0, 0.8)";
               ElemBtnCopy.style.width = "75px";
               ElemBtnCopy.style.left = "calc(50% - 35px)";

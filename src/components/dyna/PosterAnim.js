@@ -329,9 +329,9 @@ const PosterAnim = ({
                 alt="Img of Anim"
                 onError={ReTakeImgFromName}
               />
-              <div className="copy" onClick={CopyTitle}>
-                <span className="fas fa-copy"></span>
-              </div>
+            </div>
+            <div className="copy" onClick={CopyTitle}>
+              <span className="fas fa-copy"></span>
             </div>
             <div className="action">
               {(Paused && !isAlleged) ||

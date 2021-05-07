@@ -1394,19 +1394,19 @@ a:hover {
   border-radius: 7px;
 }
 
-#MyAnime .content .MyAnimPoster .ImgInterract .copy {
+#MyAnime .content .MyAnimPoster .copy {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  z-index: 1000;
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
   position: absolute;
-  bottom: 2.5px;
+  z-index: 1000;
+  top: 250px;
   left: calc(50% - 45px / 3);
   color: #fff;
   background-color: rgba(0, 0, 0, 0.6);
@@ -1512,12 +1512,11 @@ a:hover {
           transform: scale(1.1);
 }
 
-#MyAnime .content .MyAnimPoster:hover .ImgInterract,
-#MyAnime .content .MyAnimPoster:hover .copy:not() {
-  opacity: 0.3;
+#MyAnime .content .MyAnimPoster:hover .ImgInterract {
+  opacity: 0.95;
 }
 
-#MyAnime .content .MyAnimPoster:hover .ImgInterract .copy {
+#MyAnime .content .MyAnimPoster:hover .copy {
   opacity: 1;
 }
 
@@ -2153,7 +2152,8 @@ a:hover {
     height: 222px !important;
     border-radius: 7px;
   }
-  #MyAnime .content .MyAnimPoster .ImgInterract .copy {
+  #MyAnime .content .MyAnimPoster .copy {
+    top: 190px;
     width: 25px;
     height: 25px;
     font-size: 14px;
@@ -2224,7 +2224,8 @@ a:hover {
     height: 214.6px !important;
     border-radius: 7px;
   }
-  #MyAnime .content .MyAnimPoster .ImgInterract .copy {
+  #MyAnime .content .MyAnimPoster .copy {
+    top: 182.6px;
     width: 25px;
     height: 25px;
     font-size: 14px;
