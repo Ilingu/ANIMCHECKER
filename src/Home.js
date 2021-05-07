@@ -2729,7 +2729,9 @@ export default class Home extends Component {
       Object.keys(SearchFilter).forEach((key, i) => {
         if (key === "limit=") IsLimitsCall = true;
         Request += `${i === 0 ? "" : "&"}${key}${
-          key === "q="
+          key === "q=" && SearchFilter[key].length <= 2
+            ? this.replaceSpace(`${SearchFilter[key]} `, "%20")
+            : key === "q="
             ? this.replaceSpace(SearchFilter[key], "%20")
             : SearchFilter[key]
         }`;
@@ -3124,7 +3126,7 @@ export default class Home extends Component {
   ShowMessageInfo = (text, time) => {
     clearTimeout(this.setTimeOutMsgInfo);
     clearTimeout(this.setTimeOutMsgInfo2);
-    
+
     this.setState({
       ShowMessage: true,
       ShowMessageHtml: true,
