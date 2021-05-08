@@ -294,7 +294,8 @@ const PosterAnim = ({
             )}
             {AnimeSeason &&
             NewEpMode &&
-            !isFinished & !Paused &&
+            !isFinished &&
+            !Paused &&
             !Drop &&
             !InWait ? (
               <h3 className="NEWEPBadge">

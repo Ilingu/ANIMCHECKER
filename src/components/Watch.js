@@ -114,6 +114,24 @@ class Watch extends Component {
         }
       );
     }
+    // KeyShortcuts
+    if (!window.mobileAndTabletCheck()) {
+      document.onkeydown = (keyDownEvent) => {
+        if (keyDownEvent.repeat) return;
+        const { repereEpisode, repereSaison, modeWatch } = self.state;
+        if (!modeWatch) return;
+        if (keyDownEvent.key === "ArrowRight") {
+          return repereEpisode[2] !== null
+            ? this.StartNextEP(repereSaison, repereEpisode[2].id)
+            : this.verifiedEPRepere(repereSaison, true);
+        }
+        if (keyDownEvent.key === "Escape") return this.StopModeWatch();
+        if (keyDownEvent.key === "ArrowLeft")
+          return repereEpisode[0] !== null
+            ? this.playEp(repereSaison, repereEpisode[0].id)
+            : console.warn("Impossible de charger un Episode innexistant !");
+      };
+    }
     // WatchMode
     if (this.props.match.params.watchmode !== undefined)
       this.setState({ WatchModeNow: this.props.match.params.watchmode });
@@ -2503,11 +2521,13 @@ class Watch extends Component {
           <div
             className="cancel"
             onDoubleClick={() => {
-              this.deleteValue(`${Pseudo}/serie/${id}/Objectif`);
-              if (!this.state.OfflineMode) {
-                this.fnDbOffline("DELETE", `${Pseudo}/serie/${id}/Objectif`);
+              if (AnimToWatch.Objectif !== undefined) {
+                this.deleteValue(`${Pseudo}/serie/${id}/Objectif`);
+                if (!this.state.OfflineMode) {
+                  this.fnDbOffline("DELETE", `${Pseudo}/serie/${id}/Objectif`);
+                }
+                this.StopModeWatch();
               }
-              this.StopModeWatch();
             }}
             onClick={() => {
               if (AnimToWatch.Objectif !== undefined) {

@@ -15,7 +15,7 @@
 
 #### Release
 
-[![SITE](https://img.shields.io/badge/ACK%20release-LTS%201%20%CE%B26%20F3-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)  
+[![SITE](https://img.shields.io/badge/ACK%20release-LTS%201%20%CE%B27-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)  
 [![SITE](https://img.shields.io/badge/MCK%20release-%CE%B22-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)  
 [![SITE](https://img.shields.io/badge/Project%20Version-LTS%201.2.1-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)
 
