@@ -241,6 +241,7 @@ class Watch extends Component {
                   : this.verifiedEPRepere(repereSaison, true);
               }
               if (keyDownEvent.key === "Escape") return this.StopModeWatch();
+              if (keyDownEvent.key === "f") return this.StartNextEP();
               if (keyDownEvent.key === "ArrowLeft")
                 return repereEpisode[0] !== null
                   ? this.playEp(repereSaison, repereEpisode[0].id)
