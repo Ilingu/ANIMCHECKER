@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 // Components
 import Header from "./Header";
 // Design
@@ -16,9 +16,25 @@ const MyManga = ({
   CloseAlert,
   SwipeActive,
   ChangeSwipe,
+  IsShortcut,
 }) => {
+  useMemo(() => {
+    document.onkeydown = null;
+  }, []);
   useEffect(() => {
-    if (!window.mobileAndTabletCheck()) return;
+    // KeyShortcut
+    if (!window.mobileAndTabletCheck()) {
+      if (IsShortcut && document.onkeydown === null) {
+        document.onkeydown = (keyDownEvent) => {
+          if (keyDownEvent.repeat) return;
+          if (keyDownEvent.key === "ArrowRight") {
+            return ChangeSwipe(false);
+          }
+          if (keyDownEvent.key === "ArrowLeft") return ChangeSwipe(true);
+        };
+      }
+      return;
+    }
     // Mobile Swipe
     let touchstartX = 0,
       touchendX = 0;

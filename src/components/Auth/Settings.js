@@ -316,7 +316,7 @@ class Settings extends Component {
           <h1>Action:</h1>
           <div id="ActionAccount">
             <aside id="App">
-              <h3>Application:</h3>
+              <h3>Application (Personnalisation):</h3>
               {ShowColorPicker ? (
                 <Fragment>
                   <ChromePicker
@@ -330,8 +330,7 @@ class Settings extends Component {
               ) : null}
 
               <Button
-                variant="warning"
-                style={{ backgroundColor: "#7700ff40", color: "#fff" }}
+                variant="outline-light"
                 onClick={() => {
                   if (window.localStorage.getItem("BGC-ACK")) {
                     document.body.style.backgroundColor = "#212121";
@@ -362,6 +361,7 @@ class Settings extends Component {
               </Button>
               {ParamsOptn === null ? null : (
                 <Fragment>
+                  <div className="hrDiv"></div>
                   <Button
                     variant={
                       ParamsOptn.NotifState === false
@@ -372,14 +372,13 @@ class Settings extends Component {
                       this.updateValue(
                         `${Pseudo}/ParamsOptn`,
                         {
-                          NotifState:
-                            ParamsOptn.NotifState === false ? true : false,
+                          NotifState: !ParamsOptn?.NotifState ? true : false,
                         },
                         this.refreshParamsOptn
                       )
                     }
                   >
-                    {ParamsOptn.NotifState === false ? (
+                    {!ParamsOptn?.NotifState ? (
                       <Fragment>
                         <span className="fas fa-bell"></span>
                         Activer{" "}
@@ -398,32 +397,47 @@ class Settings extends Component {
                       this.updateValue(
                         `${Pseudo}/ParamsOptn`,
                         {
-                          MyAnimRandom:
-                            ParamsOptn.MyAnimRandom === false ? true : false,
+                          MyAnimRandom: !ParamsOptn?.MyAnimRandom
+                            ? true
+                            : false,
                         },
                         this.refreshParamsOptn
                       )
                     }
                   >
                     <span className="fas fa-dice"></span> Mélange de la liste
-                    d'anime: {ParamsOptn.MyAnimRandom === false ? "Off" : "On"}
+                    d'anime: {ParamsOptn?.MyAnimRandom === false ? "Off" : "On"}
                   </Button>
                   <Button
-                    variant="outline-info"
+                    variant="outline-light"
                     onClick={() =>
                       this.updateValue(
                         `${Pseudo}/ParamsOptn`,
                         {
-                          SmartRepere:
-                            ParamsOptn.SmartRepere === false ? true : false,
+                          Shortcut: !ParamsOptn?.Shortcut ? true : false,
                         },
                         this.refreshParamsOptn
                       )
                     }
                   >
-                    <span className="fas fa-eye"></span> Repere de votre
-                    progression intelligente:{" "}
-                    {ParamsOptn.SmartRepere === false ? "Off" : "On"}
+                    <span className="fas fa-keyboard"></span> Raccourci clavier:{" "}
+                    {!ParamsOptn.Shortcut ? "Off" : "On"}
+                  </Button>
+                  <Button
+                    variant="outline-light"
+                    onClick={() =>
+                      this.updateValue(
+                        `${Pseudo}/ParamsOptn`,
+                        {
+                          SmartRepere: !ParamsOptn?.SmartRepere ? true : false,
+                        },
+                        this.refreshParamsOptn
+                      )
+                    }
+                  >
+                    <span className="fas fa-eye"></span> Progression
+                    intelligente:{" "}
+                    {ParamsOptn?.SmartRepere === false ? "Off" : "On"}
                   </Button>
                   <Form>
                     <Form.Group controlId="animeAcueill">
@@ -496,33 +510,34 @@ class Settings extends Component {
                       </Form.Control>
                     </Form.Group>
                   </Form>
-                  <h4>
-                    T'es Template d'anime{" "}
-                    <Button
-                      variant="outline-primary"
-                      style={{ width: "38px" }}
-                      onClick={() => {
-                        this.setState({
-                          IndexForTemplateAnim:
-                            TemplateAnime.length - 1 === IndexForTemplateAnim
-                              ? 0
-                              : IndexForTemplateAnim + 1,
-                        });
-                      }}
-                    >
-                      <span className="fas fa-long-arrow-alt-right"></span>
-                    </Button>
-                  </h4>
-                  <div id="TemplateAnimContainer">
-                    {typeof TemplateAnime === "string"
-                      ? TemplateAnime
-                      : TemplateAnime[IndexForTemplateAnim]}
-                  </div>
                 </Fragment>
               )}
             </aside>
             <aside id="User">
-              <h3>Utilisateur:</h3>
+              <h3>Utilisateur (Données):</h3>
+              <h4>
+                T'es Template d'anime{" "}
+                <Button
+                  variant="outline-primary"
+                  style={{ width: "38px" }}
+                  onClick={() => {
+                    this.setState({
+                      IndexForTemplateAnim:
+                        TemplateAnime.length - 1 === IndexForTemplateAnim
+                          ? 0
+                          : IndexForTemplateAnim + 1,
+                    });
+                  }}
+                >
+                  <span className="fas fa-long-arrow-alt-right"></span>
+                </Button>
+              </h4>
+              <div id="TemplateAnimContainer">
+                {typeof TemplateAnime === "string"
+                  ? TemplateAnime
+                  : TemplateAnime[IndexForTemplateAnim]}
+              </div>
+              <div className="hrDiv"></div>
               <Button
                 variant="outline-primary"
                 disabled={OfflineMode}
@@ -570,7 +585,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.2.1</b>
+                  Stable (LTS)<b>1.2.2</b>
                 </li>
               </ul>
               <p>

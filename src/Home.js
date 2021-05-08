@@ -318,6 +318,10 @@ export default class Home extends Component {
     }
   }
 
+  componentWillUnmount() {
+    document.onkeydown = null;
+  }
+
   OfflineMode = (forced, auto = false) => {
     const self = this;
     if (forced === true) {
@@ -4347,6 +4351,11 @@ export default class Home extends Component {
                   this.setState({ SwipeActive: NewActive });
                   this.TransitionTabsChange(true, true, NewActive);
                 }}
+                IsShortcut={
+                  ParamsOptn?.Shortcut !== undefined
+                    ? ParamsOptn.Shortcut
+                    : true
+                }
               />
             ) : (
               <MyAnim
@@ -4452,6 +4461,11 @@ export default class Home extends Component {
                     ResText: null,
                     typeAlert: null,
                   })
+                }
+                IsShortcut={
+                  ParamsOptn?.Shortcut !== undefined
+                    ? ParamsOptn.Shortcut
+                    : true
                 }
               />
             )}

@@ -3665,6 +3665,14 @@ a:hover {
       grid-template-columns: repeat(2, 1fr);
 }
 
+#Settings #ActionAccount .hrDiv {
+  height: 1px;
+  width: 50%;
+  background-color: #fff;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+
 #Settings #ActionAccount #App,
 #Settings #ActionAccount #User,
 #Settings #ActionAccount #About {
@@ -3706,7 +3714,11 @@ a:hover {
   border-radius: 5px;
 }
 
-#Settings #ActionAccount #App #TemplateAnimContainer .TemplateAnim {
+#Settings #ActionAccount #App form {
+  width: 50%;
+}
+
+#Settings #ActionAccount #User #TemplateAnimContainer .TemplateAnim {
   height: 30px;
   font-size: 18px;
 }

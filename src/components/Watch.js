@@ -45,6 +45,7 @@ class Watch extends Component {
     isFirstTime: true,
     WatchModeNow: null,
     RedirectHome: false,
+    Shortcut: true,
     ToOpen: "",
     ModeEditTitle: false,
     ShowFormBadge: false,
@@ -114,24 +115,6 @@ class Watch extends Component {
         }
       );
     }
-    // KeyShortcuts
-    if (!window.mobileAndTabletCheck()) {
-      document.onkeydown = (keyDownEvent) => {
-        if (keyDownEvent.repeat) return;
-        const { repereEpisode, repereSaison, modeWatch } = self.state;
-        if (!modeWatch) return;
-        if (keyDownEvent.key === "ArrowRight") {
-          return repereEpisode[2] !== null
-            ? this.StartNextEP(repereSaison, repereEpisode[2].id)
-            : this.verifiedEPRepere(repereSaison, true);
-        }
-        if (keyDownEvent.key === "Escape") return this.StopModeWatch();
-        if (keyDownEvent.key === "ArrowLeft")
-          return repereEpisode[0] !== null
-            ? this.playEp(repereSaison, repereEpisode[0].id)
-            : console.warn("Impossible de charger un Episode innexistant !");
-      };
-    }
     // WatchMode
     if (this.props.match.params.watchmode !== undefined)
       this.setState({ WatchModeNow: this.props.match.params.watchmode });
@@ -149,6 +132,10 @@ class Watch extends Component {
         "BGC-ACK"
       );
     }
+  }
+
+  componentWillUnmount() {
+    document.onkeydown = null;
   }
 
   reAuth = () => {
@@ -224,16 +211,44 @@ class Watch extends Component {
         {
           AnimToWatch,
           Newtitle: AnimToWatch.name,
-          SmartRepere:
-            AllDataPseudo.ParamsOptn === undefined
-              ? true
-              : AllDataPseudo.ParamsOptn.SmartRepere === undefined
-              ? true
-              : AllDataPseudo.ParamsOptn.SmartRepere,
+          SmartRepere: AllDataPseudo?.ParamsOptn
+            ? AllDataPseudo?.ParamsOptn?.SmartRepere !== undefined
+              ? AllDataPseudo.ParamsOptn.SmartRepere
+              : true
+            : true,
+          Shortcut: AllDataPseudo?.ParamsOptn
+            ? AllDataPseudo?.ParamsOptn?.Shortcut !== undefined
+              ? AllDataPseudo.ParamsOptn.Shortcut
+              : true
+            : true,
           Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
           LoadingMode: false,
         },
         () => {
+          // KeyShortcuts
+          if (
+            !window.mobileAndTabletCheck() &&
+            this.state.Shortcut &&
+            document.onkeydown === null
+          ) {
+            document.onkeydown = (keyDownEvent) => {
+              if (keyDownEvent.repeat) return;
+              const { repereEpisode, repereSaison, modeWatch } = this.state;
+              if (!modeWatch) return;
+              if (keyDownEvent.key === "ArrowRight") {
+                return repereEpisode[2] !== null
+                  ? this.StartNextEP(repereSaison, repereEpisode[2].id)
+                  : this.verifiedEPRepere(repereSaison, true);
+              }
+              if (keyDownEvent.key === "Escape") return this.StopModeWatch();
+              if (keyDownEvent.key === "ArrowLeft")
+                return repereEpisode[0] !== null
+                  ? this.playEp(repereSaison, repereEpisode[0].id)
+                  : console.warn(
+                      "Impossible de charger un Episode innexistant !"
+                    );
+            };
+          }
           if (
             AnimToWatch.Objectif !== undefined &&
             AnimToWatch.Objectif.End[2] < Date.now()

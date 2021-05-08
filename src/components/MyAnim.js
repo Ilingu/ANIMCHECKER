@@ -1,4 +1,4 @@
-import React, { useEffect, Fragment } from "react";
+import React, { useEffect, useMemo, Fragment } from "react";
 // Components
 import Header from "./Header";
 // CSS
@@ -30,9 +30,25 @@ const MyAnim = ({
   fnNextAnimForm,
   ModeImportant,
   Tag,
+  IsShortcut,
 }) => {
+  useMemo(() => {
+    document.onkeydown = null;
+  }, []);
   useEffect(() => {
-    if (!window.mobileAndTabletCheck()) return;
+    // KeyShortcut
+    if (!window.mobileAndTabletCheck()) {
+      if (IsShortcut && document.onkeydown === null) {
+        document.onkeydown = (keyDownEvent) => {
+          if (keyDownEvent.repeat) return;
+          if (keyDownEvent.key === "ArrowRight") {
+            return SwitchMyNextAnim();
+          }
+          if (keyDownEvent.key === "ArrowLeft") return SwitchMyAnim();
+        };
+      }
+      return;
+    }
     // Mobile Swipe
     let touchstartX = 0,
       touchendX = 0;
