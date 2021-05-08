@@ -234,6 +234,7 @@ class Watch extends Component {
             document.onkeydown = (keyDownEvent) => {
               if (keyDownEvent.repeat) return;
               const { repereEpisode, repereSaison, modeWatch } = this.state;
+              if (keyDownEvent.key === "f") return this.StartNextEP();
               if (!modeWatch) return;
               if (keyDownEvent.key === "ArrowRight") {
                 return repereEpisode[2] !== null
@@ -241,7 +242,6 @@ class Watch extends Component {
                   : this.verifiedEPRepere(repereSaison, true);
               }
               if (keyDownEvent.key === "Escape") return this.StopModeWatch();
-              if (keyDownEvent.key === "f") return this.StartNextEP();
               if (keyDownEvent.key === "ArrowLeft")
                 return repereEpisode[0] !== null
                   ? this.playEp(repereSaison, repereEpisode[0].id)
