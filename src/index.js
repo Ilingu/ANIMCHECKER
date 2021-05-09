@@ -15,6 +15,7 @@ import Settings from "./components/Auth/Settings";
 import NotFound from "./components/Error/NotFound";
 // CSS
 import "bootstrap/dist/css/bootstrap.min.css";
+import "react-bootstrap-country-select/dist/react-bootstrap-country-select.css";
 import "./Assets/CSS/App.css";
 
 const Root = () => (

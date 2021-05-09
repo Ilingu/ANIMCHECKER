@@ -11,6 +11,7 @@ const OneAnim = ({
   handleAdd,
   ShowMessageHtml,
   ShowMessage,
+  UserCountry,
   ResText,
   Manga,
 }) => {
@@ -18,25 +19,30 @@ const OneAnim = ({
   const [TranslatedCacheSynopsis, setTranslatedCacheSynopsis] = useState("");
   const [Original, setOriginal] = useState(true);
   useEffect(() => {
-    axios
-      .request({
-        method: "GET",
-        url:
-          "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate",
-        params: { source: "en", target: "fr", input: details[1].synopsis },
-        headers: {
-          "x-rapidapi-key":
-            "412437fce2mshdbaa1f4314616bep11404djsn8f200dcb59de",
-          "x-rapidapi-host":
-            "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
-        },
-      })
-      .then((res) => {
-        setSynopsisText(res.data.outputs[0].output);
-        setTranslatedCacheSynopsis(res.data.outputs[0].output);
-        setOriginal(false);
-      })
-      .catch(console.error);
+    if (typeof UserCountry === "string")
+      axios
+        .request({
+          method: "GET",
+          url:
+            "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate",
+          params: {
+            source: "en",
+            target: UserCountry,
+            input: details[1].synopsis,
+          },
+          headers: {
+            "x-rapidapi-key":
+              "412437fce2mshdbaa1f4314616bep11404djsn8f200dcb59de",
+            "x-rapidapi-host":
+              "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
+          },
+        })
+        .then((res) => {
+          setSynopsisText(res.data.outputs[0].output);
+          setTranslatedCacheSynopsis(res.data.outputs[0].output);
+          setOriginal(false);
+        })
+        .catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   if (Manga) {
@@ -123,32 +129,36 @@ const OneAnim = ({
                   Résumé: <span className="info">{SynopsisText}</span>{" "}
                   {!Original ? (
                     <span style={{ color: "#aaa" }}>
-                      {`{Traduit par SYSTRAN.io}`}{" "}
+                      {`{Traduit en ${UserCountry} par SYSTRAN.io}`}{" "}
                     </span>
                   ) : null}
-                  <Button
-                    size="sm"
-                    variant="link"
-                    onClick={() => {
-                      if (Original) {
-                        if (TranslatedCacheSynopsis === "") {
-                          setSynopsisText("Traduction impossible.");
-                          setTimeout(
-                            () => setSynopsisText(details[1].synopsis),
-                            5000
-                          );
+                  {!UserCountry ? null : (
+                    <Button
+                      size="sm"
+                      variant="link"
+                      onClick={() => {
+                        if (Original) {
+                          if (TranslatedCacheSynopsis === "") {
+                            setSynopsisText("Traduction impossible.");
+                            setTimeout(
+                              () => setSynopsisText(details[1].synopsis),
+                              5000
+                            );
+                            return;
+                          }
+                          setSynopsisText(TranslatedCacheSynopsis);
+                          setOriginal(false);
                           return;
                         }
-                        setSynopsisText(TranslatedCacheSynopsis);
-                        setOriginal(false);
-                        return;
-                      }
-                      setSynopsisText(details[1].synopsis);
-                      setOriginal(true);
-                    }}
-                  >
-                    {Original ? "Traduire (par SYSTRAN.io)" : "Original"}
-                  </Button>
+                        setSynopsisText(details[1].synopsis);
+                        setOriginal(true);
+                      }}
+                    >
+                      {Original
+                        ? `Traduire en ${UserCountry} (par SYSTRAN.io)`
+                        : "Original"}
+                    </Button>
+                  )}
                 </li>
               </ul>
             </div>
@@ -278,32 +288,36 @@ const OneAnim = ({
                 Résumé: <span className="info">{SynopsisText}</span>{" "}
                 {!Original ? (
                   <span style={{ color: "#aaa" }}>
-                    {`{Traduit par SYSTRAN.io}`}{" "}
+                    {`{Traduit en ${UserCountry} par SYSTRAN.io}`}{" "}
                   </span>
                 ) : null}
-                <Button
-                  size="sm"
-                  variant="link"
-                  onClick={() => {
-                    if (Original) {
-                      if (TranslatedCacheSynopsis === "") {
-                        setSynopsisText("Traduction impossible.");
-                        setTimeout(
-                          () => setSynopsisText(details[1].synopsis),
-                          5000
-                        );
+                {!UserCountry ? null : (
+                  <Button
+                    size="sm"
+                    variant="link"
+                    onClick={() => {
+                      if (Original) {
+                        if (TranslatedCacheSynopsis === "") {
+                          setSynopsisText("Traduction impossible.");
+                          setTimeout(
+                            () => setSynopsisText(details[1].synopsis),
+                            5000
+                          );
+                          return;
+                        }
+                        setSynopsisText(TranslatedCacheSynopsis);
+                        setOriginal(false);
                         return;
                       }
-                      setSynopsisText(TranslatedCacheSynopsis);
-                      setOriginal(false);
-                      return;
-                    }
-                    setSynopsisText(details[1].synopsis);
-                    setOriginal(true);
-                  }}
-                >
-                  {Original ? "Traduire (par SYSTRAN.io)" : "Original"}
-                </Button>
+                      setSynopsisText(details[1].synopsis);
+                      setOriginal(true);
+                    }}
+                  >
+                    {Original
+                      ? `Traduire en ${UserCountry} (par SYSTRAN.io)`
+                      : "Original"}
+                  </Button>
+                )}
               </li>
             </ul>
           </div>

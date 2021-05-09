@@ -4010,6 +4010,9 @@ export default class Home extends Component {
           ShowMessageHtml={ShowMessageHtml}
           ResText={ResText}
           Manga={PageMode ? false : true}
+          UserCountry={
+            ParamsOptn?.Country !== undefined ? ParamsOptn.Country : null
+          }
           handleAdd={(typePage) => {
             // Manga
             if (typePage === "NA" && !PageMode) {

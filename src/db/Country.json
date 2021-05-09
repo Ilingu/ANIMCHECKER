@@ -1,0 +1,578 @@
+[
+  {
+    "id": "af",
+    "name": "Afrikaans",
+    "flag": "AF",
+    "alpha2": "af",
+    "alpha3": "af",
+    "ioc": "af"
+  },
+  {
+    "id": "sq",
+    "name": "Albanian",
+    "flag": "SQ",
+    "alpha2": "sq",
+    "alpha3": "sq",
+    "ioc": "sq"
+  },
+  {
+    "id": "ar",
+    "name": "Arabic",
+    "flag": "AR",
+    "alpha2": "ar",
+    "alpha3": "ar",
+    "ioc": "ar"
+  },
+  {
+    "id": "hy",
+    "name": "Armenian",
+    "flag": "HY",
+    "alpha2": "hy",
+    "alpha3": "hy",
+    "ioc": "hy"
+  },
+  {
+    "id": "eu",
+    "name": "Basque",
+    "flag": "EU",
+    "alpha2": "eu",
+    "alpha3": "eu",
+    "ioc": "eu"
+  },
+  {
+    "id": "bn",
+    "name": "Bengali",
+    "flag": "BN",
+    "alpha2": "bn",
+    "alpha3": "bn",
+    "ioc": "bn"
+  },
+  {
+    "id": "bg",
+    "name": "Bulgarian",
+    "flag": "BG",
+    "alpha2": "bg",
+    "alpha3": "bg",
+    "ioc": "bg"
+  },
+  {
+    "id": "ca",
+    "name": "Catalan",
+    "flag": "CA",
+    "alpha2": "ca",
+    "alpha3": "ca",
+    "ioc": "ca"
+  },
+  {
+    "id": "km",
+    "name": "Cambodian",
+    "flag": "KM",
+    "alpha2": "km",
+    "alpha3": "km",
+    "ioc": "km"
+  },
+  {
+    "id": "zh",
+    "name": "Chinese",
+    "flag": "ZH",
+    "alpha2": "zh",
+    "alpha3": "zh",
+    "ioc": "zh"
+  },
+  {
+    "id": "hr",
+    "name": "Croatian",
+    "flag": "HR",
+    "alpha2": "hr",
+    "alpha3": "hr",
+    "ioc": "hr"
+  },
+  {
+    "id": "cs",
+    "name": "Czech",
+    "flag": "CS",
+    "alpha2": "cs",
+    "alpha3": "cs",
+    "ioc": "cs"
+  },
+  {
+    "id": "da",
+    "name": "Danish",
+    "flag": "DA",
+    "alpha2": "da",
+    "alpha3": "da",
+    "ioc": "da"
+  },
+  {
+    "id": "nl",
+    "name": "Dutch",
+    "flag": "NL",
+    "alpha2": "nl",
+    "alpha3": "nl",
+    "ioc": "nl"
+  },
+  {
+    "id": "en",
+    "name": "English",
+    "flag": "EN",
+    "alpha2": "en",
+    "alpha3": "en",
+    "ioc": "en"
+  },
+  {
+    "id": "et",
+    "name": "Estonian",
+    "flag": "ET",
+    "alpha2": "et",
+    "alpha3": "et",
+    "ioc": "et"
+  },
+  {
+    "id": "fj",
+    "name": "Fiji",
+    "flag": "FJ",
+    "alpha2": "fj",
+    "alpha3": "fj",
+    "ioc": "fj"
+  },
+  {
+    "id": "fi",
+    "name": "Finnish",
+    "flag": "FI",
+    "alpha2": "fi",
+    "alpha3": "fi",
+    "ioc": "fi"
+  },
+  {
+    "id": "fr",
+    "name": "French",
+    "flag": "FR",
+    "alpha2": "fr",
+    "alpha3": "fr",
+    "ioc": "fr"
+  },
+  {
+    "id": "ka",
+    "name": "Georgian",
+    "flag": "KA",
+    "alpha2": "ka",
+    "alpha3": "ka",
+    "ioc": "ka"
+  },
+  {
+    "id": "de",
+    "name": "German",
+    "flag": "DE",
+    "alpha2": "de",
+    "alpha3": "de",
+    "ioc": "de"
+  },
+  {
+    "id": "el",
+    "name": "Greek",
+    "flag": "EL",
+    "alpha2": "el",
+    "alpha3": "el",
+    "ioc": "el"
+  },
+  {
+    "id": "gu",
+    "name": "Gujarati",
+    "flag": "GU",
+    "alpha2": "gu",
+    "alpha3": "gu",
+    "ioc": "gu"
+  },
+  {
+    "id": "he",
+    "name": "Hebrew",
+    "flag": "HE",
+    "alpha2": "he",
+    "alpha3": "he",
+    "ioc": "he"
+  },
+  {
+    "id": "hi",
+    "name": "Hindi",
+    "flag": "HI",
+    "alpha2": "hi",
+    "alpha3": "hi",
+    "ioc": "hi"
+  },
+  {
+    "id": "hu",
+    "name": "Hungarian",
+    "flag": "HU",
+    "alpha2": "hu",
+    "alpha3": "hu",
+    "ioc": "hu"
+  },
+  {
+    "id": "is",
+    "name": "Icelandic",
+    "flag": "IS",
+    "alpha2": "is",
+    "alpha3": "is",
+    "ioc": "is"
+  },
+  {
+    "id": "id",
+    "name": "Indonesian",
+    "flag": "ID",
+    "alpha2": "id",
+    "alpha3": "id",
+    "ioc": "id"
+  },
+  {
+    "id": "ga",
+    "name": "Irish",
+    "flag": "GA",
+    "alpha2": "ga",
+    "alpha3": "ga",
+    "ioc": "ga"
+  },
+  {
+    "id": "it",
+    "name": "Italian",
+    "flag": "IT",
+    "alpha2": "it",
+    "alpha3": "it",
+    "ioc": "it"
+  },
+  {
+    "id": "ja",
+    "name": "Japanese",
+    "flag": "JA",
+    "alpha2": "ja",
+    "alpha3": "ja",
+    "ioc": "ja"
+  },
+  {
+    "id": "jw",
+    "name": "Javanese",
+    "flag": "JW",
+    "alpha2": "jw",
+    "alpha3": "jw",
+    "ioc": "jw"
+  },
+  {
+    "id": "ko",
+    "name": "Korean",
+    "flag": "KO",
+    "alpha2": "ko",
+    "alpha3": "ko",
+    "ioc": "ko"
+  },
+  {
+    "id": "la",
+    "name": "Latin",
+    "flag": "LA",
+    "alpha2": "la",
+    "alpha3": "la",
+    "ioc": "la"
+  },
+  {
+    "id": "lv",
+    "name": "Latvian",
+    "flag": "LV",
+    "alpha2": "lv",
+    "alpha3": "lv",
+    "ioc": "lv"
+  },
+  {
+    "id": "lt",
+    "name": "Lithuanian",
+    "flag": "LT",
+    "alpha2": "lt",
+    "alpha3": "lt",
+    "ioc": "lt"
+  },
+  {
+    "id": "mk",
+    "name": "Macedonian",
+    "flag": "MK",
+    "alpha2": "mk",
+    "alpha3": "mk",
+    "ioc": "mk"
+  },
+  {
+    "id": "ms",
+    "name": "Malay",
+    "flag": "MS",
+    "alpha2": "ms",
+    "alpha3": "ms",
+    "ioc": "ms"
+  },
+  {
+    "id": "ml",
+    "name": "Malayalam",
+    "flag": "ML",
+    "alpha2": "ml",
+    "alpha3": "ml",
+    "ioc": "ml"
+  },
+  {
+    "id": "mt",
+    "name": "Maltese",
+    "flag": "MT",
+    "alpha2": "mt",
+    "alpha3": "mt",
+    "ioc": "mt"
+  },
+  {
+    "id": "mi",
+    "name": "Maori",
+    "flag": "MI",
+    "alpha2": "mi",
+    "alpha3": "mi",
+    "ioc": "mi"
+  },
+  {
+    "id": "mr",
+    "name": "Marathi",
+    "flag": "MR",
+    "alpha2": "mr",
+    "alpha3": "mr",
+    "ioc": "mr"
+  },
+  {
+    "id": "mn",
+    "name": "Mongolian",
+    "flag": "MN",
+    "alpha2": "mn",
+    "alpha3": "mn",
+    "ioc": "mn"
+  },
+  {
+    "id": "ne",
+    "name": "Nepali",
+    "flag": "NE",
+    "alpha2": "ne",
+    "alpha3": "ne",
+    "ioc": "ne"
+  },
+  {
+    "id": "no",
+    "name": "Norwegian",
+    "flag": "NO",
+    "alpha2": "no",
+    "alpha3": "no",
+    "ioc": "no"
+  },
+  {
+    "id": "fa",
+    "name": "Persian",
+    "flag": "FA",
+    "alpha2": "fa",
+    "alpha3": "fa",
+    "ioc": "fa"
+  },
+  {
+    "id": "pl",
+    "name": "Polish",
+    "flag": "PL",
+    "alpha2": "pl",
+    "alpha3": "pl",
+    "ioc": "pl"
+  },
+  {
+    "id": "pt",
+    "name": "Portuguese",
+    "flag": "PT",
+    "alpha2": "pt",
+    "alpha3": "pt",
+    "ioc": "pt"
+  },
+  {
+    "id": "pa",
+    "name": "Punjabi",
+    "flag": "PA",
+    "alpha2": "pa",
+    "alpha3": "pa",
+    "ioc": "pa"
+  },
+  {
+    "id": "qu",
+    "name": "Quechua",
+    "flag": "QU",
+    "alpha2": "qu",
+    "alpha3": "qu",
+    "ioc": "qu"
+  },
+  {
+    "id": "ro",
+    "name": "Romanian",
+    "flag": "RO",
+    "alpha2": "ro",
+    "alpha3": "ro",
+    "ioc": "ro"
+  },
+  {
+    "id": "ru",
+    "name": "Russian",
+    "flag": "RU",
+    "alpha2": "ru",
+    "alpha3": "ru",
+    "ioc": "ru"
+  },
+  {
+    "id": "sm",
+    "name": "Samoan",
+    "flag": "SM",
+    "alpha2": "sm",
+    "alpha3": "sm",
+    "ioc": "sm"
+  },
+  {
+    "id": "sr",
+    "name": "Serbian",
+    "flag": "SR",
+    "alpha2": "sr",
+    "alpha3": "sr",
+    "ioc": "sr"
+  },
+  {
+    "id": "sk",
+    "name": "Slovak",
+    "flag": "SK",
+    "alpha2": "sk",
+    "alpha3": "sk",
+    "ioc": "sk"
+  },
+  {
+    "id": "sl",
+    "name": "Slovenian",
+    "flag": "SL",
+    "alpha2": "sl",
+    "alpha3": "sl",
+    "ioc": "sl"
+  },
+  {
+    "id": "es",
+    "name": "Spanish",
+    "flag": "ES",
+    "alpha2": "es",
+    "alpha3": "es",
+    "ioc": "es"
+  },
+  {
+    "id": "sw",
+    "name": "Swahili",
+    "flag": "SW",
+    "alpha2": "sw",
+    "alpha3": "sw",
+    "ioc": "sw"
+  },
+  {
+    "id": "sv",
+    "name": "Swedish",
+    "flag": "SV",
+    "alpha2": "sv",
+    "alpha3": "sv",
+    "ioc": "sv"
+  },
+  {
+    "id": "ta",
+    "name": "Tamil",
+    "flag": "TA",
+    "alpha2": "ta",
+    "alpha3": "ta",
+    "ioc": "ta"
+  },
+  {
+    "id": "tt",
+    "name": "Tatar",
+    "flag": "TT",
+    "alpha2": "tt",
+    "alpha3": "tt",
+    "ioc": "tt"
+  },
+  {
+    "id": "te",
+    "name": "Telugu",
+    "flag": "TE",
+    "alpha2": "te",
+    "alpha3": "te",
+    "ioc": "te"
+  },
+  {
+    "id": "th",
+    "name": "Thai",
+    "flag": "TH",
+    "alpha2": "th",
+    "alpha3": "th",
+    "ioc": "th"
+  },
+  {
+    "id": "bo",
+    "name": "Tibetan",
+    "flag": "BO",
+    "alpha2": "bo",
+    "alpha3": "bo",
+    "ioc": "bo"
+  },
+  {
+    "id": "to",
+    "name": "Tonga",
+    "flag": "TO",
+    "alpha2": "to",
+    "alpha3": "to",
+    "ioc": "to"
+  },
+  {
+    "id": "tr",
+    "name": "Turkish",
+    "flag": "TR",
+    "alpha2": "tr",
+    "alpha3": "tr",
+    "ioc": "tr"
+  },
+  {
+    "id": "uk",
+    "name": "Ukrainian",
+    "flag": "UK",
+    "alpha2": "uk",
+    "alpha3": "uk",
+    "ioc": "uk"
+  },
+  {
+    "id": "ur",
+    "name": "Urdu",
+    "flag": "UR",
+    "alpha2": "ur",
+    "alpha3": "ur",
+    "ioc": "ur"
+  },
+  {
+    "id": "uz",
+    "name": "Uzbek",
+    "flag": "UZ",
+    "alpha2": "uz",
+    "alpha3": "uz",
+    "ioc": "uz"
+  },
+  {
+    "id": "vi",
+    "name": "Vietnamese",
+    "flag": "VI",
+    "alpha2": "vi",
+    "alpha3": "vi",
+    "ioc": "vi"
+  },
+  {
+    "id": "cy",
+    "name": "Welsh",
+    "flag": "CY",
+    "alpha2": "cy",
+    "alpha3": "cy",
+    "ioc": "cy"
+  },
+  {
+    "id": "xh",
+    "name": "Xhosa",
+    "flag": "XH",
+    "alpha2": "xh",
+    "alpha3": "xh",
+    "ioc": "xh"
+  }
+]
