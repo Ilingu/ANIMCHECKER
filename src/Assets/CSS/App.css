@@ -3682,7 +3682,7 @@ a:hover {
 
 #Settings #ActionAccount .hrDiv {
   height: 1px;
-  width: 50%;
+  width: 35%;
   background-color: #fff;
   margin-top: 5px;
   margin-bottom: 15px;
@@ -3748,9 +3748,15 @@ a:hover {
   font-size: 22px;
 }
 
-@media screen and (max-width: 1450px) {
-  #Settings #ActionAccount button {
-    width: 400px !important;
+@media screen and (max-width: 1250px) {
+  #Settings #ActionAccount .hrDiv {
+    width: 55%;
+  }
+  #Settings #ActionAccount form {
+    width: 70% !important;
+  }
+  #Settings #ActionAccount .BtnOfOptn {
+    width: 70% !important;
   }
 }
 
@@ -3763,8 +3769,26 @@ a:hover {
     -ms-grid-columns: (1fr)[1];
         grid-template-columns: repeat(1, 1fr);
   }
-  #Settings #ActionAccount button {
-    width: 300px !important;
+  #Settings #ActionAccount .hrDiv {
+    width: 40%;
+  }
+  #Settings #ActionAccount form {
+    width: 55% !important;
+  }
+  #Settings #ActionAccount .BtnOfOptn {
+    width: 55% !important;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  #Settings #ActionAccount .hrDiv {
+    width: 65%;
+  }
+  #Settings #ActionAccount form {
+    width: 80% !important;
+  }
+  #Settings #ActionAccount .BtnOfOptn {
+    width: 80% !important;
   }
 }
 

@@ -264,7 +264,6 @@ const OneAnim = ({
               <li>
                 Status: <span className="info">{details[1].status}</span>
               </li>
-
               <li>
                 Studio{details[1].studios > 1 ? "s" : null}:{" "}
                 <span className="info">{Studios}</span>

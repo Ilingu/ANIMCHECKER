@@ -246,15 +246,17 @@ const Header = ({ FnSearchFilter, SearchFilter }) => {
                   >
                     <span className="fas fa-sign-out-alt"></span> Se déconnecter
                   </Dropdown.Item>
-                  <div id="FakeDropdownItem">
-                    <Link push="true" to={`/Settings/${Context.Pseudo}`}>
-                      <span
-                        className="fas fa-cog fa-spin"
-                        style={{ color: "grey" }}
-                      ></span>{" "}
-                      Paramètres
-                    </Link>
-                  </div>
+                  <Link
+                    id="FakeDropdownItem"
+                    push="true"
+                    to={`/Settings/${Context.Pseudo}`}
+                  >
+                    <span
+                      className="fas fa-cog fa-spin"
+                      style={{ color: "grey" }}
+                    ></span>{" "}
+                    Paramètres
+                  </Link>
                 </Dropdown.Menu>
               </Dropdown>
             </Nav.Item>

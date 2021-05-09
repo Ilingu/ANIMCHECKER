@@ -330,6 +330,7 @@ class Settings extends Component {
               ) : null}
 
               <Button
+                className="BtnOfOptn"
                 variant="outline-light"
                 onClick={() => {
                   if (window.localStorage.getItem("BGC-ACK")) {
@@ -363,6 +364,7 @@ class Settings extends Component {
                 <Fragment>
                   <div className="hrDiv"></div>
                   <Button
+                    className="BtnOfOptn"
                     variant={
                       ParamsOptn.NotifState === false
                         ? "outline-info"
@@ -392,6 +394,7 @@ class Settings extends Component {
                     les Notif
                   </Button>
                   <Button
+                    className="BtnOfOptn"
                     variant="outline-light"
                     onClick={() =>
                       this.updateValue(
@@ -409,6 +412,7 @@ class Settings extends Component {
                     d'anime: {ParamsOptn?.MyAnimRandom === false ? "Off" : "On"}
                   </Button>
                   <Button
+                    className="BtnOfOptn"
                     variant="outline-light"
                     onClick={() =>
                       this.updateValue(
@@ -424,6 +428,7 @@ class Settings extends Component {
                     {!ParamsOptn.Shortcut ? "Off" : "On"}
                   </Button>
                   <Button
+                    className="BtnOfOptn"
                     variant="outline-light"
                     onClick={() =>
                       this.updateValue(
@@ -539,6 +544,7 @@ class Settings extends Component {
               </div>
               <div className="hrDiv"></div>
               <Button
+                className="BtnOfOptn"
                 variant="outline-primary"
                 disabled={OfflineMode}
                 onClick={() => this.setState({ ShowModalChangePseudo: true })}
@@ -546,6 +552,7 @@ class Settings extends Component {
                 <span className="fas fa-user"></span> Changer De Pseudo
               </Button>
               <Button
+                className="BtnOfOptn"
                 variant="outline-dark"
                 disabled={OfflineMode}
                 style={{ color: "#ddd" }}
@@ -559,6 +566,7 @@ class Settings extends Component {
                 données
               </Button>
               <Button
+                className="BtnOfOptn"
                 variant="outline-danger"
                 disabled={OfflineMode}
                 onClick={() => this.setState({ ShowModalDeleteUser: true })}
@@ -573,7 +581,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>8</b>
+                  Stable (LTS)<b>1</b>β<b>8</b> (F1)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
