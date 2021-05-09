@@ -92,7 +92,7 @@ a:hover {
 .btnBackDesing {
   position: absolute;
   left: 0;
-  top: 0px;
+  top: 0;
   color: #007bff;
   background-color: #fff;
   border-radius: 50px;
@@ -100,6 +100,11 @@ a:hover {
 
 .btnBackDesing.special {
   position: static;
+}
+
+.btnBackDesing.fixed {
+  position: fixed;
+  top: 0;
 }
 
 .btnBackDesing.Foreground {
@@ -723,7 +728,7 @@ a:hover {
 #oneAnim #fixedOnTop {
   position: fixed;
   top: 0px;
-  right: 0;
+  left: 42px;
   font-weight: bold;
 }
 
@@ -755,6 +760,12 @@ a:hover {
   background-color: rgba(255, 255, 255, 0.096);
 }
 
+#oneAnim > header .title {
+  margin-bottom: 25px;
+  margin-top: -15px;
+  font-weight: bold;
+}
+
 #oneAnim > header .img {
   position: relative;
   -webkit-transition: 0.7s;
@@ -767,7 +778,7 @@ a:hover {
   height: calc(318px + 25px);
 }
 
-#oneAnim > header .img .play {
+#oneAnim > header .img .info {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -779,17 +790,17 @@ a:hover {
           align-items: center;
   color: #007bff;
   position: absolute;
-  top: calc(50% - 25px);
-  left: calc(50% - 25px);
-  width: 50px;
-  height: 50px;
+  top: -20px;
+  right: -20px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-color: #ddd;
   -webkit-transition: 0.7s;
   transition: 0.7s;
 }
 
-#oneAnim > header .img .play:hover {
+#oneAnim > header .img .info:hover {
   -webkit-transform: scale(1.12);
           transform: scale(1.12);
 }
@@ -832,7 +843,7 @@ a:hover {
   color: #ddd;
 }
 
-#oneAnim #episodes {
+#oneAnim #episodesOneAnim {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -846,34 +857,35 @@ a:hover {
   width: 100%;
 }
 
-#oneAnim #episodes .EpContent {
+#oneAnim #episodesOneAnim .EpContent {
   display: -ms-grid;
   display: grid;
   -ms-grid-columns: (1fr)[6];
       grid-template-columns: repeat(6, 1fr);
+  justify-items: center;
   gap: 15px;
   margin-top: 15px;
   width: 70%;
 }
 
-#oneAnim #episodes .EpContent .EP {
+#oneAnim #episodesOneAnim .EpContent .EP {
   width: 180px;
 }
 
-#oneAnim #episodes .EpContent .EP a {
+#oneAnim #episodesOneAnim .EpContent .EP a {
   text-decoration: none;
 }
 
-#oneAnim #episodes .EpContent .EP a .img {
+#oneAnim #episodesOneAnim .EpContent .EP a .img {
   position: relative;
 }
 
-#oneAnim #episodes .EpContent .EP a .img img {
+#oneAnim #episodesOneAnim .EpContent .EP a .img img {
   width: 180px;
   border-radius: 5px;
 }
 
-#oneAnim #episodes .EpContent .EP a .img .play {
+#oneAnim #episodesOneAnim .EpContent .EP a .img .play {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -896,25 +908,25 @@ a:hover {
   transition: 0.7s;
 }
 
-#oneAnim #episodes .EpContent .EP a .img .play:hover {
+#oneAnim #episodesOneAnim .EpContent .EP a .img .play:hover {
   -webkit-transform: scale(1.12);
           transform: scale(1.12);
 }
 
-#oneAnim #episodes .EpContent .EP a h4 {
+#oneAnim #episodesOneAnim .EpContent .EP a h4 {
   color: #ff6d00;
   font-size: 1rem;
 }
 
 @media screen and (max-width: 1385px) {
-  #oneAnim #episodes .EpContent {
+  #oneAnim #episodesOneAnim .EpContent {
     -ms-grid-columns: (1fr)[4];
         grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media screen and (max-width: 1080px) {
-  #oneAnim #episodes .EpContent {
+  #oneAnim #episodesOneAnim .EpContent {
     -ms-grid-columns: (1fr)[3];
         grid-template-columns: repeat(3, 1fr);
     gap: 10px;
@@ -922,19 +934,22 @@ a:hover {
 }
 
 @media screen and (max-width: 786px) {
-  #oneAnim #episodes .EpContent .EP {
+  #oneAnim #episodesOneAnim .EpContent .EP {
     width: 140px;
   }
-  #oneAnim #episodes .EpContent .EP img {
+  #oneAnim #episodesOneAnim .EpContent .EP img {
     width: 140px !important;
   }
-  #oneAnim #episodes .EpContent .EP h4 {
+  #oneAnim #episodesOneAnim .EpContent .EP h4 {
     font-size: 0.8rem !important;
   }
 }
 
 @media screen and (max-width: 640px) {
-  #oneAnim #episodes .EpContent {
+  #oneAnim #fixedOnBottom .textContent {
+    display: none;
+  }
+  #oneAnim #episodesOneAnim .EpContent {
     -ms-grid-columns: (1fr)[2];
         grid-template-columns: repeat(2, 1fr);
     gap: 0;
@@ -942,7 +957,7 @@ a:hover {
 }
 
 @media screen and (max-width: 420px) {
-  #oneAnim #episodes .EpContent {
+  #oneAnim #episodesOneAnim .EpContent {
     -ms-grid-columns: (1fr)[1];
         grid-template-columns: repeat(1, 1fr);
     gap: 0;

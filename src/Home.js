@@ -4017,6 +4017,7 @@ export default class Home extends Component {
                 {
                   NextManga: animToDetails[1].title,
                   animToDetails: [],
+                  SeasonPage: false,
                   SwipeActive: false,
                 },
                 this.addNextManga
@@ -4034,6 +4035,7 @@ export default class Home extends Component {
                 ),
                 ShowModalAddManga: true,
                 animToDetails: [],
+                SeasonPage: false,
               });
               return;
             }
@@ -4041,6 +4043,7 @@ export default class Home extends Component {
             if (typePage === "NA" && PageMode) {
               this.setState({
                 SwitchMyAnim: false,
+                SeasonPage: false,
                 NextAnim: animToDetails[1].title,
                 TagNA: animToDetails[1].genres
                   .map((genre) => genre.name)
@@ -4051,6 +4054,7 @@ export default class Home extends Component {
             }
             this.setState({
               title: animToDetails[1].title,
+              SeasonPage: false,
               type: animToDetails[1].type === "Movie" ? "film" : "serie",
               durer:
                 animToDetails[1].type === "Movie"

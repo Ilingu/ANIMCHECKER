@@ -44,7 +44,7 @@ class Watch extends Component {
     LoadingMode: true,
     isFirstTime: true,
     WatchModeNow: null,
-    RedirectHome: false,
+    RedirectTo: [false, ""],
     Shortcut: true,
     ToOpen: "",
     ModeEditTitle: false,
@@ -95,7 +95,7 @@ class Watch extends Component {
     if (
       this.state.Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo"))
     ) {
-      this.setState({ uid: null, RedirectHome: true });
+      this.setState({ uid: null, RedirectTo: [true, "/notifuser/2"] });
       return;
     }
     // ID
@@ -235,6 +235,8 @@ class Watch extends Component {
               if (keyDownEvent.repeat) return;
               const { repereEpisode, repereSaison, modeWatch } = this.state;
               if (keyDownEvent.key === "f") return this.StartNextEP();
+              if (keyDownEvent.key === "Escape" && !modeWatch)
+                return this.setState({ RedirectTo: [true, "/"] });
               if (!modeWatch) return;
               if (keyDownEvent.key === "ArrowRight") {
                 return repereEpisode[2] !== null
@@ -1074,7 +1076,7 @@ class Watch extends Component {
     if (!this.state.OfflineMode) {
       this.fnDbOffline("DELETE", `${Pseudo}/${type}/${id}`);
     }
-    this.setState({ uid: null, RedirectHome: true });
+    this.setState({ uid: null, RedirectTo: [true, "/notifuser/5"] });
   };
 
   handleDeleteBadge = (index) => {
@@ -1158,7 +1160,7 @@ class Watch extends Component {
           Drop: DropWithAlleged ? true : null,
         });
       }
-      this.setState({ uid: null, RedirectHome: true });
+      this.setState({ uid: null, RedirectTo: [true, "/notifuser/5"] });
     }
   };
 
@@ -1457,7 +1459,7 @@ class Watch extends Component {
       Badges,
       uid,
       id,
-      RedirectHome,
+      RedirectTo,
       proprio,
       type,
       isFirstTime,
@@ -1500,7 +1502,7 @@ class Watch extends Component {
     if (AnimToWatch.Paused) return <Redirect to="/notifuser/1" />;
     if (AnimToWatch.Drop) return <Redirect to="/notifuser/7" />;
     if (AnimToWatch.InWait) return <Redirect to="/notifuser/8" />;
-    if (RedirectHome) return <Redirect to="/notifuser/5" />;
+    if (RedirectTo[0]) return <Redirect to={RedirectTo[1]} />;
 
     if (LoadingMode) {
       return (
@@ -2126,7 +2128,10 @@ class Watch extends Component {
                           InWait: true,
                         });
                       }
-                      this.setState({ uid: null, RedirectHome: true });
+                      this.setState({
+                        uid: null,
+                        RedirectTo: [true, "/notifuser/5"],
+                      });
                     }}
                   >
                     <span className="fas fa-hourglass-half"></span> Mettre en
@@ -2162,7 +2167,10 @@ class Watch extends Component {
                             }
                           );
                         }
-                        this.setState({ uid: null, RedirectHome: true });
+                        this.setState({
+                          uid: null,
+                          RedirectTo: [true, "/notifuser/5"],
+                        });
                       }}
                     >
                       <span className="fas fa-stop"></span> Drop{" "}
@@ -2197,7 +2205,10 @@ class Watch extends Component {
                           }
                         );
                       }
-                      this.setState({ uid: null, RedirectHome: true });
+                      this.setState({
+                        uid: null,
+                        RedirectTo: [true, "/notifuser/5"],
+                      });
                     }}
                   >
                     <span className="fas fa-pause"></span> Mettre en Pause{" "}
@@ -2900,7 +2911,11 @@ class Watch extends Component {
                     6000
                   );
                 }
-                if (GoToHome) this.setState({ uid: null, RedirectHome: true });
+                if (GoToHome)
+                  this.setState({
+                    uid: null,
+                    RedirectTo: [true, "/notifuser/5"],
+                  });
               }}
             >
               <span className="fas fa-check"></span> Valider

@@ -1,4 +1,5 @@
-import React, { Fragment } from "react";
+import React, { useState, Fragment, useEffect } from "react";
+import axios from "axios";
 // Components
 import Episode from "./dyna/Episode";
 // CSS
@@ -13,15 +14,43 @@ const OneAnim = ({
   ResText,
   Manga,
 }) => {
+  const [SynopsisText, setSynopsisText] = useState(details[1].synopsis);
+  const [TranslatedCacheSynopsis, setTranslatedCacheSynopsis] = useState("");
+  const [Original, setOriginal] = useState(true);
+  useEffect(() => {
+    axios
+      .request({
+        method: "GET",
+        url:
+          "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate",
+        params: { source: "en", target: "fr", input: details[1].synopsis },
+        headers: {
+          "x-rapidapi-key":
+            "412437fce2mshdbaa1f4314616bep11404djsn8f200dcb59de",
+          "x-rapidapi-host":
+            "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
+        },
+      })
+      .then((res) => {
+        setSynopsisText(res.data.outputs[0].output);
+        setTranslatedCacheSynopsis(res.data.outputs[0].output);
+        setOriginal(false);
+      })
+      .catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   if (Manga) {
     // Extra render
     const Genres = details[1]?.genres.map((genre) => genre.name).join(", ");
     const Authors = details[1]?.authors.map((author) => author.name).join(", ");
+    const SynonymsTitles = `${
+      details[1]?.title_english
+    }, ${details[1]?.title_synonyms.join(", ")}, ${details[1]?.title_japanese}`;
     return (
       <Fragment>
         <div className="container" id="oneAnim">
           <header>
-            <h1 className="title">{`${details[1].title} (${details[1].title_japanese})`}</h1>
+            <h1 className="title">{`${details[1].title}`}</h1>
             <div className="img">
               <img src={details[1].image_url} alt="Img of anim" />
               <a
@@ -29,8 +58,8 @@ const OneAnim = ({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <div className="play">
-                  <span className="fas fa-play"></span>
+                <div className="info">
+                  <span className="fas fa-info-circle"></span>
                 </div>
               </a>
             </div>
@@ -44,14 +73,22 @@ const OneAnim = ({
             </h5>
           </header>
           <section id="infoSup">
-            <Button variant="primary" onClick={back} className="btnBackDesing">
-              <span className="fas fa-arrow-left"></span> Retour
+            <Button
+              variant="primary"
+              onClick={back}
+              className="btnBackDesing fixed"
+            >
+              <span className="fas fa-arrow-left"></span>
             </Button>
             <header>
               <h1>Info supplémentaires</h1>
             </header>
             <div className="content">
               <ul>
+                <li>
+                  Titres Alternatifs:{" "}
+                  <span className="info">{SynonymsTitles}</span>
+                </li>
                 <li>
                   Type: <span className="info">{details[1].type}</span>
                 </li>
@@ -83,7 +120,35 @@ const OneAnim = ({
                   Auteur(s): <span className="info">{Authors}</span>
                 </li>
                 <li>
-                  Résumé: <span className="info">{details[1].synopsis}</span>
+                  Résumé: <span className="info">{SynopsisText}</span>{" "}
+                  {!Original ? (
+                    <span style={{ color: "#aaa" }}>
+                      {`{Traduit par SYSTRAN.io}`}{" "}
+                    </span>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="link"
+                    onClick={() => {
+                      if (Original) {
+                        if (TranslatedCacheSynopsis === "") {
+                          setSynopsisText("Traduction impossible.");
+                          setTimeout(
+                            () => setSynopsisText(details[1].synopsis),
+                            5000
+                          );
+                          return;
+                        }
+                        setSynopsisText(TranslatedCacheSynopsis);
+                        setOriginal(false);
+                        return;
+                      }
+                      setSynopsisText(details[1].synopsis);
+                      setOriginal(true);
+                    }}
+                  >
+                    {Original ? "Traduire (par SYSTRAN.io)" : "Original"}
+                  </Button>
                 </li>
               </ul>
             </div>
@@ -99,10 +164,12 @@ const OneAnim = ({
             variant="success"
             block
             id="fixedOnBottom"
-            size="lg"
             onClick={handleAdd}
           >
-            <span className="fas fa-plus"></span> Ajouter {details[1].title}
+            <span className="fas fa-plus"></span>{" "}
+            <span className="textContent">
+              Ajouter {details[1]?.title.split(":")[0]}
+            </span>
           </Button>
         </div>
 
@@ -126,17 +193,20 @@ const OneAnim = ({
   // Extra render
   const Genres = details[1]?.genres.map((genre) => genre.name).join(", ");
   const Studios = details[1]?.studios.map((studio) => studio.name).join(", ");
+  const SynonymsTitles = `${
+    details[1]?.title_english
+  }, ${details[1]?.title_synonyms.join(", ")}, ${details[1]?.title_japanese}`;
   // Render
   return (
     <Fragment>
       <div className="container" id="oneAnim">
         <header>
-          <h1 className="title">{`${details[1].title} (${details[1].title_japanese})`}</h1>
+          <h1 className="title">{`${details[1].title}`}</h1>
           <div className="img">
             <img src={details[1].image_url} alt="Img of anim" />
             <a href={details[1].url} target="_blank" rel="noopener noreferrer">
-              <div className="play">
-                <span className="fas fa-play"></span>
+              <div className="info">
+                <span className="fas fa-info-circle"></span>
               </div>
             </a>
           </div>
@@ -153,14 +223,22 @@ const OneAnim = ({
           </h5>
         </header>
         <section id="infoSup">
-          <Button variant="primary" onClick={back} className="btnBackDesing">
-            <span className="fas fa-arrow-left"></span> Retour
+          <Button
+            variant="primary"
+            onClick={back}
+            className="btnBackDesing fixed"
+          >
+            <span className="fas fa-arrow-left"></span>
           </Button>
           <header>
             <h1>Info supplémentaires</h1>
           </header>
           <div className="content">
             <ul>
+              <li>
+                Titres Alternatifs:{" "}
+                <span className="info">{SynonymsTitles}</span>
+              </li>
               <li>
                 Type:{" "}
                 <span className="info">
@@ -198,7 +276,35 @@ const OneAnim = ({
                 Age requis: <span className="info">{details[1].rating}</span>
               </li>
               <li>
-                Résumé: <span className="info">{details[1].synopsis}</span>
+                Résumé: <span className="info">{SynopsisText}</span>{" "}
+                {!Original ? (
+                  <span style={{ color: "#aaa" }}>
+                    {`{Traduit par SYSTRAN.io}`}{" "}
+                  </span>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="link"
+                  onClick={() => {
+                    if (Original) {
+                      if (TranslatedCacheSynopsis === "") {
+                        setSynopsisText("Traduction impossible.");
+                        setTimeout(
+                          () => setSynopsisText(details[1].synopsis),
+                          5000
+                        );
+                        return;
+                      }
+                      setSynopsisText(TranslatedCacheSynopsis);
+                      setOriginal(false);
+                      return;
+                    }
+                    setSynopsisText(details[1].synopsis);
+                    setOriginal(true);
+                  }}
+                >
+                  {Original ? "Traduire (par SYSTRAN.io)" : "Original"}
+                </Button>
               </li>
             </ul>
           </div>
@@ -218,13 +324,13 @@ const OneAnim = ({
               <iframe
                 title={`Trailer de ${details[1].title}`}
                 src={details[1].trailer_url?.split("?")[0]}
-                frameborder="0"
+                frameBorder="0"
                 allowFullScreen={true}
               ></iframe>
             </ResponsiveEmbed>
           </div>
         </section>
-        <section id="episodes">
+        <section id="episodesOneAnim">
           <header>
             <h1>
               {details[0].episodes.length >= 2
@@ -241,14 +347,11 @@ const OneAnim = ({
         >
           <span className="fas fa-plus"></span> Ajouter aux "Next Anime"
         </Button>
-        <Button
-          variant="success"
-          block
-          id="fixedOnBottom"
-          size="lg"
-          onClick={handleAdd}
-        >
-          <span className="fas fa-plus"></span> Ajouter {details[1].title}
+        <Button variant="success" block id="fixedOnBottom" onClick={handleAdd}>
+          <span className="fas fa-plus"></span>{" "}
+          <span className="textContent">
+            Ajouter {details[1]?.title.split(":")[0]}
+          </span>
         </Button>
       </div>
 
