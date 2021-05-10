@@ -200,27 +200,33 @@ class Watch extends Component {
     const { id, type, ScrollPosAccordeon } = this.state;
 
     try {
-      const AllDataPseudo = await base.fetch(this.state.Pseudo, {
-        context: this,
-      });
-
-      const AnimToWatch = AllDataPseudo[type][id];
+      const [AnimToWatch, ParamsOptn] = await Promise.all([
+        await base.fetch(`${this.state.Pseudo}/${type}/${id}`, {
+          context: this,
+        }),
+        await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
+          context: this,
+        }),
+      ]);
+      console.log(AnimToWatch, ParamsOptn);
 
       document.title = `ACK:${AnimToWatch.name}`;
       this.setState(
         {
           AnimToWatch,
           Newtitle: AnimToWatch.name,
-          SmartRepere: AllDataPseudo?.ParamsOptn
-            ? AllDataPseudo?.ParamsOptn?.SmartRepere !== undefined
-              ? AllDataPseudo.ParamsOptn.SmartRepere
-              : true
-            : true,
-          Shortcut: AllDataPseudo?.ParamsOptn
-            ? AllDataPseudo?.ParamsOptn?.Shortcut !== undefined
-              ? AllDataPseudo.ParamsOptn.Shortcut
-              : true
-            : true,
+          SmartRepere:
+            Object.keys(ParamsOptn).length !== 0
+              ? ParamsOptn?.SmartRepere !== undefined
+                ? ParamsOptn.SmartRepere
+                : true
+              : true,
+          Shortcut:
+            Object.keys(ParamsOptn).length !== 0
+              ? ParamsOptn?.Shortcut !== undefined
+                ? ParamsOptn.Shortcut
+                : true
+              : true,
           Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
           LoadingMode: false,
         },
