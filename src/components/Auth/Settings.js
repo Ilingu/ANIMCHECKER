@@ -54,9 +54,8 @@ class Settings extends Component {
     this.GetUserConnInfo();
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
-      document.body.style.backgroundColor = window.localStorage.getItem(
-        "BGC-ACK"
-      );
+      document.body.style.backgroundColor =
+        window.localStorage.getItem("BGC-ACK");
     }
   }
 
@@ -636,7 +635,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>9</b>
+                  Stable (LTS)<b>1</b>β<b>9</b> (F1)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>

@@ -220,10 +220,6 @@ a:hover {
   color: #dc3545;
 }
 
-.ackmessage.green span {
-  color: #28a745;
-}
-
 .ackmessage.show {
   -webkit-animation: ShowMessage 1s ease-in 0s 1;
           animation: ShowMessage 1s ease-in 0s 1;

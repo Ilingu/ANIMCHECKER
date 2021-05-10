@@ -59,7 +59,9 @@ class Watch extends Component {
     DropWithAlleged: false,
     ScrollPosAccordeon: 0,
     AlreadyClicked: false,
+    // Message
     ResText: null,
+    typeAlertMsg: null,
     // Fun
     LetsCelebrate: false,
     LetsNotCelebrate: false,
@@ -128,9 +130,8 @@ class Watch extends Component {
     }
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
-      document.body.style.backgroundColor = window.localStorage.getItem(
-        "BGC-ACK"
-      );
+      document.body.style.backgroundColor =
+        window.localStorage.getItem("BGC-ACK");
     }
   }
 
@@ -175,14 +176,15 @@ class Watch extends Component {
         // Reconected
         if (this.setIntervalVar !== null) {
           clearInterval(this.setIntervalVar);
-          this.DisplayMsg("Reconnecté avec succès !", 5000);
+          this.DisplayMsg("Reconnecté avec succès !", 5000, "success");
           console.warn("Firebase Connexion retablished");
         }
       } else {
         this.reconectFirebase();
         this.DisplayMsg(
           "Connection aux serveurs perdues -> Reconnection...",
-          5000
+          5000,
+          "warn"
         );
         console.warn(
           "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
@@ -261,7 +263,7 @@ class Watch extends Component {
             AnimToWatch.Objectif !== undefined &&
             AnimToWatch.Objectif.End[2] < Date.now()
           ) {
-            this.DisplayMsg("Vous avez râté votre objectif", 6000);
+            this.DisplayMsg("Vous avez râté votre objectif", 6000, "danger");
             this.setState({ LetsNotCelebrate: true });
             this.deleteValue(`${this.state.Pseudo}/serie/${id}/Objectif`);
             if (!this.state.OfflineMode) {
@@ -902,7 +904,8 @@ class Watch extends Component {
                     ? null
                     : repereSaison.name.split(" ")[1]
                 }) fini !`,
-                3000
+                3000,
+                "success"
               )
           );
         },
@@ -939,7 +942,8 @@ class Watch extends Component {
                 ? null
                 : repereSaison.name.split(" ")[1]
             }) déjà fini`,
-            3000
+            3000,
+            "warn"
           )
       );
     }
@@ -1128,14 +1132,8 @@ class Watch extends Component {
   };
 
   handleAlleger = () => {
-    const {
-      Pseudo,
-      type,
-      id,
-      PauseWithAlleged,
-      DropWithAlleged,
-      AnimToWatch,
-    } = this.state;
+    const { Pseudo, type, id, PauseWithAlleged, DropWithAlleged, AnimToWatch } =
+      this.state;
 
     if (type === "serie") {
       if (AnimToWatch.Lier) {
@@ -1196,7 +1194,7 @@ class Watch extends Component {
     }
   };
 
-  DisplayMsg = (msg, time) => {
+  DisplayMsg = (msg, time, type) => {
     clearTimeout(this.setTimeOutMsgInfo);
     clearTimeout(this.setTimeOutMsgInfo2);
 
@@ -1204,6 +1202,7 @@ class Watch extends Component {
       ShowMessage: true,
       ShowMessageHtml: true,
       ResText: msg,
+      typeAlertMsg: type,
     });
     this.setTimeOutMsgInfo = setTimeout(() => {
       if (this.state.SecondMessage) {
@@ -1220,6 +1219,7 @@ class Watch extends Component {
         this.setState({
           ShowMessageHtml: false,
           ResText: null,
+          typeAlertMsg: null,
         });
       }, 900);
     }, time);
@@ -1476,6 +1476,7 @@ class Watch extends Component {
       DateObjectif,
       nbEpToAddToHave,
       LetsNotCelebrate,
+      typeAlertMsg,
       modeWatch,
       ShowModalVerification,
       ShowMessage,
@@ -1558,10 +1559,8 @@ class Watch extends Component {
               const AnimToWatchCopy = [...this.state.AnimToWatch.AnimEP];
               let IsSeasonFinished = true;
               AnimToWatchCopy[idSaison].finished = false;
-              AnimToWatchCopy[idSaison].Episodes[
-                idEP - 1
-              ].finished = !AnimToWatchCopy[idSaison].Episodes[idEP - 1]
-                .finished;
+              AnimToWatchCopy[idSaison].Episodes[idEP - 1].finished =
+                !AnimToWatchCopy[idSaison].Episodes[idEP - 1].finished;
 
               AnimToWatchCopy[idSaison].Episodes.forEach((Ep) => {
                 if (!Ep.finished) {
@@ -2025,7 +2024,12 @@ class Watch extends Component {
                                 ? null
                                 : true,
                             },
-                            () => this.DisplayMsg("Changement opéré !", 3000)
+                            () =>
+                              this.DisplayMsg(
+                                "Changement opéré !",
+                                3000,
+                                "success"
+                              )
                           );
 
                           if (!this.state.OfflineMode) {
@@ -2565,7 +2569,8 @@ class Watch extends Component {
               if (AnimToWatch.Objectif !== undefined) {
                 this.DisplayMsg(
                   "Mode Objectif Activé: Impossible de quitter le mode Watch. Veuillez Désactiver le Mode Objectif pour quitter (Double Click sur le boutton quitter)",
-                  12000
+                  12000,
+                  "warn"
                 );
                 return;
               }
@@ -2912,8 +2917,9 @@ class Watch extends Component {
                   });
                 } else {
                   this.DisplayMsg(
-                    "Impossible de noter si l'anime n'ai pas fini ou que la note soit incorrect.",
-                    6000
+                    "Impossible de noter l'anime quand il n'est pas fini.",
+                    6000,
+                    "danger"
                   );
                 }
                 if (GoToHome)
@@ -3085,8 +3091,21 @@ class Watch extends Component {
           </Modal.Footer>
         </Modal>
         {ShowMessageHtml ? (
-          <div className={`ackmessage${ShowMessage ? " show" : " hide"} green`}>
-            <span className="fas fa-check-circle"></span> {ResText}
+          <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
+            <span
+              className={`fas fa-${
+                typeAlertMsg === "info"
+                  ? "info"
+                  : typeAlertMsg === "success"
+                  ? "check"
+                  : typeAlertMsg === "warn"
+                  ? "exclamation-triangle"
+                  : typeAlertMsg === "danger"
+                  ? "times-circle"
+                  : "info"
+              }`}
+            ></span>{" "}
+            {ResText}
           </div>
         ) : null}
       </section>

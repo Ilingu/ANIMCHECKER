@@ -159,6 +159,7 @@ export default class Home extends Component {
     DeletePathVerif: null,
     // Alerts
     ResText: null,
+    ResTextMsg: null,
     typeAlert: null,
     typeAlertMsg: null,
     // A2HS
@@ -178,9 +179,8 @@ export default class Home extends Component {
       : (document.title = "MCK:Manga-Checker");
     // Color
     if (window.localStorage.getItem("BGC-ACK")) {
-      document.body.style.backgroundColor = window.localStorage.getItem(
-        "BGC-ACK"
-      );
+      document.body.style.backgroundColor =
+        window.localStorage.getItem("BGC-ACK");
     }
     // Firebase
     if (this.state.Pseudo) {
@@ -360,11 +360,11 @@ export default class Home extends Component {
               "danger"
             );
           else if (!connection)
-             this.ShowMessageInfo(
-               "Connexion internet faible/instable.",
-               7000,
-               "warn"
-             );
+            this.ShowMessageInfo(
+              "Connexion internet faible/instable.",
+              7000,
+              "warn"
+            );
         })
         .catch(next);
     }
@@ -3183,7 +3183,7 @@ export default class Home extends Component {
     this.setState({
       ShowMessage: true,
       ShowMessageHtml: true,
-      ResText: text,
+      ResTextMsg: text,
       typeAlertMsg: type,
     });
     this.setTimeOutMsgInfo = setTimeout(() => {
@@ -3192,7 +3192,7 @@ export default class Home extends Component {
       this.setTimeOutMsgInfo2 = setTimeout(() => {
         this.setState({
           ShowMessageHtml: false,
-          ResText: null,
+          ResTextMsg: null,
           typeAlertMsg: null,
         });
       }, 900);
@@ -3344,6 +3344,7 @@ export default class Home extends Component {
       UrlUserImg,
       ShowMessageHtml,
       ShowModalAddManga,
+      ResTextMsg,
       NotAskAgain,
       TagNA,
       TagSearchAnime,
@@ -3798,12 +3799,13 @@ export default class Home extends Component {
       }
 
       // Render Components
-      let MyAnimListTemplateKey = (ModeFilter === "Rate"
-          ? AnimeKeySort
-          : Object.keys({
-              ...serieFirebase,
-              ...filmFireBase,
-            })
+      let MyAnimListTemplateKey = (
+          ModeFilter === "Rate"
+            ? AnimeKeySort
+            : Object.keys({
+                ...serieFirebase,
+                ...filmFireBase,
+              })
         ).map((key) => key),
         NewNextReRenderOrderSerie = null,
         NewValHaveAlreadyBeenMix = HaveAlreadyBeenMix[0];
@@ -3851,10 +3853,10 @@ export default class Home extends Component {
           NewNextReRenderOrderSerie = CopyNextReRenderOrderSerie;
         }
 
-        MyAnimListTemplate = (MyAnimListTemplateKey.length !==
-        NextReRenderOrderSerie.length
-          ? NewNextReRenderOrderSerie
-          : NextReRenderOrderSerie
+        MyAnimListTemplate = (
+          MyAnimListTemplateKey.length !== NextReRenderOrderSerie.length
+            ? NewNextReRenderOrderSerie
+            : NextReRenderOrderSerie
         ).flatMap((key) => {
           try {
             return TemplateGAnime(key);
@@ -3932,10 +3934,10 @@ export default class Home extends Component {
           NewNextReRenderOrderNA = CopyNextReRenderOrderNA;
         }
 
-        MyNextAnimListTemplate = (MyNextAnimListTemplateKey.length !==
-        NextReRenderOrderNA.length
-          ? NewNextReRenderOrderNA
-          : NextReRenderOrderNA
+        MyNextAnimListTemplate = (
+          MyNextAnimListTemplateKey.length !== NextReRenderOrderNA.length
+            ? NewNextReRenderOrderNA
+            : NextReRenderOrderNA
         ).map((key) => TemplateGNextAnim(key));
       } else {
         MyNextAnimListTemplate = MyNextAnimListTemplateKey.map((key) =>
@@ -4907,9 +4909,10 @@ export default class Home extends Component {
               <Button
                 variant="danger"
                 onClick={() => {
-                  const IDPath = DeletePathVerif.split("/")[
-                      DeletePathVerif.split("/").length - 1
-                    ],
+                  const IDPath =
+                      DeletePathVerif.split("/")[
+                        DeletePathVerif.split("/").length - 1
+                      ],
                     AnimeObj = { ...serieFirebase, ...filmFireBase }[IDPath];
 
                   if (AnimeObj.Lier) {
@@ -5698,7 +5701,7 @@ export default class Home extends Component {
                     : "info"
                 }`}
               ></span>{" "}
-              {ResText}
+              {ResTextMsg}
             </div>
           ) : null}
         </Fragment>
