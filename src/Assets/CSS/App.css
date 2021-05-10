@@ -202,7 +202,22 @@ a:hover {
 
 .ackmessage span {
   margin-right: 10px;
+}
+
+.ackmessage span.fa-info {
   color: #007bff;
+}
+
+.ackmessage span.fa-check {
+  color: #28a745;
+}
+
+.ackmessage span.fa-exclamation-triangle {
+  color: #ffc107;
+}
+
+.ackmessage span.fa-times-circle {
+  color: #dc3545;
 }
 
 .ackmessage.green span {

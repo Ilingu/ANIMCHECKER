@@ -24,6 +24,7 @@ class Settings extends Component {
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
     isFirstTime: true,
+    ConnectionInfo: {},
     Country: null,
     IndexForTemplateAnim: 0,
     RedirectHome: null,
@@ -50,12 +51,21 @@ class Settings extends Component {
         }
       });
     }
+    this.GetUserConnInfo();
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
       document.body.style.backgroundColor = window.localStorage.getItem(
         "BGC-ACK"
       );
     }
+  }
+
+  componentWillUnmount() {
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    connection.removeEventListener("change", () => this.GetUserConnInfo(true));
   }
 
   reAuth = () => {
@@ -219,6 +229,24 @@ class Settings extends Component {
     }
   };
 
+  GetUserConnInfo = (AlreadyInstanced = false) => {
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (connection) {
+      const Type = connection.effectiveType;
+      const TypeTechno = connection.type;
+      const Speed = connection.downlink;
+      const RecudeConsommation = connection.saveData;
+      if (!AlreadyInstanced)
+        connection.addEventListener("change", () => this.GetUserConnInfo(true));
+      this.setState({
+        ConnectionInfo: { Type, Speed, TypeTechno, RecudeConsommation },
+      });
+    }
+  };
+
   cancelState = () => {
     this.setState({
       ShowModalDeleteUser: false,
@@ -239,6 +267,7 @@ class Settings extends Component {
       IndexForTemplateAnim,
       RedirectHome,
       newPseudo,
+      ConnectionInfo,
       Country,
       isFirstTime,
       ACKColor,
@@ -607,7 +636,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>8</b> (F3)
+                  Stable (LTS)<b>1</b>β<b>9</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
@@ -619,7 +648,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.2.2</b>
+                  Stable (LTS)<b>1.3</b>
                 </li>
               </ul>
               <p>
@@ -631,6 +660,42 @@ class Settings extends Component {
                 )}{" "}
                 de MyAnimChecker
               </p>
+              {Object.keys(ConnectionInfo) === 0 ? null : (
+                <Fragment>
+                  <h5>Session Actuelle</h5>
+                  <ul>
+                    {!ConnectionInfo.TypeTechno ? null : (
+                      <li>
+                        <span
+                          style={{ textDecoration: "underline", color: "#ddd" }}
+                        >
+                          Type de connexion:
+                        </span>{" "}
+                        {ConnectionInfo.TypeTechno}
+                      </li>
+                    )}
+                    <li>
+                      <span
+                        style={{ textDecoration: "underline", color: "#ddd" }}
+                      >
+                        Vitesse:
+                      </span>{" "}
+                      Connexion équivalente à de la {ConnectionInfo.Type} (
+                      {ConnectionInfo.Speed} Mbps)
+                    </li>
+                    <li>
+                      <span
+                        style={{ textDecoration: "underline", color: "#ddd" }}
+                      >
+                        Demande de réduction de consommation:
+                      </span>{" "}
+                      {ConnectionInfo.RecudeConsommation
+                        ? "Réduction de données actif."
+                        : "Aucune demande"}
+                    </li>
+                  </ul>
+                </Fragment>
+              )}
               <h5>Développeur</h5>
               <ul>
                 <li>

@@ -208,7 +208,6 @@ class Watch extends Component {
           context: this,
         }),
       ]);
-      console.log(AnimToWatch, ParamsOptn);
 
       document.title = `ACK:${AnimToWatch.name}`;
       this.setState(

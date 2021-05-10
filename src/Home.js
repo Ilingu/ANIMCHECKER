@@ -160,6 +160,7 @@ export default class Home extends Component {
     // Alerts
     ResText: null,
     typeAlert: null,
+    typeAlertMsg: null,
     // A2HS
     AddToHomeScreen: null,
   };
@@ -167,6 +168,7 @@ export default class Home extends Component {
   setIntervalVar = null;
   setTimeOutMsgInfo = null;
   setTimeOutMsgInfo2 = null;
+  NumberOfFailedConnection = 0;
 
   componentDidMount() {
     const self = this;
@@ -263,6 +265,23 @@ export default class Home extends Component {
         });
       })();
     }
+    // Connection Test
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (connection) {
+      if (
+        connection.effectiveType === "slow-2g" ||
+        connection.effectiveType === "2g"
+      ) {
+        this.ShowMessageInfo(
+          `Connexion internet faible/instable. (${connection.effectiveType}}`,
+          7000,
+          "warn"
+        );
+      }
+    }
     // Recup Message Inter-page
     if (this.props.match.params.codemsg !== undefined) {
       let ResText = null;
@@ -330,20 +349,29 @@ export default class Home extends Component {
       axios
         .get("https://rest.ensembl.org/info/ping?content-type=application/json")
         .then(() => {
+          const connection =
+            navigator.connection ||
+            navigator.mozConnection ||
+            navigator.webkitConnection;
           if (!auto)
             this.ShowMessageInfo(
               "Impossible d'activé le mode hors ligne",
-              7000
+              7000,
+              "danger"
             );
-          else
-            this.ShowMessageInfo("Connexion internet faible/instable.", 7000);
+          else if (!connection)
+             this.ShowMessageInfo(
+               "Connexion internet faible/instable.",
+               7000,
+               "warn"
+             );
         })
         .catch(next);
     }
 
     async function next() {
       self.setState({ OfflineMode: true, RefreshRandomizeAnime: true });
-      self.ShowMessageInfo("Mode hors ligne activé", 6000);
+      self.ShowMessageInfo("Mode hors ligne activé", 6000, "success");
 
       if (self.setIntervalVar !== null) {
         clearInterval(self.setIntervalVar);
@@ -1046,7 +1074,7 @@ export default class Home extends Component {
           clearInterval(this.setIntervalVar);
           this.setIntervalVar = null;
           this.setState({ ReConnectionFirebase: false });
-          this.ShowMessageInfo("Reconnecté avec succès !", 5000);
+          this.ShowMessageInfo("Reconnecté avec succès !", 5000, "success");
           console.warn("Firebase Connexion (re)establish");
         }
       } else {
@@ -1054,7 +1082,8 @@ export default class Home extends Component {
         this.setState({ ReConnectionFirebase: true });
         this.ShowMessageInfo(
           "Connection aux serveurs perdues -> Reconnection...",
-          5000
+          5000,
+          "warn"
         );
         console.warn(
           "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
@@ -1096,10 +1125,26 @@ export default class Home extends Component {
     window.confirmationResult
       .confirm(this.state.CodeNumber[0])
       .then(() => {
-        console.log("Connected");
+        // Connected Successfully
         this.setState({ NewLogin: true, JustDefined: false });
+        this.NumberOfFailedConnection = 0;
       })
-      .catch(console.error);
+      .catch(() => {
+        // Not connected: Bad Code ?
+        this.NumberOfFailedConnection += 1;
+        this.ShowMessageInfo(
+          "La connexion a echoué: Mauvaise code ?",
+          6000,
+          "danger"
+        );
+        this.setState({
+          CodeNumber: this.NumberOfFailedConnection >= 3 ? ["", 1] : ["", 2],
+        });
+        if (this.NumberOfFailedConnection >= 3) {
+          window.confirmationResult = null;
+          this.NumberOfFailedConnection = 1;
+        }
+      });
   };
 
   verificateNum = () => {
@@ -2412,7 +2457,7 @@ export default class Home extends Component {
     let NotAutoCloseAlert = false;
 
     if (!FileToImport) {
-      this.ShowMessageInfo("Auncun fichier selectionné.", 5000);
+      this.ShowMessageInfo("Auncun fichier selectionné.", 5000, "danger");
       return;
     }
 
@@ -3081,8 +3126,9 @@ export default class Home extends Component {
       };
     } catch (err) {
       this.ShowMessageInfo(
-        "Une erreur est survenue lors du traitement de votre requête. Il semblerait que votre naviguateur ne puisse pas ou veut pas démarrez cette fonction (veuillez verifier la version de votre navigateur ainsi que sa mordernité ou tout simplement les autorisations pour ce site).",
-        15000
+        "Une erreur est survenue lors du traitement de votre requête.",
+        7500,
+        "danger"
       );
       console.error(err);
     }
@@ -3130,7 +3176,7 @@ export default class Home extends Component {
     });
   };
 
-  ShowMessageInfo = (text, time) => {
+  ShowMessageInfo = (text, time, type = "info") => {
     clearTimeout(this.setTimeOutMsgInfo);
     clearTimeout(this.setTimeOutMsgInfo2);
 
@@ -3138,12 +3184,17 @@ export default class Home extends Component {
       ShowMessage: true,
       ShowMessageHtml: true,
       ResText: text,
+      typeAlertMsg: type,
     });
     this.setTimeOutMsgInfo = setTimeout(() => {
       this.setState({ ShowMessage: false });
 
       this.setTimeOutMsgInfo2 = setTimeout(() => {
-        this.setState({ ShowMessageHtml: false, ResText: null });
+        this.setState({
+          ShowMessageHtml: false,
+          ResText: null,
+          typeAlertMsg: null,
+        });
       }, 900);
     }, time);
   };
@@ -3284,6 +3335,7 @@ export default class Home extends Component {
       ShowModalVerification,
       ShowModalAddScan,
       ShowModalType,
+      typeAlertMsg,
       MicOn,
       ShowModalImportFile,
       ShowMessage,
@@ -3679,7 +3731,8 @@ export default class Home extends Component {
             this.SeeInDetails(id);
             this.ShowMessageInfo(
               "Chargement de la page... Veuillez patienté...",
-              5000
+              5000,
+              "info"
             );
           }}
           type={anim.type}
@@ -4116,7 +4169,8 @@ export default class Home extends Component {
               this.SeeInDetails(id);
               this.ShowMessageInfo(
                 "Chargement de la page... Veuillez patienté...",
-                5000
+                5000,
+                "info"
               );
             }}
             type={SeasonAnime.type}
@@ -4548,8 +4602,9 @@ export default class Home extends Component {
                   } catch (err) {
                     console.error(err);
                     this.ShowMessageInfo(
-                      "Veuillez donner un URL valide: http://exemple.com OU https://exemple.com",
-                      7000
+                      "Veuillez donner un URL valide: https://www.exemple.com",
+                      7000,
+                      "danger"
                     );
                     return;
                   }
@@ -4587,7 +4642,8 @@ export default class Home extends Component {
                       console.error(err);
                       this.ShowMessageInfo(
                         "Veuillez donner un URL valide: http://exemple.com OU https://exemple.com",
-                        7000
+                        7000,
+                        "danger"
                       );
                       return;
                     }
@@ -5629,7 +5685,20 @@ export default class Home extends Component {
 
           {ShowMessageHtml ? (
             <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
-              <span className="fas fa-info"></span> {ResText}
+              <span
+                className={`fas fa-${
+                  typeAlertMsg === "info"
+                    ? "info"
+                    : typeAlertMsg === "success"
+                    ? "check"
+                    : typeAlertMsg === "warn"
+                    ? "exclamation-triangle"
+                    : typeAlertMsg === "danger"
+                    ? "times-circle"
+                    : "info"
+                }`}
+              ></span>{" "}
+              {ResText}
             </div>
           ) : null}
         </Fragment>
