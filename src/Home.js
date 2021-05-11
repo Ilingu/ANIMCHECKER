@@ -2736,9 +2736,19 @@ export default class Home extends Component {
       .join("");
   };
 
-  GETSeasonAnime = async (year, season) => {
+  GETSeasonAnime = async () => {
+    const { year, season } = this.state;
     this.setState({ AnimateFasIcon: [true, false] });
     try {
+      if (
+        isNaN(new Date(`1/1/${year}`).getTime()) ||
+        !season ||
+        (season !== "spring" &&
+          season !== "summer" &&
+          season !== "fall" &&
+          season !== "winter")
+      )
+        throw new Error("Invaid Date");
       this.setState({
         AnimateFasIcon: [false, false],
         SeasonAnimeDetails: (
@@ -4187,7 +4197,7 @@ export default class Home extends Component {
             <Form
               onSubmit={(event) => {
                 event.preventDefault();
-                this.GETSeasonAnime(year, season);
+                this.GETSeasonAnime();
               }}
             >
               <Button
@@ -4302,11 +4312,15 @@ export default class Home extends Component {
               OpenSearchFilter: () => {
                 this.setState({ OpenSearchFilter: !OpenSearchFilter });
               },
-              OpenSeasonPage: () =>
-                this.setState({
-                  SeasonPage: true,
-                  season: this.WhitchSeason(),
-                }),
+              OpenSeasonPage: () => {
+                this.setState(
+                  {
+                    SeasonPage: true,
+                    season: this.WhitchSeason(),
+                  },
+                  this.GETSeasonAnime
+                );
+              },
               LoadingMode: LoadingMode[0],
               ChangePage: () => {
                 PageMode

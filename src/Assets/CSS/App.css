@@ -17,6 +17,9 @@ body {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
+  -webkit-box-align: unset !important;
+      -ms-flex-align: unset !important;
+          align-items: unset !important;
   overflow-x: hidden !important;
   min-height: 100vh;
   background-color: #212121;
