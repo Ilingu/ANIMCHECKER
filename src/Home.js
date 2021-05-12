@@ -201,6 +201,8 @@ export default class Home extends Component {
       window.localStorage.setItem("OfflineMode", JSON.stringify(false));
     else if (JSON.parse(window.localStorage.getItem("OfflineMode")) === true)
       this.OfflineMode(null, true);
+    //  WS
+    this.ActiveWebSockets();
     // AntiLostData
     const VarAntiLostData = JSON.parse(
       window.localStorage.getItem("LastSecurityAntiLostData")
@@ -347,6 +349,15 @@ export default class Home extends Component {
   componentWillUnmount() {
     document.onkeydown = null;
   }
+
+  ActiveWebSockets = () => {
+    // WS
+    const DataBaseWS = firebase.database().ref(this.state.Pseudo);
+    DataBaseWS.on("value", (snap) => {
+      const NewData = snap.val();
+      this.refreshValueFirebase(null, null, NewData);
+    });
+  };
 
   OfflineMode = (forced, auto = false) => {
     const self = this;
@@ -520,11 +531,18 @@ export default class Home extends Component {
     }
   };
 
-  refreshValueFirebase = async (after = null, HomePage = null) => {
+  refreshValueFirebase = async (
+    after = null,
+    HomePage = null,
+    WithWSData = null
+  ) => {
     try {
-      const GlobalInfoUser = await base.fetch(`${this.state.Pseudo}`, {
-        context: this,
-      });
+      const GlobalInfoUser =
+        WithWSData !== null
+          ? WithWSData
+          : await base.fetch(`${this.state.Pseudo}`, {
+              context: this,
+            });
 
       const {
         RefreshfromFnOffline,
@@ -561,6 +579,13 @@ export default class Home extends Component {
             !SwitchMyAnim
               ? false
               : true,
+          MangaFirebase:
+            WithWSData !== null
+              ? !GlobalInfoUser.manga
+                ? []
+                : GlobalInfoUser.manga
+              : this.state.MangaFirebase,
+          RefreshRandomizeAnime3: true,
           RefreshfromFnOffline: false,
           LoadingMode: [
             typeof GlobalInfoUser.serie === "object" &&
@@ -1049,7 +1074,6 @@ export default class Home extends Component {
         data: authData.user.uid,
       });
     }
-
     // Verified listener Conn
     connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
