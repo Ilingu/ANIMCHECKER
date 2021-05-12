@@ -68,7 +68,6 @@ const PosterAnim = ({
   ReTakeImgFromName,
   // MyManga
   inMyManga,
-  openDetailsManga,
   isFinishedManga,
   MangaSearch,
 }) => {
@@ -78,10 +77,7 @@ const PosterAnim = ({
   // MyManga
   if (inMyManga === true) {
     const TemplateMangaPoster = (
-      <div
-        className={`PosterManga${isFinishedManga ? " finished" : ""}`}
-        onClick={openDetailsManga}
-      >
+      <div className={`PosterManga${isFinishedManga ? " finished" : ""}`}>
         <div className="ImgInterract">
           <img
             draggable={"false"}
@@ -96,7 +92,9 @@ const PosterAnim = ({
           {isFinishedManga ? <span className="fas fa-check"> </span> : null}
           {title}
         </div>
-        <span className="fas fa-eye"></span>
+        <Link push="false" to={`/WatchManga/${Pseudo}/${id}`}>
+          <span className="fas fa-eye"></span>
+        </Link>
       </div>
     );
     // Filter

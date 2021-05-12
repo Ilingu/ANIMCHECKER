@@ -21,7 +21,6 @@ import { Modal, Button, Form, Dropdown, Spinner } from "react-bootstrap";
 // DB
 import base, { firebaseApp } from "./db/base";
 import firebase from "firebase/app";
-import "firebase/auth";
 
 export default class Home extends Component {
   state = {
@@ -72,7 +71,6 @@ export default class Home extends Component {
     ShowModalSearch: false,
     ShowModalChangeNote: false,
     ShowModalAddAnim: false,
-    ShowModalAddScan: false,
     ShowModalAddNM: false,
     ShowModalAddFilm: false,
     ShowModalAddNotifLier: false,
@@ -81,10 +79,8 @@ export default class Home extends Component {
     ShowModalType: false,
     ShowModalVerification: false,
     ShowModalAddManga: false,
-    ShowModalMangaDetails: false,
     ////
     PalmaresModal: false,
-    ScanManga: null,
     SeasonPage: false,
     NotAskAgain: true,
     ModePreview: false,
@@ -500,24 +496,13 @@ export default class Home extends Component {
 
   refreshManga = async () => {
     try {
-      const { ScanManga } = this.state;
       const MangaInfo = await base.fetch(`${this.state.Pseudo}/manga`, {
         context: this,
       });
-      let NewScanManga = null;
-      if (ScanManga !== null) {
-        NewScanManga = [
-          this.GTemplateScan(ScanManga[1], MangaInfo, {
-            ...MangaInfo[0][ScanManga[1]].Scan,
-          }),
-          ScanManga[1],
-        ];
-      }
 
       this.setState({
         MangaFirebase: !MangaInfo ? [] : MangaInfo,
         RefreshRandomizeAnime3: true,
-        ScanManga: NewScanManga !== null ? NewScanManga : null,
       });
     } catch (err) {
       console.error(err);
@@ -1218,7 +1203,6 @@ export default class Home extends Component {
             ShowModalSearch: false,
             ShowModalChangeNote: false,
             ShowModalAddAnim: false,
-            ShowModalAddScan: false,
             ShowModalAddNM: false,
             ShowModalAddFilm: false,
             ShowModalAddNotifLier: false,
@@ -1227,10 +1211,8 @@ export default class Home extends Component {
             ShowModalType: false,
             ShowModalVerification: false,
             ShowModalAddManga: false,
-            ShowModalMangaDetails: false,
             ////
             PalmaresModal: false,
-            ScanManga: null,
             NotAskAgain: true,
             ModePreview: false,
             SwitchMyAnim: true,
@@ -3060,29 +3042,6 @@ export default class Home extends Component {
     }
   };
 
-  GTemplateScan = (key, data, CopyScan) =>
-    data[0][key].Scan.map((finished, i) => (
-      <div
-        key={i}
-        className={`ScanManga SM-${i}${finished ? " finished" : ""}`}
-        onClick={() => {
-          if (CopyScan[i] === true) return;
-          CopyScan[i] = true;
-          this.updateValue(`${this.state.Pseudo}/manga/0/${key}`, {
-            Scan: { ...CopyScan },
-            finished: i === Object.keys(CopyScan).length - 1 ? true : false,
-          });
-        }}
-      >
-        {finished ? (
-          <span className="fas fa-check"></span>
-        ) : (
-          <span className="fas fa-flag-checkered"></span>
-        )}{" "}
-        Scan <span className="ScanID">{i + 1}</span>
-      </div>
-    ));
-
   StartSpeechRecognition = () => {
     const { SecondMessage } = this.state;
     try {
@@ -3244,10 +3203,8 @@ export default class Home extends Component {
     this.setState({
       ShowModalSearch: false,
       ShowModalAddAnim: false,
-      ShowModalAddScan: false,
       ShowModalAddNM: false,
       ShowModalAddFilm: false,
-      ShowModalMangaDetails: false,
       ShowModalAddManga: false,
       ShowModalChooseImgURL: [false, null],
       ShowModalType: false,
@@ -3257,7 +3214,6 @@ export default class Home extends Component {
       AnimateFasIcon: [false, false],
       AntiLostData: true,
       AddNotifWithAnim: false,
-      ScanManga: null,
       SeasonAnimCheck: false,
       WaitAnimCheck: false,
       PalmaresModal: false,
@@ -3317,7 +3273,6 @@ export default class Home extends Component {
       AllowUseReAuth,
       ShowModalChooseImgURL,
       RedirectPage,
-      ShowModalMangaDetails,
       ShowModalSearch,
       addEPToAlleged,
       findAnim,
@@ -3328,7 +3283,6 @@ export default class Home extends Component {
       ResText,
       DeletePathVerif,
       Scan,
-      ScanManga,
       OpenSearchFilter,
       SearchFilter,
       OfflineMode,
@@ -3343,7 +3297,6 @@ export default class Home extends Component {
       PalmaresModal,
       Rate,
       ShowModalVerification,
-      ShowModalAddScan,
       ShowModalType,
       typeAlertMsg,
       MicOn,
@@ -3995,46 +3948,14 @@ export default class Home extends Component {
                 .map((key) => (
                   <Poster
                     key={key}
+                    id={key}
+                    Pseudo={Pseudo}
                     ModeFilter={ModeFilter}
                     isFinishedManga={MangaFirebase[0][key].finished}
                     inMyManga={true}
                     title={MangaFirebase[0][key].name}
                     url={MangaFirebase[0][key].imageUrl}
                     CopyTitle={() => this.CopyText(MangaFirebase[0][key].name)}
-                    openDetailsManga={() => {
-                      let LastScanRead = null;
-                      MangaFirebase[0][key].Scan.forEach((val, i) => {
-                        if (val === true) {
-                          LastScanRead = i;
-                        }
-                      });
-                      this.setState(
-                        {
-                          ShowModalMangaDetails: true,
-                          ScanManga: [
-                            this.GTemplateScan(key, MangaFirebase, {
-                              ...MangaFirebase[0][key].Scan,
-                            }),
-                            key,
-                          ],
-                        },
-                        () => {
-                          try {
-                            document
-                              .getElementById("ScanContainer")
-                              .parentNode.scrollTo({
-                                left:
-                                  document
-                                    .querySelector(
-                                      `.ScanManga.SM-${LastScanRead}`
-                                    )
-                                    .getBoundingClientRect().x - 740,
-                                behavior: "smooth",
-                              });
-                          } catch (err) {}
-                        }
-                      );
-                    }}
                   />
                 ))
             : "Vous n'avez aucun Manga En Cours",
@@ -5569,99 +5490,6 @@ export default class Home extends Component {
             </Modal.Footer>
           </Modal>
 
-          <Modal
-            show={ShowModalMangaDetails}
-            size="lg"
-            onHide={this.cancelModal}
-          >
-            <Modal.Header id="ModalTitle" closeButton>
-              <Modal.Title>
-                Scans de{" "}
-                {!ScanManga ? null : MangaFirebase[0][ScanManga[1]].name}
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body id="ModalBody">
-              <div id="ScanContainer">{!ScanManga ? null : ScanManga[0]}</div>
-            </Modal.Body>
-            <Modal.Footer id="ModalFooter">
-              <Button variant="primary" onClick={this.cancelModal}>
-                <span className="fas fa-window-close"></span> Fermer
-              </Button>
-              <Button
-                variant="danger"
-                style={{ touchAction: "manipulation" }}
-                onDoubleClick={() => {
-                  this.deleteValue(`${Pseudo}/manga/0/${ScanManga[1]}`);
-                  this.cancelModal();
-                }}
-              >
-                <span className="fas fa-trash-alt"></span> Supprimer{" "}
-                {!ScanManga ? null : MangaFirebase[0][ScanManga[1]].name}
-              </Button>
-              <Button
-                variant="success"
-                onClick={() => this.setState({ ShowModalAddScan: true })}
-              >
-                <span className="fas fa-plus"></span> Ajouter des Scans
-              </Button>
-            </Modal.Footer>
-          </Modal>
-
-          <Modal show={ShowModalAddScan} onHide={this.cancelModal}>
-            <Modal.Header id="ModalTitle" closeButton>
-              <Modal.Title>
-                Ajouter {Scan} Scans à{" "}
-                {ShowModalAddScan ? MangaFirebase[0][ScanManga[1]].name : null}
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body id="ModalBody">
-              <Form id="AddScan">
-                <Form.Group controlId="scanToAdd">
-                  <Form.Label>Nombres de Scans</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={Scan.toString()}
-                    min="1"
-                    placeholder="Scan du manga"
-                    autoComplete="off"
-                    onChange={(event) => {
-                      const value = parseInt(event.target.value);
-
-                      if (value < 1) return;
-                      this.setState({ Scan: value });
-                    }}
-                  />
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer id="ModalFooter">
-              <Button
-                variant="secondary"
-                onClick={() => this.setState({ ShowModalAddScan: false })}
-              >
-                <span className="fas fa-window-close"></span> Annuler
-              </Button>
-              <Button
-                variant="success"
-                onClick={() => {
-                  let ScanToAdd = [];
-                  for (let i = 0; i < Scan; i++) {
-                    ScanToAdd = [...ScanToAdd, false];
-                  }
-                  this.updateValue(`${Pseudo}/manga/0/${ScanManga[1]}`, {
-                    Scan: [
-                      ...MangaFirebase[0][ScanManga[1]].Scan,
-                      ...ScanToAdd,
-                    ],
-                    finished: false,
-                  });
-                  this.setState({ ShowModalAddScan: false });
-                }}
-              >
-                <span className="fas fa-plus"></span> Ajouter {Scan} Scans
-              </Button>
-            </Modal.Footer>
-          </Modal>
           <Modal show={ShowModalAddNM} onHide={this.cancelModal}>
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Next Manga</Modal.Title>

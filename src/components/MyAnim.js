@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, Fragment } from "react";
+import React, { useEffect, Fragment } from "react";
 // Components
 import Header from "./Header";
 // CSS
@@ -32,11 +32,9 @@ const MyAnim = ({
   Tag,
   IsShortcut,
 }) => {
-  useMemo(() => {
-    document.onkeydown = null;
-  }, []);
   useEffect(() => {
     // KeyShortcut
+    document.onkeydown = null;
     if (!window.mobileAndTabletCheck()) {
       if (IsShortcut && document.onkeydown === null) {
         document.onkeydown = (keyDownEvent) => {

@@ -9,7 +9,6 @@ import TimePicker from "react-bootstrap-time-picker";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
-import "firebase/auth";
 
 export default class Notif extends Component {
   state = {
@@ -63,9 +62,8 @@ export default class Notif extends Component {
     }
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
-      document.body.style.backgroundColor = window.localStorage.getItem(
-        "BGC-ACK"
-      );
+      document.body.style.backgroundColor =
+        window.localStorage.getItem("BGC-ACK");
     }
   }
 

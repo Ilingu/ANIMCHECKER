@@ -10,7 +10,6 @@
 # testing
 /coverage
 /debug.log
-/src/components/WatchManga.js
 /.scannerwork
 /scannerCmd.txt
 

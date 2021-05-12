@@ -23,7 +23,6 @@ import { Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
-import "firebase/auth";
 
 class Watch extends Component {
   state = {

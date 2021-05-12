@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 // Components
 import Header from "./Header";
 // Design
@@ -18,11 +18,9 @@ const MyManga = ({
   ChangeSwipe,
   IsShortcut,
 }) => {
-  useMemo(() => {
-    document.onkeydown = null;
-  }, []);
   useEffect(() => {
     // KeyShortcut
+    document.onkeydown = null;
     if (!window.mobileAndTabletCheck()) {
       if (IsShortcut && document.onkeydown === null) {
         document.onkeydown = (keyDownEvent) => {
