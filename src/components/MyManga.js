@@ -25,6 +25,7 @@ const MyManga = ({
       if (IsShortcut && document.onkeydown === null) {
         document.onkeydown = (keyDownEvent) => {
           if (keyDownEvent.repeat) return;
+          if (document.body.contains(document.querySelector(".modal"))) return;
           if (keyDownEvent.key === "ArrowRight") {
             return ChangeSwipe(false);
           }

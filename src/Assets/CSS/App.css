@@ -459,64 +459,29 @@ a:hover {
   color: #007bff !important;
 }
 
-.modal #ScanContainer {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
-  max-height: 390px;
-}
-
-.modal #ScanContainer .ScanManga {
-  cursor: pointer;
-  overflow-y: hidden;
-  height: 35px;
-  width: 200px;
-  text-align: center;
-  margin-right: 5px;
-  background-color: rgba(223, 223, 223, 0.041);
+.modal .VolumesMangaPreview {
   margin-bottom: 5px;
+  color: #ddd;
+  background-color: #16181b;
   padding: 5px;
-  color: rgba(255, 51, 0, 0.85);
+  text-align: center;
+  border-radius: 10px;
 }
 
-.modal #ScanContainer .ScanManga .fa-flag-checkered {
-  color: rgba(255, 51, 0, 0.85);
+.modal .VolumesMangaPreview span {
+  text-decoration: underline;
 }
 
-.modal #ScanContainer .ScanManga .ScanID {
-  color: rgba(255, 51, 0, 0.85);
+.modal .VolumesMangaPreview #NumberVolumesMangaPreview {
+  font-size: 16px;
   font-weight: bold;
-  -webkit-text-decoration: underline double;
-          text-decoration: underline double;
 }
 
-@media screen and (max-width: 460px) {
-  .modal #ScanContainer .ScanManga {
-    width: 150px;
-  }
-}
-
-@media screen and (max-width: 355px) {
-  .modal #ScanContainer .ScanManga {
-    width: 100px;
-  }
-}
-
-.modal #ScanContainer .ScanManga.finished {
-  color: gold;
-}
-
-.modal #ScanContainer .ScanManga.finished .ScanID {
-  color: gold;
+.modal .VolumesMangaPreview button {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background-color: transparent;
 }
 
 #loginForm {

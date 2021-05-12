@@ -121,7 +121,7 @@ export default class Home extends Component {
     // Form
     title: "",
     type: "serie",
-    typeManga: "volume",
+    typeManga: ["scan", false],
     Rate: 7.5,
     UrlUserImg: "",
     FileToImport: null,
@@ -143,7 +143,9 @@ export default class Home extends Component {
       Math.round(new Date().getMinutes() / 10) * 10 * 60,
     durer: 110,
     nbEP: "",
-    Scan: 1,
+    Scan: NaN,
+    Volumes: [NaN, NaN],
+    VolumesPersonnalize: {},
     NextManga: "",
     NextAnim: "",
     ImportanceNA: 0,
@@ -1271,7 +1273,7 @@ export default class Home extends Component {
               Math.round(new Date().getMinutes() / 10) * 10 * 60,
             durer: 110,
             nbEP: "",
-            Scan: 1,
+            Scan: NaN,
             NextManga: "",
             NextAnim: "",
             ImportanceNA: 0,
@@ -1910,9 +1912,12 @@ export default class Home extends Component {
   addManga = async () => {
     const {
       Pseudo,
+      typeManga,
       MangaFirebase,
+      VolumesPersonnalize,
       title,
       Scan,
+      Volumes,
       NextMangaToDelete,
       imageUrl,
       SwipeActive,
@@ -1920,20 +1925,47 @@ export default class Home extends Component {
     const self = this;
 
     let imgUrl = imageUrl;
-    if (
-      typeof title === "string" &&
-      title.trim().length !== 0 &&
-      typeof Scan === "number" &&
-      Scan >= 1
-    ) {
+    if (typeof title === "string" && title.trim().length !== 0) {
       if (!imgUrl)
         imgUrl = await this.TakeInfoFromName(title, false, null, null, true);
 
       let IsGoodForPost = true,
         ScanArr = [];
 
-      for (let i = 0; i < Scan; i++) {
-        ScanArr = [...ScanArr, false];
+      if (typeManga[0] === "scan")
+        for (let i = 0; i < Scan; i++) {
+          ScanArr = [...ScanArr, false];
+        }
+
+      if (typeManga[0] === "volume") {
+        if (Volumes[0] >= 50000 || Volumes[1] >= 10000) IsGoodForPost = false;
+        let Scans = [];
+        for (let i = 0; i < Volumes[1]; i++) {
+          Scans = [...Scans, false];
+        }
+        if (Scans.length <= 0) {
+          IsGoodForPost = false;
+        }
+        for (let i = 0; i < Volumes[0]; i++) {
+          if (!IsGoodForPost) break;
+          let ScansPerso = [];
+          if (VolumesPersonnalize[`Volume${i}`]?.Scan) {
+            for (let j = 0; j < VolumesPersonnalize[`Volume${i}`]?.Scan; j++) {
+              ScansPerso = [...ScansPerso, false];
+            }
+          }
+          ScanArr = [
+            ...ScanArr,
+            {
+              volume: i + 1,
+              Scans: ScansPerso.length > 0 ? ScansPerso : Scans,
+            },
+          ];
+        }
+      }
+
+      if (ScanArr.length <= 0 || !IsGoodForPost) {
+        return this.ShowMessageInfo("Nombre de Scan Incorrect", 6000, "warn");
       }
 
       try {
@@ -1947,9 +1979,9 @@ export default class Home extends Component {
       if (IsGoodForPost) {
         this.addValue(`${Pseudo}/manga/0`, {
           ...MangaFirebase[0],
-          [`manga-${this.token(10)}${Date.now()}`]: {
+          [`${typeManga[0]}-${this.token(10)}${Date.now()}`]: {
             name: title,
-            Scan: ScanArr,
+            Scans: ScanArr,
             imageUrl: imgUrl,
             finished: false,
           },
@@ -1966,11 +1998,8 @@ export default class Home extends Component {
     }
 
     function reset(error = false, warn = false) {
+      self.cancelModal();
       self.setState({
-        title: "",
-        Scan: 1,
-        ShowModalAddManga: false,
-        NextMangaToDelete: null,
         SwipeActive: error ? SwipeActive : true,
         ResText: error ? error : warn ? warn : null,
         typeAlert: error ? "danger" : warn ? "warning" : null,
@@ -3223,7 +3252,10 @@ export default class Home extends Component {
       IdToAddEp: null,
       InfoAnimeToChangeNote: null,
       Rate: 7.5,
+      typeManga: ["scan", false],
+      VolumesPersonnalize: {},
       UrlUserImg: "",
+      Volumes: [NaN, NaN],
       OpenSearchFilter: false,
       SearchFilter: {},
       ShowModalChangeNote: false,
@@ -3232,6 +3264,7 @@ export default class Home extends Component {
       NextAnimToDelete: null,
       NextMangaToDelete: null,
       addEPToAlleged: false,
+      Scan: NaN,
       DeletePathVerif: null,
       title: "",
       type: "serie",
@@ -3298,6 +3331,8 @@ export default class Home extends Component {
       PalmaresModal,
       Rate,
       ShowModalVerification,
+      Volumes,
+      VolumesPersonnalize,
       typeAlertMsg,
       MicOn,
       ShowModalImportFile,
@@ -3685,6 +3720,7 @@ export default class Home extends Component {
     );
     let animList = null;
     let NbTemplate = [];
+    let VolumesMangaPreview = [];
 
     if (findAnim.length !== 0) {
       animList = findAnim.map((anim) => (
@@ -3989,8 +4025,66 @@ export default class Home extends Component {
       });
     }
 
-    // Other Page In Home
+    if (
+      ShowModalAddManga &&
+      typeManga[1] &&
+      typeManga[0] === "volume" &&
+      !isNaN(Volumes[0]) &&
+      !isNaN(Volumes[1]) &&
+      Volumes[0] <= 1000
+    ) {
+      for (let i = 0; i < Volumes[0]; i++) {
+        VolumesMangaPreview = [
+          ...VolumesMangaPreview,
+          <div className="VolumesMangaPreview">
+            <span>
+              Volume <span id="NumberVolumesMangaPreview">{i + 1}</span>
+            </span>{" "}
+            :{" "}
+            {VolumesPersonnalize[`Volume${i}`]?.Scan
+              ? `${VolumesPersonnalize[`Volume${i}`].Scan} scans`
+              : `${Volumes[1]} scans`}{" "}
+            <Button
+              onClick={() => {
+                const VolumesPersonnalize = {
+                  ...this.state.VolumesPersonnalize,
+                };
+                VolumesPersonnalize[`Volume${i}`] = {
+                  Scan: VolumesPersonnalize[`Volume${i}`]?.Scan
+                    ? VolumesPersonnalize[`Volume${i}`].Scan + 1
+                    : Volumes[1] + 1,
+                };
+                if (VolumesPersonnalize[`Volume${i}`].Scan === Volumes[1])
+                  delete VolumesPersonnalize[`Volume${i}`];
+                this.setState({ VolumesPersonnalize });
+              }}
+            >
+              +
+            </Button>
+            <Button
+              onClick={() => {
+                const VolumesPersonnalize = {
+                  ...this.state.VolumesPersonnalize,
+                };
+                VolumesPersonnalize[`Volume${i}`] = {
+                  Scan: VolumesPersonnalize[`Volume${i}`]?.Scan
+                    ? VolumesPersonnalize[`Volume${i}`].Scan - 1
+                    : Volumes[1] - 1,
+                };
+                if (VolumesPersonnalize[`Volume${i}`].Scan === Volumes[1])
+                  delete VolumesPersonnalize[`Volume${i}`];
+                this.setState({ VolumesPersonnalize });
+              }}
+            >
+              -
+            </Button>
+          </div>,
+        ];
+      }
+    }
+
     if (animToDetails !== null && animToDetails.length >= 2) {
+      // Other Page In Home
       return (
         <OneAnim
           details={animToDetails}
@@ -5323,7 +5417,9 @@ export default class Home extends Component {
                           WaitAnimCheck === true ? "Oui" : "Non"
                         }`}
                         onChange={(event) =>
-                          this.setState({ WaitAnimCheck: event.target.checked })
+                          this.setState({
+                            WaitAnimCheck: event.target.checked,
+                          })
                         }
                       />
                     </Form.Group>
@@ -5369,7 +5465,9 @@ export default class Home extends Component {
                           WaitAnimCheck === true ? "Oui" : "Non"
                         }`}
                         onChange={(event) =>
-                          this.setState({ WaitAnimCheck: event.target.checked })
+                          this.setState({
+                            WaitAnimCheck: event.target.checked,
+                          })
                         }
                       />
                     </Form.Group>
@@ -5440,7 +5538,11 @@ export default class Home extends Component {
             </Modal.Footer>
           </Modal>
 
-          <Modal show={ShowModalAddManga} onHide={this.cancelModal}>
+          <Modal
+            show={ShowModalAddManga}
+            size={typeManga[1] && typeManga[0] === "volume" ? "lg" : null}
+            onHide={this.cancelModal}
+          >
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>Ajouter un Manga</Modal.Title>
             </Modal.Header>
@@ -5452,60 +5554,115 @@ export default class Home extends Component {
             >
               <Form id="AddManga" onSubmit={this.addManga}>
                 <Form.Group controlId="typeManga">
-                  <Form.Label>En volume OU en scan</Form.Label>
+                  <Form.Label>1. En scans OU en volumes</Form.Label>
                   <Form.Control
                     as="select"
-                    value={typeManga}
+                    value={typeManga[0]}
                     autoComplete="off"
                     onChange={(event) =>
-                      this.setState({ typeManga: event.target.value })
+                      this.setState({
+                        typeManga: [event.target.value, typeManga[1]],
+                      })
                     }
                     custom
                   >
-                    <option value="volume">Volumes</option>
                     <option value="scan">Scans (Online)</option>
+                    <option value="volume">Volumes</option>
                   </Form.Control>
                 </Form.Group>
+                {typeManga[1] ? (
+                  <Fragment>
+                    <Form.Group controlId="titreM">
+                      <Form.Label>2. Titre Du Manga</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Attaques des Titans"
+                        required
+                        autoComplete="off"
+                        value={title}
+                        onChange={(event) =>
+                          this.setState({
+                            title: event.target.value,
+                          })
+                        }
+                      />
+                    </Form.Group>
+                    {typeManga[0] === "volume" ? (
+                      <Form.Group controlId="volume">
+                        <Form.Label>3. Nombres de Tomes</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={Volumes[0].toString()}
+                          min="1"
+                          placeholder="34"
+                          autoComplete="off"
+                          onChange={(event) => {
+                            const value = parseInt(event.target.value);
+                            if (value < 1) return;
+                            this.setState({ Volumes: [value, Volumes[1]] });
+                          }}
+                        />
+                        <Form.Label>
+                          3. Nombres de Chapitres par Tome
+                        </Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={Volumes[1].toString()}
+                          min="1"
+                          placeholder="4"
+                          autoComplete="off"
+                          onChange={(event) => {
+                            const value = parseInt(event.target.value);
+                            if (value < 1) return;
+                            this.setState({ Volumes: [Volumes[0], value] });
+                          }}
+                        />
+                        <Form.Label>4. Prévisualiser</Form.Label>
+                        {VolumesMangaPreview}
+                      </Form.Group>
+                    ) : (
+                      <Form.Group controlId="scan">
+                        <Form.Label>3. Nombres de Scans</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={Scan.toString()}
+                          min="1"
+                          placeholder="139"
+                          autoComplete="off"
+                          onChange={(event) => {
+                            const value = parseInt(event.target.value);
 
-                <Form.Group controlId="titreM">
-                  <Form.Label>Titre Du Manga</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Titre Du Manga"
-                    required
-                    autoComplete="off"
-                    value={title}
-                    onChange={(event) =>
-                      this.setState({
-                        title: event.target.value,
-                      })
-                    }
-                  />
-                </Form.Group>
-                <Form.Group controlId="scan">
-                  <Form.Label>Nombres de Scans</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={Scan.toString()}
-                    min="1"
-                    placeholder="Scan du manga"
-                    autoComplete="off"
-                    onChange={(event) => {
-                      const value = parseInt(event.target.value);
-
-                      if (value < 1) return;
-                      this.setState({ Scan: value });
-                    }}
-                  />
-                </Form.Group>
+                            if (value < 1) return;
+                            this.setState({ Scan: value });
+                          }}
+                        />
+                      </Form.Group>
+                    )}
+                  </Fragment>
+                ) : null}
               </Form>
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 <span className="fas fa-window-close"></span> Annuler
               </Button>
-              <Button variant="success" onClick={this.addManga}>
-                <span className="fas fa-plus"></span> Créer {title}
+              <Button
+                variant="success"
+                onClick={() => {
+                  if (!typeManga[1])
+                    return this.setState({ typeManga: [typeManga[0], true] });
+                  this.addManga();
+                }}
+              >
+                {!typeManga[1] ? (
+                  <Fragment>
+                    Suivant <span className="fas fa-arrow-right"></span>
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <span className="fas fa-plus"></span> Créer {title}
+                  </Fragment>
+                )}
               </Button>
             </Modal.Footer>
           </Modal>
