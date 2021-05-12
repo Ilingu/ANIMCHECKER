@@ -1,39 +1,26 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Redirect, Link } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useHistory } from "react-router-dom";
 // CSS
-import { Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
+import {} from "react-bootstrap";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
 
-/* Global State */
-const useRefState = (initialValue) => {
-  const [state, setState] = useState(initialValue);
-  const stateRef = useRef(state);
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-  return [stateRef.current, setState];
-};
-
-/* FN */
-// FireBase
-const AddValue = () => {};
-const UpdateValue = () => {};
-const DeleteValue = () => {};
-// Connection
-const handleAuth = () => {};
-// RefreshVal
+let setIntervalVar = null;
 
 const WatchManga = (props) => {
   /* DefinedState */
   // FireBase
-  const [Pseudo, setPseudo] = useRefState(props.match.params.pseudo);
-  const [Uid, setUid] = useRefState(null);
-  const [Id, setId] = useRefState(props.match.params.id);
-  const [MangaToWatch, setMangaToWatch] = useRefState({});
+  const [Pseudo, setPseudo] = useState(props.match.params.pseudo);
+  const [Uid, setUid] = useState(null);
+  const [proprio, setProprio] = useState(null);
+  const [Id, setId] = useState(props.match.params.id);
+  const [MangaToWatch, setMangaToWatch] = useState({});
   // App State
-  const [RedirectHome, setRedirectHome] = useRefState([false, ""]);
+  const [RedirectHome, setRedirectHome] = useState([false, ""]);
+  const [isFirstTime, setIsFirstTime] = useState(true);
+  const [LoadingMode, setLoadingMode] = useState(true);
+  let History = useHistory();
   /* componentDidMount */
   useEffect(() => {
     if (
@@ -56,7 +43,7 @@ const WatchManga = (props) => {
       return;
     }
     /* FB Conn */
-    if (this.state.Pseudo && !this.state.OfflineMode) {
+    if (Pseudo) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           handleAuth({ user });
@@ -68,10 +55,120 @@ const WatchManga = (props) => {
       document.body.style.backgroundColor =
         window.localStorage.getItem("BGC-ACK");
     }
-  }, [Pseudo, setRedirectHome, Id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Pseudo, setRedirectHome, Id, setUid]);
+  /* FN */
+  // Connection
+  const handleAuth = useCallback(
+    async (authData) => {
+      const box = await base.fetch(Pseudo, { context: {} });
+      const connectedRef = firebase.database().ref(".info/connected");
+
+      if (!box.proprio) {
+        await base.post(`${Pseudo}/proprio`, {
+          data: authData.user.uid,
+        });
+      }
+
+      // Verified listener Conn
+      connectedRef.on("value", (snap) => {
+        if (snap.val() === true) {
+          // Fast Loading Anime before FnRefresh
+          // Reconected
+          if (setIntervalVar !== null) {
+            clearInterval(setIntervalVar);
+            console.warn("Firebase Connexion retablished");
+          }
+        } else {
+          reconectFirebase();
+          console.warn(
+            "Firebase Connexion Disconnected\n\tReconnect to Firebase..."
+          );
+        }
+      });
+      setUid(authData.user.uid);
+      setProprio(box.proprio || authData.user.uid);
+      refreshMangaToWatch();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [Pseudo]
+  );
+  const reAuth = useCallback(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        handleAuth({ user });
+      }
+    });
+  }, [handleAuth]);
+  const reconectFirebase = useCallback(() => {
+    let i = 0;
+    setIntervalVar = setInterval(() => {
+      if (i === 5) reAuth();
+      // Allow Vpn
+      window.localStorage.removeItem("firebase:previous_websocket_failure");
+      i++;
+    }, 1000);
+  }, [reAuth]);
+  // RefreshData
+  const refreshMangaToWatch = useCallback(async () => {
+    try {
+      const MangaToWatch = await base.fetch(`${Pseudo}/manga/0/${Id}`, {
+        context: this,
+      });
+      if (MangaToWatch) {
+        setMangaToWatch(MangaToWatch);
+        setLoadingMode(false);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [Id, Pseudo]);
+  // FireBase
+  const AddValue = useCallback(
+    (path, value) => {
+      base
+        .post(path, {
+          data: value,
+        })
+        .then(refreshMangaToWatch)
+        .catch(console.error);
+    },
+    [refreshMangaToWatch]
+  );
+  const UpdateValue = useCallback(
+    (path, value) => {
+      base
+        .update(path, {
+          data: value,
+        })
+        .then(refreshMangaToWatch)
+        .catch((err) => console.error(err));
+    },
+    [refreshMangaToWatch]
+  );
+  const DeleteValue = useCallback(
+    (path) => {
+      base.remove(path).then(refreshMangaToWatch).catch(console.error);
+    },
+    [refreshMangaToWatch]
+  );
+
   /* Render */
-  if (RedirectHome[0]) return <Redirect to={RedirectHome[1]} />;
-  return <div></div>;
+  if (!Pseudo || typeof Pseudo !== "string") History.push("/notifuser/2");
+  if (RedirectHome[0]) History.push(RedirectHome[1]);
+  if (LoadingMode) return <div></div>;
+
+  if (Uid !== proprio) History.push("/notifuser/3");
+
+  if (Id === null) {
+    History.push("/notifuser/4");
+  }
+  if (isFirstTime) {
+    setIsFirstTime(false);
+    History.push("/WatchManga");
+  }
+
+  return <section id="WatchManga"></section>;
 };
 
 export default WatchManga;
