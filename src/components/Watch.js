@@ -30,9 +30,9 @@ class Watch extends Component {
     Pseudo: this.props.match.params.pseudo,
     AnimToWatch: {},
     Badges: [],
+    id: this.props.match.params.id,
     // Auth
     uid: null,
-    id: null,
     proprio: null,
     // Bon fonctionnement de l'app
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
@@ -94,16 +94,23 @@ class Watch extends Component {
     /* Var From URL */
     // Pseudo
     if (
-      this.state.Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo"))
+      this.state.Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo")) ||
+      !this.state.Pseudo
     ) {
       this.setState({ uid: null, RedirectTo: [true, "/notifuser/2"] });
       return;
     }
     // ID
-    if (this.props.match.params.id !== undefined) {
+    if (this.state.id) {
+      if (
+        this.state.id.split("-")[0] !== "serie" &&
+        this.state.id.split("-")[0] !== "film"
+      ) {
+        this.setState({ uid: null, RedirectTo: [true, "/notifuser/11"] });
+        return;
+      }
       this.setState(
         {
-          id: this.props.match.params.id,
           type: this.props.match.params.id.split("-")[0],
         },
         () => {
@@ -115,6 +122,9 @@ class Watch extends Component {
           this.refreshAnimToWatch();
         }
       );
+    } else {
+      this.setState({ uid: null, RedirectTo: [true, "/notifuser/10"] });
+      return;
     }
     // WatchMode
     if (this.props.match.params.watchmode !== undefined)
@@ -239,8 +249,15 @@ class Watch extends Component {
           ) {
             document.onkeydown = (keyDownEvent) => {
               if (keyDownEvent.repeat) return;
-              const { repereEpisode, repereSaison, modeWatch } = this.state;
-              if (keyDownEvent.key === "f") return this.StartNextEP();
+              const {
+                repereEpisode,
+                repereSaison,
+                modeWatch,
+                ShowFormBadge,
+                ModeEditTitle,
+              } = this.state;
+              if (keyDownEvent.key === "f" && !ShowFormBadge && !ModeEditTitle)
+                return this.StartNextEP();
               if (keyDownEvent.key === "Escape" && !modeWatch)
                 return this.setState({ RedirectTo: [true, "/"] });
               if (!modeWatch) return;
@@ -968,7 +985,7 @@ class Watch extends Component {
       let lastOne = null,
         BackUpLastOne = null;
 
-      AnimToWatch.AnimEP.forEach((Season) => {
+      AnimToWatch?.AnimEP?.forEach((Season) => {
         Season.Episodes.forEach((Ep) => {
           if (SmartRepere && lastOne !== null && Ep.finished) lastOne = null;
           if (!Ep.finished && lastOne === null) {

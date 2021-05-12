@@ -114,6 +114,12 @@ a:hover {
   pointer-events: auto !important;
 }
 
+.btnBackDesing.only {
+  position: static;
+  margin-left: -5px;
+  margin-right: 5px;
+}
+
 .FakeDropDownItem {
   display: block;
   width: 100%;

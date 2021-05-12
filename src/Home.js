@@ -70,16 +70,15 @@ export default class Home extends Component {
     //// Modal
     ShowModalSearch: false,
     ShowModalChangeNote: false,
-    ShowModalAddAnim: false,
+    ShowModalAddAnime: false,
     ShowModalAddNM: false,
-    ShowModalAddFilm: false,
     ShowModalAddNotifLier: false,
     ShowModalChooseImgURL: [false, null],
     ShowModalImportFile: false,
-    ShowModalType: false,
     ShowModalVerification: false,
     ShowModalAddManga: false,
     ////
+    OpenNextNewAnime: false,
     PalmaresModal: false,
     SeasonPage: false,
     NotAskAgain: true,
@@ -122,6 +121,7 @@ export default class Home extends Component {
     // Form
     title: "",
     type: "serie",
+    typeManga: "volume",
     Rate: 7.5,
     UrlUserImg: "",
     FileToImport: null,
@@ -248,7 +248,8 @@ export default class Home extends Component {
         );
 
         this.setState({
-          ShowModalAddAnim: true,
+          ShowModalAddAnime: true,
+          OpenNextNewAnime: true,
           title: TemplateFirebase.title,
           type: TemplateFirebase.type,
           nbEP:
@@ -320,6 +321,14 @@ export default class Home extends Component {
         case "9":
           ResText =
             "Impossible d'accéder à cette page car cette anime est allégée.";
+          typeAlert = "danger";
+          break;
+        case "10":
+          ResText = "Aucun ID préciser";
+          typeAlert = "danger";
+          break;
+        case "11":
+          ResText = "Type Inexistant";
           typeAlert = "danger";
           break;
         default:
@@ -1202,13 +1211,11 @@ export default class Home extends Component {
             //// Modal
             ShowModalSearch: false,
             ShowModalChangeNote: false,
-            ShowModalAddAnim: false,
+            ShowModalAddAnime: false,
             ShowModalAddNM: false,
-            ShowModalAddFilm: false,
             ShowModalAddNotifLier: false,
             ShowModalChooseImgURL: [false, null],
             ShowModalImportFile: false,
-            ShowModalType: false,
             ShowModalVerification: false,
             ShowModalAddManga: false,
             ////
@@ -2078,6 +2085,20 @@ export default class Home extends Component {
             };
           });
 
+          if (!AnimSEP || AnimSEP[0].Episodes.length <= 0) {
+            self.setState({
+              ShowModalChooseImgURL: [false, null],
+              ShowModalAddAnime: true,
+              OpenNextNewAnime: true,
+              nbEP: "",
+            });
+            return self.ShowMessageInfo(
+              "Veuillez donner une liste d'épisode valide !",
+              6000,
+              "warn"
+            );
+          }
+
           try {
             Object.keys(serieFirebase).forEach((key) => {
               if (
@@ -2189,9 +2210,7 @@ export default class Home extends Component {
         self.setState({
           findAnim: [],
           ShowModalSearch: false,
-          ShowModalAddAnim: false,
-          ShowModalAddFilm: false,
-          ShowModalType: false,
+          ShowModalAddAnime: false,
           PalmaresModal: false,
           ShowModalVerification: false,
           palmares: null,
@@ -2223,8 +2242,7 @@ export default class Home extends Component {
     }
 
     this.setState({
-      ShowModalAddAnim: false,
-      ShowModalAddFilm: false,
+      ShowModalAddAnime: false,
     });
   };
 
@@ -2885,22 +2903,6 @@ export default class Home extends Component {
     }
   };
 
-  openNext = (onDefault = null) => {
-    const { type } = this.state;
-
-    if (onDefault !== null) {
-      onDefault === "serie"
-        ? this.setState({ ShowModalAddAnim: true })
-        : this.setState({ ShowModalAddFilm: true });
-    } else {
-      type === "serie"
-        ? this.setState({ ShowModalAddAnim: true })
-        : this.setState({ ShowModalAddFilm: true });
-    }
-
-    this.setState({ animToDetails: [] });
-  };
-
   findPalmares = () => {
     const sizeof = require("object-sizeof");
     const CopyState = { ...this.state };
@@ -3202,12 +3204,10 @@ export default class Home extends Component {
   cancelModal = () => {
     this.setState({
       ShowModalSearch: false,
-      ShowModalAddAnim: false,
+      ShowModalAddAnime: false,
       ShowModalAddNM: false,
-      ShowModalAddFilm: false,
       ShowModalAddManga: false,
       ShowModalChooseImgURL: [false, null],
-      ShowModalType: false,
       ShowModalAddNotifLier: false,
       ShowModalImportFile: false,
       FileToImport: null,
@@ -3218,6 +3218,7 @@ export default class Home extends Component {
       WaitAnimCheck: false,
       PalmaresModal: false,
       ShowModalVerification: false,
+      OpenNextNewAnime: false,
       palmares: null,
       IdToAddEp: null,
       InfoAnimeToChangeNote: null,
@@ -3277,7 +3278,7 @@ export default class Home extends Component {
       addEPToAlleged,
       findAnim,
       animToDetails,
-      ShowModalAddAnim,
+      ShowModalAddAnime,
       ShowModalAddNotifLier,
       title,
       ResText,
@@ -3288,16 +3289,15 @@ export default class Home extends Component {
       OfflineMode,
       typeAlert,
       type,
+      typeManga,
       ModeFilter,
       HaveAlreadyBeenMix,
       NextReRenderOrderSerie,
       NextReRenderOrderNA,
       ShowModalAddNM,
-      ShowModalAddFilm,
       PalmaresModal,
       Rate,
       ShowModalVerification,
-      ShowModalType,
       typeAlertMsg,
       MicOn,
       ShowModalImportFile,
@@ -3325,6 +3325,7 @@ export default class Home extends Component {
       JustDefined,
       day,
       time,
+      OpenNextNewAnime,
       ImportanceNA,
       AntiLostData,
       ImportanceSearch,
@@ -3440,7 +3441,9 @@ export default class Home extends Component {
           if (key.split("-")[0] !== "serie") return;
           this.setState({
             addEPToAlleged: true,
-            ShowModalAddAnim: true,
+            ShowModalAddAnime: true,
+            OpenNextNewAnime: true,
+            type: "serie",
             IdToAddEp: key,
             title: serieFirebase[key].name,
           });
@@ -3670,7 +3673,7 @@ export default class Home extends Component {
           )
             return;
           this.setState({
-            ShowModalType: true,
+            ShowModalAddAnime: true,
             title: NextAnimFireBase[key].name,
             NextAnimToDelete: key,
           });
@@ -4075,7 +4078,10 @@ export default class Home extends Component {
                   ? "none"
                   : animToDetails[1].duration,
             });
-            this.openNext(animToDetails[1].type === "Movie" ? "film" : "serie");
+            this.setState({
+              OpenNextNewAnime: true,
+              type: animToDetails[1].type === "Movie" ? "film" : "serie",
+            });
           }}
         />
       );
@@ -4224,7 +4230,7 @@ export default class Home extends Component {
             value={{
               openModalNew: () =>
                 this.setState({
-                  ShowModalType: PageMode ? true : false,
+                  ShowModalAddAnime: PageMode ? true : false,
                   ShowModalAddManga: PageMode ? false : true,
                 }),
               Pseudo,
@@ -4274,7 +4280,7 @@ export default class Home extends Component {
                   ];
                   if (!KeyRda) return;
                   this.setState({
-                    ShowModalType: true,
+                    ShowModalAddAnime: true,
                     title: (PageMode ? NextAnimFireBase : MangaFirebase[1])[
                       KeyRda
                     ].name,
@@ -5170,162 +5176,218 @@ export default class Home extends Component {
             </Modal.Footer>
           </Modal>
 
-          <Modal show={ShowModalType} onHide={this.cancelModal}>
+          <Modal show={ShowModalAddAnime} onHide={this.cancelModal}>
             <Modal.Header id="ModalTitle" closeButton>
               <Modal.Title>
-                {title.trim().length !== 0
-                  ? `Le type d'anime de ${title}`
-                  : "Type d'anime"}
+                {!OpenNextNewAnime ? (
+                  title.trim().length !== 0 ? (
+                    `Le type d'anime de ${title}`
+                  ) : (
+                    "Type d'anime"
+                  )
+                ) : type === "serie" ? (
+                  <Fragment>
+                    <Button
+                      variant="primary"
+                      onClick={() => this.setState({ OpenNextNewAnime: false })}
+                      className="btnBackDesing only"
+                    >
+                      <span className="fas fa-arrow-left"></span>
+                    </Button>
+                    Ajouter une série
+                  </Fragment>
+                ) : type === "film" ? (
+                  <Fragment>
+                    <Button
+                      variant="primary"
+                      onClick={() => this.setState({ OpenNextNewAnime: false })}
+                      className="btnBackDesing only"
+                    >
+                      <span className="fas fa-arrow-left"></span>
+                    </Button>
+                    Ajouter un Film
+                  </Fragment>
+                ) : (
+                  this.setState({ OpenNextNewAnime: false, type: "serie" })
+                )}
               </Modal.Title>
             </Modal.Header>
             <Modal.Body
               id="ModalBody"
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
-                  this.setState({ ShowModalType: false });
-                  this.openNext();
+                  if (!OpenNextNewAnime)
+                    return this.setState({ OpenNextNewAnime: true });
+                  // Serie
+                  if (type === "serie") {
+                    if (addEPToAlleged) return this.AddEPToAlleged();
+                    if (SeasonAnimCheck)
+                      return this.setState({ ShowModalAddNotifLier: true });
+
+                    return this.addAnime();
+                  }
+                  // Film
+                  if (type === "film") return this.addAnime();
+                  // No Type
+                  this.setState({ OpenNextNewAnime: false, type: "serie" });
                 }
               }}
             >
               <Form
                 onSubmit={() => {
-                  this.setState({ ShowModalType: false });
-                  this.openNext();
+                  if (!OpenNextNewAnime)
+                    return this.setState({ OpenNextNewAnime: true });
+                  // Serie
+                  if (type === "serie") {
+                    if (addEPToAlleged) return this.AddEPToAlleged();
+                    if (SeasonAnimCheck)
+                      return this.setState({ ShowModalAddNotifLier: true });
+
+                    return this.addAnime();
+                  }
+                  // Film
+                  if (type === "film") return this.addAnime();
+                  // No Type
+                  this.setState({ OpenNextNewAnime: false, type: "serie" });
                 }}
               >
-                <Form.Group controlId="type">
-                  <Form.Label>Série OU Film</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={type}
-                    autoComplete="off"
-                    onChange={(event) =>
-                      this.setState({ type: event.target.value })
-                    }
-                    custom
-                  >
-                    <option value="serie">Série</option>
-                    <option value="film">Film</option>
-                  </Form.Control>
-                </Form.Group>
+                {!OpenNextNewAnime ? (
+                  <Form.Group controlId="type">
+                    <Form.Label>Série OU Film</Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={type}
+                      autoComplete="off"
+                      onChange={(event) =>
+                        this.setState({ type: event.target.value })
+                      }
+                      custom
+                    >
+                      <option value="serie">Série</option>
+                      <option value="film">Film</option>
+                    </Form.Control>
+                  </Form.Group>
+                ) : type === "serie" ? (
+                  <Fragment>
+                    <Form.Group controlId="titre">
+                      <Form.Label>Titre</Form.Label>
+                      <Form.Control
+                        type="text"
+                        required
+                        disabled={addEPToAlleged}
+                        placeholder="Titre de la série"
+                        autoComplete="off"
+                        value={title}
+                        onChange={(event) =>
+                          this.setState({
+                            title: event.target.value,
+                          })
+                        }
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="saison">
+                      <Form.Label>
+                        Nombre d'épisode (séparé d'un "," pour changer de saison
+                        pas d'espace !)
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={nbEP}
+                        required
+                        placeholder="Nombre d'EP => S1NbEP,S2NbEP..."
+                        autoComplete="off"
+                        onChange={(event) =>
+                          this.setState({ nbEP: event.target.value })
+                        }
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="seasonAnime">
+                      <Form.Check
+                        type="checkbox"
+                        checked={SeasonAnimCheck}
+                        label={`Anime de saison: ${
+                          SeasonAnimCheck === true ? "Oui" : "Non"
+                        }`}
+                        onChange={(event) =>
+                          this.setState({
+                            SeasonAnimCheck: event.target.checked,
+                          })
+                        }
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="WaitAnim">
+                      <Form.Check
+                        type="checkbox"
+                        checked={WaitAnimCheck}
+                        label={`Anime en attente de visionnage: ${
+                          WaitAnimCheck === true ? "Oui" : "Non"
+                        }`}
+                        onChange={(event) =>
+                          this.setState({ WaitAnimCheck: event.target.checked })
+                        }
+                      />
+                    </Form.Group>
+                  </Fragment>
+                ) : type === "film" ? (
+                  <Fragment>
+                    <Form.Group controlId="titreFilm">
+                      <Form.Label>Titre</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Titre du film"
+                        required
+                        autoComplete="off"
+                        value={title}
+                        onChange={(event) =>
+                          this.setState({
+                            title: event.target.value,
+                          })
+                        }
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="duree">
+                      <Form.Label>Durée du film</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={durer.toString()}
+                        min={1}
+                        placeholder="Durée en minutes"
+                        autoComplete="off"
+                        onChange={(event) => {
+                          const value = parseInt(event.target.value);
+
+                          if (value < 1) return;
+                          this.setState({ durer: value });
+                        }}
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="WaitAnimFilm">
+                      <Form.Check
+                        type="checkbox"
+                        checked={WaitAnimCheck}
+                        label={`Anime en attente de visionnage: ${
+                          WaitAnimCheck === true ? "Oui" : "Non"
+                        }`}
+                        onChange={(event) =>
+                          this.setState({ WaitAnimCheck: event.target.checked })
+                        }
+                      />
+                    </Form.Group>
+                  </Fragment>
+                ) : (
+                  this.setState({ OpenNextNewAnime: false, type: "serie" })
+                )}
               </Form>
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
               <Button variant="secondary" onClick={this.cancelModal}>
                 <span className="fas fa-window-close"></span> Annuler
               </Button>
-              <Button
-                variant="success"
-                onClick={() => {
-                  this.setState({ ShowModalType: false });
-                  this.openNext();
-                }}
-              >
-                Suivant <span className="fas fa-arrow-right"></span>
-              </Button>
-            </Modal.Footer>
-          </Modal>
-
-          <Modal show={ShowModalAddAnim} onHide={this.cancelModal}>
-            <Modal.Header id="ModalTitle" closeButton>
-              <Modal.Title>Ajouter une série</Modal.Title>
-            </Modal.Header>
-            <Modal.Body
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  if (addEPToAlleged) {
-                    this.AddEPToAlleged();
-                    return;
-                  }
-                  if (SeasonAnimCheck) {
-                    this.setState({ ShowModalAddNotifLier: true });
-                    return;
-                  }
-                  this.addAnime();
-                }
-              }}
-              id="ModalBody"
-            >
-              <Form
-                id="AddAnim"
-                onSubmit={() => {
-                  if (addEPToAlleged) {
-                    this.AddEPToAlleged();
-                    return;
-                  }
-                  if (SeasonAnimCheck) {
-                    this.setState({
-                      ShowModalAddNotifLier: true,
-                    });
-                    return;
-                  }
-
-                  this.addAnime();
-                }}
-              >
-                <Form.Group controlId="titre">
-                  <Form.Label>Titre</Form.Label>
-                  <Form.Control
-                    type="text"
-                    required
-                    disabled={addEPToAlleged}
-                    placeholder="Titre de la série"
-                    autoComplete="off"
-                    value={title}
-                    onChange={(event) =>
-                      this.setState({
-                        title: event.target.value,
-                      })
-                    }
-                  />
-                </Form.Group>
-                <Form.Group controlId="saison">
-                  <Form.Label>
-                    Nombre d'épisode (séparé d'un "," pour changer de saison pas
-                    d'espace !)
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={nbEP}
-                    required
-                    placeholder="Nombre d'EP => S1NbEP,S2NbEP..."
-                    autoComplete="off"
-                    onChange={(event) =>
-                      this.setState({ nbEP: event.target.value })
-                    }
-                  />
-                </Form.Group>
-                <Form.Group controlId="seasonAnime">
-                  <Form.Check
-                    type="checkbox"
-                    checked={SeasonAnimCheck}
-                    label={`Anime de saison: ${
-                      SeasonAnimCheck === true ? "Oui" : "Non"
-                    }`}
-                    onChange={(event) =>
-                      this.setState({ SeasonAnimCheck: event.target.checked })
-                    }
-                  />
-                </Form.Group>
-                <Form.Group controlId="WaitAnim">
-                  <Form.Check
-                    type="checkbox"
-                    checked={WaitAnimCheck}
-                    label={`Anime en attente de visionnage: ${
-                      WaitAnimCheck === true ? "Oui" : "Non"
-                    }`}
-                    onChange={(event) =>
-                      this.setState({ WaitAnimCheck: event.target.checked })
-                    }
-                  />
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer id="ModalFooter">
-              <Button variant="secondary" onClick={this.cancelModal}>
-                <span className="fas fa-window-close"></span> Annuler
-              </Button>
-              {title.trim().length !== 0 && nbEP.trim().length === 0 ? (
+              {(OpenNextNewAnime &&
+                type === "serie" &&
+                title.trim().length !== 0 &&
+                nbEP.trim().length === 0) ||
+              (type === "film" && title.trim().length !== 0) ? (
                 <Button variant="info" onClick={this.FindEPBtn}>
                   <span
                     className={`fas ${
@@ -5339,99 +5401,41 @@ export default class Home extends Component {
               ) : null}
               <Button
                 variant="success"
-                onClick={(event) => {
-                  event.preventDefault();
-                  if (addEPToAlleged) {
-                    this.AddEPToAlleged();
-                    return;
-                  }
-                  if (SeasonAnimCheck) {
-                    this.setState({ ShowModalAddNotifLier: true });
-                    return;
-                  }
+                disabled={
+                  !OpenNextNewAnime
+                    ? type === ""
+                    : type === "serie"
+                    ? title.trim().length === 0 || nbEP.trim().length === 0
+                    : false
+                }
+                onClick={() => {
+                  if (!OpenNextNewAnime)
+                    return this.setState({ OpenNextNewAnime: true });
+                  // Serie
+                  if (type === "serie") {
+                    if (addEPToAlleged) return this.AddEPToAlleged();
+                    if (SeasonAnimCheck)
+                      return this.setState({ ShowModalAddNotifLier: true });
 
-                  this.addAnime();
+                    return this.addAnime();
+                  }
+                  // Film
+                  if (type === "film") return this.addAnime();
+                  // No Type
+                  this.setState({ OpenNextNewAnime: false, type: "serie" });
                 }}
               >
-                <span className="fas fa-plus"></span> Créer {title}
-              </Button>
-            </Modal.Footer>
-          </Modal>
-
-          <Modal show={ShowModalAddFilm} onHide={this.cancelModal}>
-            <Modal.Header id="ModalTitle" closeButton>
-              <Modal.Title>Ajouter un Film</Modal.Title>
-            </Modal.Header>
-            <Modal.Body
-              id="ModalBody"
-              onKeyDown={(event) => {
-                if (event.key === "Enter") this.addAnime();
-              }}
-            >
-              <Form id="AddAnim" onSubmit={this.addAnime}>
-                <Form.Group controlId="titre">
-                  <Form.Label>Titre</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Titre du film"
-                    required
-                    autoComplete="off"
-                    value={title}
-                    onChange={(event) =>
-                      this.setState({
-                        title: event.target.value,
-                      })
-                    }
-                  />
-                </Form.Group>
-                <Form.Group controlId="duree">
-                  <Form.Label>Durée du film</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={durer.toString()}
-                    min={1}
-                    placeholder="Durée en minutes"
-                    autoComplete="off"
-                    onChange={(event) => {
-                      const value = parseInt(event.target.value);
-
-                      if (value < 1) return;
-                      this.setState({ durer: value });
-                    }}
-                  />
-                </Form.Group>
-                <Form.Group controlId="WaitAnimFilm">
-                  <Form.Check
-                    type="checkbox"
-                    checked={WaitAnimCheck}
-                    label={`Anime en attente de visionnage: ${
-                      WaitAnimCheck === true ? "Oui" : "Non"
-                    }`}
-                    onChange={(event) =>
-                      this.setState({ WaitAnimCheck: event.target.checked })
-                    }
-                  />
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer id="ModalFooter">
-              <Button variant="secondary" onClick={this.cancelModal}>
-                <span className="fas fa-window-close"></span> Annuler
-              </Button>
-              {title.trim().length !== 0 ? (
-                <Button variant="info" onClick={this.FindEPBtn}>
-                  <span
-                    className={`fas ${
-                      AnimateFasIcon[0] && AnimateFasIcon[1]
-                        ? "fa-times"
-                        : `fa-sync${AnimateFasIcon[0] ? " fa-spin" : ""}`
-                    }`}
-                  ></span>{" "}
-                  Find durer of {title}
-                </Button>
-              ) : null}
-              <Button variant="success" onClick={this.addAnime}>
-                <span className="fas fa-plus"></span> Créer {title}
+                {!OpenNextNewAnime ? (
+                  <Fragment>
+                    Suivant <span className="fas fa-arrow-right"></span>
+                  </Fragment>
+                ) : type === "serie" || type === "film" ? (
+                  <Fragment>
+                    <span className="fas fa-plus"></span> Créer {title}
+                  </Fragment>
+                ) : (
+                  this.setState({ OpenNextNewAnime: false, type: "serie" })
+                )}
               </Button>
             </Modal.Footer>
           </Modal>
@@ -5447,6 +5451,22 @@ export default class Home extends Component {
               }}
             >
               <Form id="AddManga" onSubmit={this.addManga}>
+                <Form.Group controlId="typeManga">
+                  <Form.Label>En volume OU en scan</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={typeManga}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      this.setState({ typeManga: event.target.value })
+                    }
+                    custom
+                  >
+                    <option value="volume">Volumes</option>
+                    <option value="scan">Scans (Online)</option>
+                  </Form.Control>
+                </Form.Group>
+
                 <Form.Group controlId="titreM">
                   <Form.Label>Titre Du Manga</Form.Label>
                   <Form.Control

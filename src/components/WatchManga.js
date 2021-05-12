@@ -6,33 +6,66 @@ import { Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
 import base from "../db/base";
 import firebase from "firebase/app";
 
-// Global State
+/* Global State */
 const useRefState = (initialValue) => {
   const [state, setState] = useState(initialValue);
   const stateRef = useRef(state);
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
-  return [stateRef, setState];
+  return [stateRef.current, setState];
 };
 
-// FN
+/* FN */
+// FireBase
 const AddValue = () => {};
 const UpdateValue = () => {};
 const DeleteValue = () => {};
+// Connection
+const handleAuth = () => {};
+// RefreshVal
 
 const WatchManga = (props) => {
   /* DefinedState */
+  // FireBase
   const [Pseudo, setPseudo] = useRefState(props.match.params.pseudo);
-  const [ID, setID] = useRefState(props.match.params.id);
+  const [Id, setId] = useRefState(props.match.params.id);
   const [MangaToWatch, setMangaToWatch] = useRefState({});
+  // App State
+  const [RedirectHome, setRedirectHome] = useRefState([false, ""]);
   /* componentDidMount */
   useEffect(() => {
-    if (Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo"))) {
+    if (
+      Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo")) ||
+      !Pseudo
+    ) {
+      setRedirectHome([true, "/notifuser/2"]);
       return;
     }
-  }, [Pseudo]);
+    if (Id) {
+      if (Id.split("-")[0] !== "serie" && Id.split("-")[0] !== "film") {
+        this.setState({ uid: null, RedirectTo: [true, "/notifuser/11"] });
+        return;
+      }
+    } else {
+      setRedirectHome([true, "/notifuser/10"]);
+    }
+    /* FB Conn */
+    if (this.state.Pseudo && !this.state.OfflineMode) {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          handleAuth({ user });
+        }
+      });
+    }
+    /* Color */
+    if (window.localStorage.getItem("BGC-ACK")) {
+      document.body.style.backgroundColor =
+        window.localStorage.getItem("BGC-ACK");
+    }
+  }, [Pseudo, setRedirectHome, Id]);
   /* Render */
+  if (RedirectHome[0]) return <Redirect to={RedirectHome[1]} />;
   return <div></div>;
 };
 

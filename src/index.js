@@ -29,6 +29,7 @@ const Root = () => (
       <Route exact path={`/notifuser/:codemsg`} component={Home} />
       <Route exact path={`/Template/:token`} component={Home} />
       {/* Watch */}
+      <Route exact path={`/Watch/:pseudo`} component={Watch} />
       <Route exact path={`/Watch/:pseudo/:id`} component={Watch} />
       <Route exact path={`/Watch/:pseudo/:id/:watchmode`} component={Watch} />
       <Route exact path="/Watch" component={Watch} />
