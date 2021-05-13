@@ -287,7 +287,7 @@ a:hover {
   min-height: 100vh;
 }
 
-.container > nav {
+.container > .navbar {
   position: -webkit-sticky;
   position: sticky;
   top: 0;
@@ -296,7 +296,7 @@ a:hover {
   border-bottom-right-radius: 5px;
 }
 
-.container > nav #btnBarsMenu {
+.container > .navbar #btnBarsMenu {
   display: none;
   cursor: pointer;
   position: absolute;
@@ -316,21 +316,21 @@ a:hover {
   border-radius: 5px;
 }
 
-.container > nav .navbar-brand {
+.container > .navbar .navbar-brand {
   cursor: pointer;
 }
 
-.container > nav .navbar-brand sup {
+.container > .navbar .navbar-brand sup {
   cursor: text;
   font-size: 10px;
   color: #ff6d00;
 }
 
-.container > nav .nav-item {
+.container > .navbar .nav-item {
   margin-left: 10px;
 }
 
-.container > nav #FakeDropdownItem {
+.container > .navbar #FakeDropdownItem {
   display: block;
   width: 100%;
   padding: 0.25rem 1.5rem;
@@ -343,36 +343,36 @@ a:hover {
   border: 0;
 }
 
-.container > nav #FakeDropdownItem:hover,
-.container > nav #FakeDropdownItem:focus {
+.container > .navbar #FakeDropdownItem:hover,
+.container > .navbar #FakeDropdownItem:focus {
   color: #16181b;
   text-decoration: none;
   background-color: #f8f9fa;
 }
 
-.container > nav #FakeDropdownItem:active {
+.container > .navbar #FakeDropdownItem:active {
   color: #fff;
   text-decoration: none;
   background-color: #007bff;
 }
 
 @media screen and (max-width: 991px) {
-  .container > nav #btnBarsMenu {
+  .container > .navbar #btnBarsMenu {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
   }
-  .container > nav .navbar-collapse {
+  .container > .navbar .navbar-collapse {
     display: none;
   }
-  .container > nav .navbar-collapse.active {
+  .container > .navbar .navbar-collapse.active {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
     -ms-flex-wrap: wrap;
         flex-wrap: wrap;
   }
-  .container > nav .navbar-collapse.active .navbar-nav {
+  .container > .navbar .navbar-collapse.active .navbar-.navbar {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -383,63 +383,63 @@ a:hover {
     -ms-flex-wrap: wrap;
         flex-wrap: wrap;
   }
-  .container > nav .navbar-collapse.active #searchForm {
+  .container > .navbar .navbar-collapse.active #searchForm {
     margin-top: 5px;
   }
-  .container > nav .navbar-collapse.active #searchForm .form-group {
+  .container > .navbar .navbar-collapse.active #searchForm .form-group {
     margin-left: 10px;
   }
-  .container > nav .navbar-collapse.active #searchForm .form-group #SearchFormBtnVoice {
+  .container > .navbar .navbar-collapse.active #searchForm .form-group #SearchFormBtnVoice {
     right: 0 !important;
   }
 }
 
 @media screen and (max-width: 768px) {
-  .container > nav .navbar-collapse.active {
+  .container > .navbar .navbar-collapse.active {
     display: unset;
   }
-  .container > nav .navbar-collapse.active #searchForm {
+  .container > .navbar .navbar-collapse.active #searchForm {
     margin-top: 7px;
   }
 }
 
 @media screen and (max-width: 575px) {
-  .container > nav .navbar-collapse.active {
+  .container > .navbar .navbar-collapse.active {
     display: unset;
   }
-  .container > nav .navbar-collapse.active #searchForm .form-group #SearchFormBtnVoice {
+  .container > .navbar .navbar-collapse.active #searchForm .form-group #SearchFormBtnVoice {
     top: calc(38px / 5);
   }
 }
 
 @media screen and (max-width: 400px) {
-  .container > nav .navbar-collapse.active #searchForm {
+  .container > .navbar .navbar-collapse.active #searchForm {
     width: 300px;
   }
-  .container > nav .navbar-collapse.active #searchForm div {
+  .container > .navbar .navbar-collapse.active #searchForm div {
     width: 300px;
   }
-  .container > nav .navbar-collapse.active #searchForm div input {
+  .container > .navbar .navbar-collapse.active #searchForm div input {
     width: 300px;
     padding-right: 35px;
   }
-  .container > nav .navbar-collapse.active #searchForm #SearchFormBtnVoice {
+  .container > .navbar .navbar-collapse.active #searchForm #SearchFormBtnVoice {
     width: auto;
   }
 }
 
 @media screen and (max-width: 360px) {
-  .container > nav .navbar-collapse.active #searchForm {
+  .container > .navbar .navbar-collapse.active #searchForm {
     width: 250px;
   }
-  .container > nav .navbar-collapse.active #searchForm div {
+  .container > .navbar .navbar-collapse.active #searchForm div {
     width: 250px;
   }
-  .container > nav .navbar-collapse.active #searchForm div input {
+  .container > .navbar .navbar-collapse.active #searchForm div input {
     width: 250px;
     padding-right: 35px;
   }
-  .container > nav .navbar-collapse.active #searchForm #SearchFormBtnVoice {
+  .container > .navbar .navbar-collapse.active #searchForm #SearchFormBtnVoice {
     width: auto;
   }
 }
@@ -2416,6 +2416,185 @@ a:hover {
   padding: 0;
 }
 
+#Watch #SideBarMenu {
+  z-index: 10;
+  position: fixed;
+  background-color: #252525;
+  border-bottom-right-radius: 5px;
+  -webkit-transition: left 0.3s;
+  transition: left 0.3s;
+}
+
+#Watch #SideBarMenu #NavContent {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  height: 5rem;
+  background-color: transparent;
+  font-size: 30px;
+  text-decoration: none;
+  color: #fff;
+  border: none;
+  outline: none;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink .NavIcon {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  min-width: 2rem;
+  margin: 0 1.5rem;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink .NavIconLittle {
+  font-size: 14px;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink .linkText {
+  font-size: 16px;
+  margin-left: 1rem;
+  display: none;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink:hover .NavIcon {
+  color: #ff6d00;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink:hover .linkText {
+  color: #ff6d00;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem.NavDropDown {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  height: calc(100% - 80px);
+}
+
+#Watch #SideBarMenu #NavContent .NavItem.NavDropDown .DropDownItem {
+  display: none;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem.NavDropDown.active .NavLink.btnAgrandir {
+  border-bottom: 1px solid #fff;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem.NavDropDown.active .NavLink.btnAgrandir:hover {
+  border-bottom: 1px solid #ff6d00;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem.NavDropDown.active .DropDownItem {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem.NavDropDown.activeSecond .DropDownItem .NavLink {
+  height: auto;
+}
+
+@media screen and (min-width: 875px) {
+  #Watch #SideBarMenu {
+    width: 5rem;
+    height: 100vh;
+  }
+  #Watch #SideBarMenu #NavContent {
+    height: 100%;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
+  }
+  #Watch #SideBarMenu.closeModal {
+    position: absolute;
+    left: -5rem;
+  }
+  #Watch #SideBarMenu:hover {
+    width: 16rem;
+  }
+  #Watch #SideBarMenu:hover #NavContent .NavItem .NavLink .linkText {
+    display: block;
+  }
+  #Watch .nonStartMod {
+    margin-left: 0;
+  }
+  #Watch .nonStartMod.closeModal {
+    margin-left: 0 !important;
+  }
+  #Watch .nonStartMod.active {
+    margin-left: 5rem;
+  }
+}
+
+@media screen and (max-width: 875px) {
+  #Watch #SideBarMenu {
+    margin-top: -5rem;
+    width: 100vw;
+    height: 5rem;
+  }
+  #Watch #SideBarMenu #NavContent {
+    overflow: auto;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: row;
+            flex-direction: row;
+    width: 100%;
+  }
+  #Watch #SideBarMenu #NavContent .NavItem:last-child {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: row;
+            flex-direction: row;
+  }
+  #Watch #SideBarMenu #NavContent .NavItem:last-child .DropDownItem {
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+  }
+  #Watch #SideBarMenu.closeModal {
+    position: absolute;
+    top: -5rem;
+  }
+  #Watch .nonStartMod {
+    margin-top: 5rem;
+  }
+  #Watch .nonStartMod header .ToogleNavBar {
+    display: none;
+  }
+  #Watch .nonStartMod.closeModal {
+    margin-top: 0;
+  }
+}
+
 #Watch .nonStartMod::after {
   content: "";
   width: 100vw;
@@ -2433,6 +2612,37 @@ a:hover {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+  -webkit-transition: 0.2s;
+  transition: 0.2s;
+}
+
+#Watch .nonStartMod header .ToogleNavBar {
+  position: absolute;
+  background-color: #252525;
+  color: #fff;
+  border: none;
+  outline: none;
+  left: 0;
+  top: 0;
+  width: 85px;
+  height: 50px;
+  border-bottom-right-radius: 50px;
+  border-top-right-radius: 50px;
+  font-size: 26px;
+}
+
+#Watch .nonStartMod header .ToogleNavBar span {
+  -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+  -webkit-transition: -webkit-transform 0.3s;
+  transition: -webkit-transform 0.3s;
+  transition: transform 0.3s;
+  transition: transform 0.3s, -webkit-transform 0.3s;
+}
+
+#Watch .nonStartMod header .ToogleNavBar.closeModal span {
+  -webkit-transform: rotate(-180deg);
+          transform: rotate(-180deg);
 }
 
 #Watch .nonStartMod header h1 p {

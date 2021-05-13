@@ -19,7 +19,7 @@ import WakanimLogo from "../Assets/Img/WakanimLogo.png";
 import VoirAnimeLogo from "../Assets/Img/voiranime.png";
 import NineAnimeLogo from "../Assets/Img/9anime.png";
 // CSS
-import { Button, Modal, Form, Dropdown, Badge } from "react-bootstrap";
+import { Button, Modal, Form, Badge } from "react-bootstrap";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
@@ -47,6 +47,9 @@ class Watch extends Component {
     RedirectTo: [false, ""],
     Shortcut: true,
     ToOpen: "",
+    ToggleNavbar: false,
+    OpenDropDownAction: false,
+    OpenDropDownAlleger: false,
     ModeEditTitle: false,
     ShowFormBadge: false,
     ShowModalRateAnime: false,
@@ -1530,6 +1533,9 @@ class Watch extends Component {
       ShowMessage,
       ShowMessageHtml,
       ResText,
+      OpenDropDownAction,
+      OpenDropDownAlleger,
+      ToggleNavbar,
       ActionEndAnime,
       repereEpisode,
       ShowModalAddObjectif,
@@ -1910,12 +1916,366 @@ class Watch extends Component {
 
     return (
       <section id="Watch">
-        <div
+        <nav
+          id="SideBarMenu"
           className={
-            modeWatch || LetsCelebrate ? "nonStartMod" : "nonStartMod active"
+            (!ToggleNavbar && !window.mobileAndTabletCheck()) || modeWatch
+              ? "closeModal"
+              : ""
+          }
+        >
+          <ul id="NavContent">
+            <li className="NavItem" title="Retour">
+              <Link push="true" to="/">
+                <button className="NavLink">
+                  <span className="fas fa-long-arrow-alt-left NavIcon"></span>
+                  <span className="linkText">Retour</span>
+                </button>
+              </Link>
+            </li>
+            <li
+              className={`NavItem NavDropDown${
+                OpenDropDownAction ? " active" : ""
+              }${OpenDropDownAlleger ? " activeSecond" : ""}`}
+              title="Actions"
+            >
+              <button
+                className="NavLink btnAgrandir"
+                onClick={() =>
+                  this.setState({ OpenDropDownAction: !OpenDropDownAction })
+                }
+              >
+                <span
+                  className={`fas fa-chevron-${
+                    !window.mobileAndTabletCheck()
+                      ? OpenDropDownAction
+                        ? "up"
+                        : "down"
+                      : OpenDropDownAction
+                      ? "left"
+                      : "right"
+                  } NavIcon`}
+                ></span>
+                <span className="linkText">
+                  {OpenDropDownAction ? "Réduire" : "Agrandir"}
+                </span>
+              </button>
+
+              {type === "serie" ? (
+                <Fragment>
+                  <li className="DropDownItem">
+                    <button
+                      className="NavLink"
+                      onClick={() =>
+                        this.setState({ ShowModalAddSeasonEp: true })
+                      }
+                    >
+                      <span className="fas fa-plus NavIcon"></span>{" "}
+                      <span className="linkText">Nouvelle saison</span>
+                    </button>
+                  </li>
+                  {AnimToWatch.AnimeSeason === true ? null : (
+                    <li className="DropDownItem">
+                      <button
+                        className="NavLink"
+                        onClick={() => {
+                          this.setRepere(
+                            AnimToWatch.AnimEP[
+                              parseInt(this.CalculateWhereStop()[0]) - 1
+                            ],
+                            this.CalculateWhereStop()[1],
+                            false,
+                            true
+                          );
+                        }}
+                      >
+                        <span className="fas fa-bullseye NavIcon"></span>{" "}
+                        <span className="linkText">Objectif</span>
+                      </button>
+                    </li>
+                  )}
+                  <li className="DropDownItem">
+                    <button
+                      className="NavLink"
+                      onClick={() => {
+                        this.updateValue(
+                          `${this.state.Pseudo}/serie/${id}`,
+                          {
+                            AnimeSeason: AnimToWatch.AnimeSeason ? null : true,
+                          },
+                          () =>
+                            this.DisplayMsg(
+                              "Changement opéré !",
+                              3000,
+                              "success"
+                            )
+                        );
+
+                        if (!this.state.OfflineMode) {
+                          this.fnDbOffline(
+                            "PUT",
+                            `${this.state.Pseudo}/serie/${id}`,
+                            {
+                              AnimeSeason: AnimToWatch.AnimeSeason
+                                ? null
+                                : true,
+                            }
+                          );
+                        }
+                      }}
+                    >
+                      <span
+                        className={`fas fa-${this.WhitchSeason()} NavIcon`}
+                      ></span>{" "}
+                      <span className="linkText">
+                        {AnimToWatch.AnimeSeason
+                          ? "Anime Normal"
+                          : "Anime de saison"}
+                      </span>
+                    </button>
+                  </li>
+                </Fragment>
+              ) : null}
+              {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
+                <li className="DropDownItem">
+                  <button
+                    className="NavLink"
+                    onClick={() =>
+                      this.setState({
+                        ShowModalRateAnime: true,
+                      })
+                    }
+                  >
+                    <span className="fas fa-star NavIcon"></span>{" "}
+                    <span className="linkText">Changer la note</span>
+                  </button>
+                </li>
+              ) : null}
+              <li className="DropDownItem">
+                <button
+                  className="NavLink"
+                  onClick={() => {
+                    this.updateValue(`${Pseudo}/${type}/${id}`, {
+                      InWait: true,
+                    });
+                    if (!this.state.OfflineMode) {
+                      this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
+                        InWait: true,
+                      });
+                    }
+                    this.setState({
+                      uid: null,
+                      RedirectTo: [true, "/notifuser/5"],
+                    });
+                  }}
+                >
+                  <span className="fas fa-hourglass-half NavIcon"></span>{" "}
+                  <span className="linkText">Mettre en attente</span>
+                </button>
+              </li>
+              {AnimToWatch.finished === false ||
+              AnimToWatch.finishedAnim === false ? (
+                <li className="DropDownItem">
+                  <button
+                    className="NavLink"
+                    onClick={() => {
+                      this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
+                        Drop: true,
+                        Paused: null,
+                        InWait: null,
+                        AnimeSeason: null,
+                        Lier: null,
+                        NewEpMode: null,
+                      });
+                      if (!this.state.OfflineMode) {
+                        this.fnDbOffline(
+                          "PUT",
+                          `${this.state.Pseudo}/${type}/${id}`,
+                          {
+                            Drop: true,
+                            Paused: null,
+                            InWait: null,
+                            AnimeSeason: null,
+                            Lier: null,
+                            NewEpMode: null,
+                          }
+                        );
+                      }
+                      this.setState({
+                        uid: null,
+                        RedirectTo: [true, "/notifuser/5"],
+                      });
+                    }}
+                  >
+                    <span className="fas fa-stop NavIcon"></span>{" "}
+                    <span className="linkText">Drop</span>
+                  </button>
+                </li>
+              ) : null}
+              <li className="DropDownItem">
+                <button
+                  className="NavLink"
+                  onClick={() => {
+                    this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
+                      Paused: true,
+                      Drop: null,
+                      InWait: null,
+                      AnimeSeason: null,
+                      Lier: null,
+                      NewEpMode: null,
+                    });
+                    if (!this.state.OfflineMode) {
+                      this.fnDbOffline(
+                        "PUT",
+                        `${this.state.Pseudo}/${type}/${id}`,
+                        {
+                          Paused: true,
+                          Drop: null,
+                          InWait: null,
+                          AnimeSeason: null,
+                          Lier: null,
+                          NewEpMode: null,
+                        }
+                      );
+                    }
+                    this.setState({
+                      uid: null,
+                      RedirectTo: [true, "/notifuser/5"],
+                    });
+                  }}
+                >
+                  <span className="fas fa-pause NavIcon"></span>{" "}
+                  <span className="linkText">Mettre en Pause</span>
+                </button>
+              </li>
+              {type === "serie" ? (
+                <Fragment>
+                  <li className="DropDownItem">
+                    <button
+                      className="NavLink"
+                      onClick={this.ReTakeInfoFromName}
+                    >
+                      <span className="fas fa-undo-alt NavIcon">
+                        <sup className="fas fa-info NavIconLittle"></sup>
+                      </span>{" "}
+                      <span className="linkText">Infos de l'anime</span>
+                    </button>
+                  </li>
+                  <li className="DropDownItem">
+                    <button
+                      className="NavLink"
+                      onClick={() =>
+                        this.setState({
+                          OpenDropDownAlleger: !OpenDropDownAlleger,
+                        })
+                      }
+                    >
+                      <span
+                        className={`fas fa-chevron-${
+                          !window.mobileAndTabletCheck()
+                            ? OpenDropDownAlleger
+                              ? "up"
+                              : "down"
+                            : OpenDropDownAlleger
+                            ? "left"
+                            : "right"
+                        } NavIcon`}
+                      ></span>
+                      <span className="linkText">Alléger</span>
+                    </button>
+                  </li>
+                  {OpenDropDownAlleger ? (
+                    <Fragment>
+                      <li className="DropDownItem">
+                        <button
+                          className="NavLink"
+                          onClick={() =>
+                            this.setState({
+                              ShowModalVerification: [true, "alleger"],
+                            })
+                          }
+                        >
+                          <span className="fas fa-file-archive NavIcon"></span>{" "}
+                          <span className="linkText">Alléger</span>
+                        </button>
+                      </li>
+                      {!AnimToWatch.finishedAnim ? (
+                        <li className="DropDownItem">
+                          <button
+                            className="NavLink"
+                            onClick={() =>
+                              this.setState({
+                                DropWithAlleged: true,
+                                ShowModalVerification: [true, "alleger"],
+                              })
+                            }
+                          >
+                            <span className="fas fa-file-archive NavIcon">
+                              <sup className="fas fa-stop NavIconLittle"></sup>
+                            </span>{" "}
+                            <span className="linkText">Alléger et Drop</span>
+                          </button>
+                        </li>
+                      ) : null}
+                      <li className="DropDownItem">
+                        <button
+                          className="NavLink"
+                          onClick={() =>
+                            this.setState({
+                              PauseWithAlleged: true,
+                              ShowModalVerification: [true, "alleger"],
+                            })
+                          }
+                        >
+                          <span className="fas fa-file-archive NavIcon">
+                            <sup className="fas fa-pause NavIconLittle"></sup>
+                          </span>{" "}
+                          <span className="linkText">Alléger et pauser</span>
+                        </button>
+                      </li>
+                    </Fragment>
+                  ) : null}
+                </Fragment>
+              ) : null}
+              <li className="DropDownItem">
+                <button
+                  className="NavLink"
+                  onClick={() =>
+                    this.setState({
+                      ShowModalVerification: [true, "supprimer"],
+                    })
+                  }
+                >
+                  <span className="fas fa-trash-alt NavIcon"></span>{" "}
+                  <span className="linkText">Supprimer</span>
+                </button>
+              </li>
+            </li>
+          </ul>
+        </nav>
+        <div
+          id="MainWatchContent"
+          className={
+            modeWatch || LetsCelebrate
+              ? `nonStartMod${
+                  (!ToggleNavbar && !window.mobileAndTabletCheck()) || modeWatch
+                    ? " closeModal"
+                    : ""
+                }`
+              : `nonStartMod active${
+                  !ToggleNavbar && !window.mobileAndTabletCheck()
+                    ? " closeModal"
+                    : ""
+                }`
           }
         >
           <header>
+            <button
+              className={`ToogleNavBar${!ToggleNavbar ? " closeModal" : ""}`}
+              onClick={() => this.setState({ ToggleNavbar: !ToggleNavbar })}
+            >
+              <span className="fas fa-angle-double-left"></span>{" "}
+            </button>
             <h1
               onDoubleClick={() => {
                 this.setState({ ModeEditTitle: true });
@@ -2009,315 +2369,6 @@ class Watch extends Component {
             </div>
           </header>
           <section id="ToWatch">
-            <Link push="true" to="/">
-              <Button
-                variant="primary"
-                onClick={this.StopModeWatch}
-                className={
-                  AnimToWatch.Objectif !== undefined
-                    ? "btnBackDesing Foreground"
-                    : "btnBackDesing"
-                }
-              >
-                <span className="fas fa-arrow-left"></span> Retour
-              </Button>
-            </Link>
-            <Dropdown drop="down">
-              <Dropdown.Toggle variant="outline-secondary" id="DropdownAction">
-                <span className="fas fa-bars"></span>
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu>
-                {type === "serie" ? (
-                  <Fragment>
-                    <Dropdown.Item>
-                      <Button
-                        variant="success"
-                        block
-                        onClick={() =>
-                          this.setState({ ShowModalAddSeasonEp: true })
-                        }
-                      >
-                        <span className="fas fa-plus"></span> Ajouter une saison
-                      </Button>
-                    </Dropdown.Item>
-                    {AnimToWatch.AnimeSeason === true ? null : (
-                      <Dropdown.Item>
-                        <Button
-                          block
-                          style={{ backgroundColor: "#301c4d", border: "none" }}
-                          onClick={() => {
-                            this.setRepere(
-                              AnimToWatch.AnimEP[
-                                parseInt(this.CalculateWhereStop()[0]) - 1
-                              ],
-                              this.CalculateWhereStop()[1],
-                              false,
-                              true
-                            );
-                          }}
-                        >
-                          <span className="fas fa-bullseye"></span> Ajouter Un
-                          Objectif
-                        </Button>
-                      </Dropdown.Item>
-                    )}
-                    <Dropdown.Item>
-                      <Button
-                        variant="dark"
-                        onClick={() => {
-                          this.updateValue(
-                            `${this.state.Pseudo}/serie/${id}`,
-                            {
-                              AnimeSeason: AnimToWatch.AnimeSeason
-                                ? null
-                                : true,
-                            },
-                            () =>
-                              this.DisplayMsg(
-                                "Changement opéré !",
-                                3000,
-                                "success"
-                              )
-                          );
-
-                          if (!this.state.OfflineMode) {
-                            this.fnDbOffline(
-                              "PUT",
-                              `${this.state.Pseudo}/serie/${id}`,
-                              {
-                                AnimeSeason: AnimToWatch.AnimeSeason
-                                  ? null
-                                  : true,
-                              }
-                            );
-                          }
-                        }}
-                        block
-                      >
-                        <span
-                          className={`fas fa-${this.WhitchSeason()}`}
-                        ></span>{" "}
-                        {AnimToWatch.AnimeSeason
-                          ? "Anime Normal"
-                          : "Anime de saison"}
-                      </Button>
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown className="FakeDropDownItem">
-                      <Dropdown.Toggle
-                        variant="outline-primary"
-                        id="dropdown-basic"
-                        block
-                      >
-                        Actions combinées
-                      </Dropdown.Toggle>
-
-                      <Dropdown.Menu>
-                        {!AnimToWatch.finishedAnim ? (
-                          <Dropdown.Item>
-                            <Button
-                              variant="light"
-                              block
-                              onClick={() =>
-                                this.setState({
-                                  DropWithAlleged: true,
-                                  ShowModalVerification: [true, "alleger"],
-                                })
-                              }
-                            >
-                              <span className="fas fa-window-close"></span>{" "}
-                              Alléger et Drop {AnimToWatch.name}
-                            </Button>
-                          </Dropdown.Item>
-                        ) : null}
-                        <Dropdown.Item>
-                          <Button
-                            variant="light"
-                            block
-                            onClick={() =>
-                              this.setState({
-                                PauseWithAlleged: true,
-                                ShowModalVerification: [true, "alleger"],
-                              })
-                            }
-                          >
-                            <span className="fas fa-window-close"></span>{" "}
-                            Alléger et pauser {AnimToWatch.name}
-                          </Button>
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </Fragment>
-                ) : null}
-                {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
-                  <Fragment>
-                    <Dropdown.Divider />
-                    <Dropdown.Item>
-                      <Button
-                        style={{
-                          backgroundColor: "gold",
-                          color: "#212121",
-                          border: "none",
-                        }}
-                        block
-                        onClick={() =>
-                          this.setState({
-                            ShowModalRateAnime: true,
-                          })
-                        }
-                      >
-                        <span className="fas fa-star"></span> Changer la note
-                      </Button>
-                    </Dropdown.Item>
-                  </Fragment>
-                ) : null}
-                <Dropdown.Divider />
-                <Dropdown.Item>
-                  <Button
-                    variant="secondary"
-                    block
-                    onClick={() => {
-                      this.updateValue(`${Pseudo}/${type}/${id}`, {
-                        InWait: true,
-                      });
-                      if (!this.state.OfflineMode) {
-                        this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
-                          InWait: true,
-                        });
-                      }
-                      this.setState({
-                        uid: null,
-                        RedirectTo: [true, "/notifuser/5"],
-                      });
-                    }}
-                  >
-                    <span className="fas fa-hourglass-half"></span> Mettre en
-                    attente {AnimToWatch.name}
-                  </Button>
-                </Dropdown.Item>
-                {AnimToWatch.finished === false ||
-                AnimToWatch.finishedAnim === false ? (
-                  <Dropdown.Item>
-                    <Button
-                      variant="primary"
-                      block
-                      onClick={() => {
-                        this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
-                          Drop: true,
-                          Paused: null,
-                          InWait: null,
-                          AnimeSeason: null,
-                          Lier: null,
-                          NewEpMode: null,
-                        });
-                        if (!this.state.OfflineMode) {
-                          this.fnDbOffline(
-                            "PUT",
-                            `${this.state.Pseudo}/${type}/${id}`,
-                            {
-                              Drop: true,
-                              Paused: null,
-                              InWait: null,
-                              AnimeSeason: null,
-                              Lier: null,
-                              NewEpMode: null,
-                            }
-                          );
-                        }
-                        this.setState({
-                          uid: null,
-                          RedirectTo: [true, "/notifuser/5"],
-                        });
-                      }}
-                    >
-                      <span className="fas fa-stop"></span> Drop{" "}
-                      {AnimToWatch.name}
-                    </Button>
-                  </Dropdown.Item>
-                ) : null}
-                <Dropdown.Item>
-                  <Button
-                    variant="info"
-                    block
-                    onClick={() => {
-                      this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
-                        Paused: true,
-                        Drop: null,
-                        InWait: null,
-                        AnimeSeason: null,
-                        Lier: null,
-                        NewEpMode: null,
-                      });
-                      if (!this.state.OfflineMode) {
-                        this.fnDbOffline(
-                          "PUT",
-                          `${this.state.Pseudo}/${type}/${id}`,
-                          {
-                            Paused: true,
-                            Drop: null,
-                            InWait: null,
-                            AnimeSeason: null,
-                            Lier: null,
-                            NewEpMode: null,
-                          }
-                        );
-                      }
-                      this.setState({
-                        uid: null,
-                        RedirectTo: [true, "/notifuser/5"],
-                      });
-                    }}
-                  >
-                    <span className="fas fa-pause"></span> Mettre en Pause{" "}
-                    {AnimToWatch.name}
-                  </Button>
-                </Dropdown.Item>
-                <Dropdown.Divider />
-                {type === "serie" ? (
-                  <Fragment>
-                    <Dropdown.Item>
-                      <Button
-                        variant="outline-dark"
-                        block
-                        onClick={this.ReTakeInfoFromName}
-                      >
-                        <span className="fas fa-undo-alt"></span> Mettre à jour
-                        les infos de {AnimToWatch.name}
-                      </Button>
-                    </Dropdown.Item>
-                    <Dropdown.Item>
-                      <Button
-                        variant="warning"
-                        block
-                        onClick={() =>
-                          this.setState({
-                            ShowModalVerification: [true, "alleger"],
-                          })
-                        }
-                      >
-                        <span className="fas fa-window-close"></span> Alléger{" "}
-                        {AnimToWatch.name}
-                      </Button>
-                    </Dropdown.Item>
-                  </Fragment>
-                ) : null}
-                <Dropdown.Item>
-                  <Button
-                    variant="danger"
-                    block
-                    onClick={() =>
-                      this.setState({
-                        ShowModalVerification: [true, "supprimer"],
-                      })
-                    }
-                  >
-                    <span className="fas fa-trash-alt"></span> Supprimer{" "}
-                    {AnimToWatch.name}
-                  </Button>
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
             <div id="badgeStreaming">
               {ShowFormBadge ? (
                 <Badge
