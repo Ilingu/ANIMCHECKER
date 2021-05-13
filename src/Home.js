@@ -134,7 +134,7 @@ export default class Home extends Component {
     OpenSearchFilter: false,
     WaitAnimCheck: false,
     ModeCombinaisonSearch: "ET",
-    year: new Date().getFullYear(),
+    year: new Date().getFullYear().toString(),
     season: "spring",
     SearchFilter: {},
     day: new Date().getDay().toString(),
@@ -164,12 +164,16 @@ export default class Home extends Component {
     AddToHomeScreen: null,
   };
 
+  _isMounted = false;
+  DataBaseWS = null;
+  connectedRef = null;
   setIntervalVar = null;
   setTimeOutMsgInfo = null;
   setTimeOutMsgInfo2 = null;
   NumberOfFailedConnection = 0;
 
   componentDidMount() {
+    this._isMounted = true;
     const self = this;
     // Title
     this.state.PageMode
@@ -181,7 +185,7 @@ export default class Home extends Component {
         window.localStorage.getItem("BGC-ACK");
     }
     // Firebase
-    if (this.state.Pseudo) {
+    if (this.state.Pseudo && this._isMounted) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           // User Detected
@@ -347,16 +351,21 @@ export default class Home extends Component {
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
+    if (this.DataBaseWS) this.DataBaseWS.off("value");
+    if (this.connectedRef) this.connectedRef.off("value");
+    this.DataBaseWS = null;
+    this.connectedRef = null;
     document.onkeydown = null;
   }
 
   ActiveWebSockets = () => {
     // WS
-    const DataBaseWS = firebase.database().ref(this.state.Pseudo);
-    DataBaseWS.on("value", (snap) => {
+    this.DataBaseWS = firebase.database().ref(this.state.Pseudo);
+    this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      this.refreshValueFirebase(null, null, NewData);
-      if (NewData?.Notif) this.doNotif(NewData.Notif);
+      if (this.state.FirstQuerie)
+        this.refreshValueFirebase(null, null, NewData);
     });
   };
 
@@ -555,195 +564,199 @@ export default class Home extends Component {
         ModeFilter,
       } = this.state;
 
-      this.setState(
-        {
-          ModeFindAnime: [false, null],
-          RefreshRandomizeAnime:
-            RefreshfromFnOffline &&
-            this.deepEqualObj(
-              { ...serieFirebase, ...filmFireBase },
-              { ...GlobalInfoUser.serie, ...GlobalInfoUser.film }
-            ) === true &&
-            SwitchMyAnim &&
-            (GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage === "NotFinished" ||
-              !GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage ||
-              (this.state.FirstQuerie &&
-                GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage !==
-                  "NotFinished" &&
-                ModeFilter === "NotFinished"))
-              ? false
-              : true,
-          RefreshRandomizeAnime2:
-            RefreshfromFnOffline &&
-            this.deepEqualObj(NextAnimFireBase, GlobalInfoUser.NextAnim) ===
-              true &&
-            !SwitchMyAnim
-              ? false
-              : true,
-          RefreshRandomizeAnime3: true,
-          RefreshfromFnOffline: false,
-          LoadingMode: [
-            typeof GlobalInfoUser.serie === "object" &&
-            typeof GlobalInfoUser.film === "object"
-              ? Object.keys(GlobalInfoUser.serie).length !== 0 ||
-                Object.keys(GlobalInfoUser.film).length !== 0
+      if (this._isMounted) {
+        this.setState(
+          {
+            ModeFindAnime: [false, null],
+            RefreshRandomizeAnime:
+              RefreshfromFnOffline &&
+              this.deepEqualObj(
+                { ...serieFirebase, ...filmFireBase },
+                { ...GlobalInfoUser.serie, ...GlobalInfoUser.film }
+              ) === true &&
+              SwitchMyAnim &&
+              (GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage === "NotFinished" ||
+                !GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage ||
+                (this.state.FirstQuerie &&
+                  GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage !==
+                    "NotFinished" &&
+                  ModeFilter === "NotFinished"))
                 ? false
-                : true
-              : false,
-            typeof GlobalInfoUser.NextAnim === "object"
-              ? Object.keys(GlobalInfoUser.NextAnim).length !== 0
+                : true,
+            RefreshRandomizeAnime2:
+              RefreshfromFnOffline &&
+              this.deepEqualObj(NextAnimFireBase, GlobalInfoUser.NextAnim) ===
+                true &&
+              !SwitchMyAnim
                 ? false
-                : true
-              : false,
-          ],
-          ModeFilter:
-            GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage &&
-            !this.state.FirstQuerie
-              ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
-              : ModeFilter,
-          FirstQuerie: true,
-          NextAnimFireBase: !GlobalInfoUser.NextAnim
-            ? {}
-            : GlobalInfoUser.NextAnim,
-          serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
-          filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
-          MangaFirebase:
-            WithWSData !== null
-              ? !GlobalInfoUser.manga
-                ? this.state.MangaFirebase
-                : GlobalInfoUser.manga
-              : this.state.MangaFirebase,
-          PhoneNumFireBase: GlobalInfoUser.PhoneNum,
-          ParamsOptn: GlobalInfoUser.ParamsOptn,
-        },
-        () => {
-          if (after !== null) after();
-          if (ToReSearchAfterRefresh) this.SearchAnimInList();
-        }
-      );
-      // Check If Data Lost
-      const AllDataIndexedDb = await this.fnDbOffline("GETReturn");
-      let IsLostData = false;
-      let UserNo = false;
+                : true,
+            RefreshRandomizeAnime3:
+              WithWSData !== null ? true : this.state.RefreshRandomizeAnime3,
+            RefreshfromFnOffline: false,
+            LoadingMode: [
+              typeof GlobalInfoUser.serie === "object" &&
+              typeof GlobalInfoUser.film === "object"
+                ? Object.keys(GlobalInfoUser.serie).length !== 0 ||
+                  Object.keys(GlobalInfoUser.film).length !== 0
+                  ? false
+                  : true
+                : false,
+              typeof GlobalInfoUser.NextAnim === "object"
+                ? Object.keys(GlobalInfoUser.NextAnim).length !== 0
+                  ? false
+                  : true
+                : false,
+            ],
+            ModeFilter:
+              GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage &&
+              !this.state.FirstQuerie
+                ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
+                : ModeFilter,
+            FirstQuerie: true,
+            NextAnimFireBase: !GlobalInfoUser.NextAnim
+              ? {}
+              : GlobalInfoUser.NextAnim,
+            serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
+            filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
+            MangaFirebase:
+              WithWSData !== null
+                ? !GlobalInfoUser.manga
+                  ? this.state.MangaFirebase
+                  : GlobalInfoUser.manga
+                : this.state.MangaFirebase,
+            PhoneNumFireBase: GlobalInfoUser.PhoneNum,
+            ParamsOptn: GlobalInfoUser.ParamsOptn,
+          },
+          () => {
+            if (after !== null) after();
+            if (ToReSearchAfterRefresh) this.SearchAnimInList();
+          }
+        );
+        // Check If Data Lost
+        const AllDataIndexedDb = await this.fnDbOffline("GETReturn");
+        let IsLostData = false;
+        let UserNo = false;
 
-      const CheckLastAntiLostData = (type) => {
+        const CheckLastAntiLostData = (type) => {
+          if (
+            JSON.parse(
+              window.localStorage.getItem("LastSecurityAntiLostData")
+            ) === true &&
+            window.confirm(
+              `DERNIER AVERTISSMENT !
+          Si vous continué (en appuyant sur "ok") vos ${type} seront supprimées.
+          Si vous ne souhaitez pas la disparition de vos ${type} alors appuyer sur "Annulé".`
+            )
+          ) {
+            UserNo = true;
+          }
+        };
+
+        if (
+          (typeof GlobalInfoUser.serie !== "object" ||
+            Object.keys(GlobalInfoUser.serie).length === 0) &&
+          AllDataIndexedDb[0][0]?.data
+        ) {
+          CheckLastAntiLostData("séries");
+          if (!UserNo) {
+            console.warn(
+              "Perte des données séries, procedure de réparage enclenché."
+            );
+            IsLostData = true;
+            this.addValue(
+              `${this.state.Pseudo}/serie`,
+              AllDataIndexedDb[0][0]?.data
+            );
+          } else {
+            UserNo = false;
+          }
+        }
+        if (
+          (typeof GlobalInfoUser.film !== "object" ||
+            Object.keys(GlobalInfoUser.film).length === 0) &&
+          AllDataIndexedDb[1][0]?.data
+        ) {
+          CheckLastAntiLostData("films");
+          if (!UserNo) {
+            console.warn(
+              "Perte des données film, procedure de réparage enclenché."
+            );
+            IsLostData = true;
+            this.addValue(
+              `${this.state.Pseudo}/film`,
+              AllDataIndexedDb[1][0]?.data
+            );
+          } else {
+            UserNo = false;
+          }
+        }
+        if (
+          (typeof GlobalInfoUser.NextAnim !== "object" ||
+            Object.keys(GlobalInfoUser.NextAnim).length === 0) &&
+          AllDataIndexedDb[2][0]?.data
+        ) {
+          CheckLastAntiLostData("prochains animes");
+          if (!UserNo) {
+            console.warn(
+              "Perte des données prochain animes, procedure de réparage enclenché."
+            );
+            IsLostData = true;
+            UserNo = false;
+            this.addValue(
+              `${this.state.Pseudo}/NextAnim`,
+              AllDataIndexedDb[2][0]?.data
+            );
+          } else {
+            UserNo = false;
+          }
+        }
+
         if (
           JSON.parse(
             window.localStorage.getItem("LastSecurityAntiLostData")
-          ) === true &&
-          window.confirm(
-            `DERNIER AVERTISSMENT !
-          Si vous continué (en appuyant sur "ok") vos ${type} seront supprimées.
-          Si vous ne souhaitez pas la disparition de vos ${type} alors appuyer sur "Annulé".`
-          )
+          ) === true
         ) {
-          UserNo = true;
+          window.localStorage.setItem(
+            "LastSecurityAntiLostData",
+            JSON.stringify(false)
+          );
         }
-      };
+        if (IsLostData) return;
 
-      if (
-        (typeof GlobalInfoUser.serie !== "object" ||
-          Object.keys(GlobalInfoUser.serie).length === 0) &&
-        AllDataIndexedDb[0][0]?.data
-      ) {
-        CheckLastAntiLostData("séries");
-        if (!UserNo) {
-          console.warn(
-            "Perte des données séries, procedure de réparage enclenché."
-          );
-          IsLostData = true;
-          this.addValue(
-            `${this.state.Pseudo}/serie`,
-            AllDataIndexedDb[0][0]?.data
-          );
-        } else {
-          UserNo = false;
-        }
-      }
-      if (
-        (typeof GlobalInfoUser.film !== "object" ||
-          Object.keys(GlobalInfoUser.film).length === 0) &&
-        AllDataIndexedDb[1][0]?.data
-      ) {
-        CheckLastAntiLostData("films");
-        if (!UserNo) {
-          console.warn(
-            "Perte des données film, procedure de réparage enclenché."
-          );
-          IsLostData = true;
-          this.addValue(
-            `${this.state.Pseudo}/film`,
-            AllDataIndexedDb[1][0]?.data
-          );
-        } else {
-          UserNo = false;
-        }
-      }
-      if (
-        (typeof GlobalInfoUser.NextAnim !== "object" ||
-          Object.keys(GlobalInfoUser.NextAnim).length === 0) &&
-        AllDataIndexedDb[2][0]?.data
-      ) {
-        CheckLastAntiLostData("prochains animes");
-        if (!UserNo) {
-          console.warn(
-            "Perte des données prochain animes, procedure de réparage enclenché."
-          );
-          IsLostData = true;
-          UserNo = false;
-          this.addValue(
-            `${this.state.Pseudo}/NextAnim`,
-            AllDataIndexedDb[2][0]?.data
-          );
-        } else {
-          UserNo = false;
-        }
-      }
-
-      if (
-        JSON.parse(window.localStorage.getItem("LastSecurityAntiLostData")) ===
-        true
-      ) {
-        window.localStorage.setItem(
-          "LastSecurityAntiLostData",
-          JSON.stringify(false)
-        );
-      }
-      if (IsLostData) return;
-
-      if (!this.state.UpdateDbFromIndexedDB) {
-        // Add Data To IndexedDB
-        const db = await openDB("AckDb", 1);
-        const Store = [
-          db
-            .transaction("serieFirebase", "readwrite")
-            .objectStore("serieFirebase"),
-          db
-            .transaction("filmFireBase", "readwrite")
-            .objectStore("filmFireBase"),
-          db
-            .transaction("NextAnimFireBase", "readwrite")
-            .objectStore("NextAnimFireBase"),
-          db
-            .transaction("NotifFirebase", "readwrite")
-            .objectStore("NotifFirebase"),
-          db.transaction("ParamsOptn", "readwrite").objectStore("ParamsOptn"),
-        ];
-        Store.forEach(async (req) => {
-          req.put({
-            id: req.name,
-            data:
-              req.name === "serieFirebase"
-                ? GlobalInfoUser.serie
-                : req.name === "filmFireBase"
-                ? GlobalInfoUser.film
-                : req.name === "NextAnimFireBase"
-                ? GlobalInfoUser.NextAnim
-                : req.name === "NotifFirebase"
-                ? GlobalInfoUser.Notif
-                : GlobalInfoUser.ParamsOptn,
+        if (!this.state.UpdateDbFromIndexedDB) {
+          // Add Data To IndexedDB
+          const db = await openDB("AckDb", 1);
+          const Store = [
+            db
+              .transaction("serieFirebase", "readwrite")
+              .objectStore("serieFirebase"),
+            db
+              .transaction("filmFireBase", "readwrite")
+              .objectStore("filmFireBase"),
+            db
+              .transaction("NextAnimFireBase", "readwrite")
+              .objectStore("NextAnimFireBase"),
+            db
+              .transaction("NotifFirebase", "readwrite")
+              .objectStore("NotifFirebase"),
+            db.transaction("ParamsOptn", "readwrite").objectStore("ParamsOptn"),
+          ];
+          Store.forEach(async (req) => {
+            req.put({
+              id: req.name,
+              data:
+                req.name === "serieFirebase"
+                  ? GlobalInfoUser.serie
+                  : req.name === "filmFireBase"
+                  ? GlobalInfoUser.film
+                  : req.name === "NextAnimFireBase"
+                  ? GlobalInfoUser.NextAnim
+                  : req.name === "NotifFirebase"
+                  ? GlobalInfoUser.Notif
+                  : GlobalInfoUser.ParamsOptn,
+            });
           });
-        });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -1067,7 +1080,7 @@ export default class Home extends Component {
     window.localStorage.removeItem("firebase:previous_websocket_failure");
     // Connection
     const box = await base.fetch(this.state.Pseudo, { context: this });
-    const connectedRef = firebase.database().ref(".info/connected");
+    this.connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
@@ -1075,7 +1088,7 @@ export default class Home extends Component {
       });
     }
     // Verified listener Conn
-    connectedRef.on("value", (snap) => {
+    this.connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
         // Verified if OfflineMode In an another session
         if (this.state.OfflineMode === true) {
@@ -1302,7 +1315,7 @@ export default class Home extends Component {
             OpenSearchFilter: false,
             WaitAnimCheck: false,
             ModeCombinaisonSearch: "ET",
-            year: new Date().getFullYear(),
+            year: new Date().getFullYear().toString(),
             season: "spring",
             SearchFilter: {},
             day: new Date().getDay().toString(),
@@ -2355,7 +2368,7 @@ export default class Home extends Component {
     }
   };
 
-  doNotif = async (WSData = null) => {
+  doNotif = async () => {
     try {
       const { OfflineMode } = this.state;
       const db = await openDB("AckDb", 1);
@@ -2363,14 +2376,11 @@ export default class Home extends Component {
         .transaction("NotifFirebase")
         .objectStore("NotifFirebase");
 
-      const NotifFirebase =
-        WSData !== null
-          ? WSData
-          : OfflineMode
-          ? (await Store.getAll())[0].data
-          : await base.fetch(`${this.state.Pseudo}/Notif`, {
-              context: this,
-            });
+      const NotifFirebase = OfflineMode
+        ? (await Store.getAll())[0].data
+        : await base.fetch(`${this.state.Pseudo}/Notif`, {
+            context: this,
+          });
 
       // Generate Notif
       const NotifCall = (notifKey) => {
@@ -5466,9 +5476,7 @@ export default class Home extends Component {
                           WaitAnimCheck === true ? "Oui" : "Non"
                         }`}
                         onChange={(event) =>
-                          this.setState({
-                            WaitAnimCheck: event.target.checked,
-                          })
+                          this.setState({ WaitAnimCheck: event.target.checked })
                         }
                       />
                     </Form.Group>

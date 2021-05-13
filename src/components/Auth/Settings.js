@@ -38,19 +38,23 @@ class Settings extends Component {
     typeAlert: null,
   };
 
+  _isMounted = false;
+  DataBaseWS = null;
+  connectedRef = null;
   setIntervalVar = null;
 
   componentDidMount() {
+    this._isMounted = true;
     const self = this;
     /* FB Conn */
-    this.refreshParamsOptn();
-    if (this.state.Pseudo) {
+    if (this.state.Pseudo && this._isMounted) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           self.handleAuth({ user });
         }
       });
     }
+    this.refreshParamsOptn();
     /* WS */
     this.ActiveWebSockets();
     /* UserInfo */
@@ -63,6 +67,11 @@ class Settings extends Component {
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
+    if (this.DataBaseWS) this.DataBaseWS.off("value");
+    if (this.connectedRef) this.connectedRef.off("value");
+    this.DataBaseWS = null;
+    this.connectedRef = null;
     const connection =
       navigator.connection ||
       navigator.mozConnection ||
@@ -73,8 +82,8 @@ class Settings extends Component {
   ActiveWebSockets = () => {
     // WS
     const { Pseudo } = this.state;
-    const DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
-    DataBaseWS.on("value", (snap) => {
+    this.DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
+    this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       this.refreshParamsOptn(NewData);
     });
@@ -119,12 +128,13 @@ class Settings extends Component {
         }),
       ]);
 
-      this.setState({
-        ParamsOptn: DataRequired[0],
-        TemplateAnimeFirebase: DataRequired[1],
-        ACKColor: DataRequired[0].ACKColor,
-        Country: DataRequired[0].Country,
-      });
+      if (this._isMounted)
+        this.setState({
+          ParamsOptn: DataRequired[0],
+          TemplateAnimeFirebase: DataRequired[1],
+          ACKColor: DataRequired[0].ACKColor,
+          Country: DataRequired[0].Country,
+        });
     } catch (err) {
       console.error(err);
     }
@@ -181,7 +191,7 @@ class Settings extends Component {
 
   handleAuth = async (authData) => {
     const box = await base.fetch(this.state.Pseudo, { context: this });
-    const connectedRef = firebase.database().ref(".info/connected");
+    this.connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
@@ -190,7 +200,7 @@ class Settings extends Component {
     }
 
     // Verified listener Conn
-    connectedRef.on("value", (snap) => {
+    this.connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
         if (this.setIntervalVar !== null) {
           clearInterval(this.setIntervalVar);
@@ -653,7 +663,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>11</b> (F1)
+                  Stable (LTS)<b>1</b>β<b>11</b> (F2)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
@@ -665,7 +675,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.5</b>
+                  Stable (LTS)<b>1.6</b>
                 </li>
               </ul>
               <p>

@@ -41,6 +41,7 @@ class Watch extends Component {
     modeWatch: false,
     type: "",
     LoadingMode: true,
+    LoadingModeAuth: true,
     isFirstTime: true,
     WatchModeNow: null,
     RedirectTo: [false, ""],
@@ -83,6 +84,9 @@ class Watch extends Component {
     ShowModalAddSeasonEp: false,
   };
 
+  _isMounted = false;
+  DataBaseWS = null;
+  connectedRef = null;
   setIntervalVar = null;
   setTimeOutMsgInfo = null;
   setTimeOutMsgInfo2 = null;
@@ -90,6 +94,7 @@ class Watch extends Component {
   DynamicSize = 0;
 
   componentDidMount() {
+    this._isMounted = true;
     const self = this;
     /* Var From URL */
     // Pseudo
@@ -132,7 +137,7 @@ class Watch extends Component {
     if (this.props.match.params.watchmode !== undefined)
       this.setState({ WatchModeNow: this.props.match.params.watchmode });
     /* FB Conn */
-    if (this.state.Pseudo && !this.state.OfflineMode) {
+    if (this.state.Pseudo && !this.state.OfflineMode && this._isMounted) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           self.handleAuth({ user });
@@ -147,14 +152,19 @@ class Watch extends Component {
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
+    if (this.DataBaseWS) this.DataBaseWS.off("value");
+    if (this.connectedRef) this.connectedRef.off("value");
+    this.DataBaseWS = null;
+    this.connectedRef = null;
     document.onkeydown = null;
   }
 
   ActiveWebSockets = () => {
     // WS
     const { Pseudo, type, id } = this.state;
-    const DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
-    DataBaseWS.on("value", (snap) => {
+    this.DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
+    this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       this.refreshAnimToWatch(null, NewData);
     });
@@ -180,7 +190,7 @@ class Watch extends Component {
 
   handleAuth = async (authData) => {
     const box = await base.fetch(this.state.Pseudo, { context: this });
-    const connectedRef = firebase.database().ref(".info/connected");
+    this.connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
@@ -189,7 +199,7 @@ class Watch extends Component {
     }
 
     // Verified listener Conn
-    connectedRef.on("value", (snap) => {
+    this.connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
         // Fast Loading Anime before FnRefresh
         this.fnDbOffline("GET");
@@ -216,6 +226,7 @@ class Watch extends Component {
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
+      LoadingModeAuth: false,
     });
   };
 
@@ -235,93 +246,99 @@ class Watch extends Component {
       ]);
 
       document.title = `ACK:${AnimToWatch.name}`;
-      this.setState(
-        {
-          AnimToWatch,
-          Newtitle: AnimToWatch.name,
-          SmartRepere:
-            Object.keys(ParamsOptn).length !== 0
-              ? ParamsOptn?.SmartRepere !== undefined
-                ? ParamsOptn.SmartRepere
-                : true
-              : true,
-          Shortcut:
-            Object.keys(ParamsOptn).length !== 0
-              ? ParamsOptn?.Shortcut !== undefined
-                ? ParamsOptn.Shortcut
-                : true
-              : true,
-          Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
-          LoadingMode: false,
-        },
-        () => {
-          // KeyShortcuts
-          if (
-            !window.mobileAndTabletCheck() &&
-            this.state.Shortcut &&
-            document.onkeydown === null
-          ) {
-            document.onkeydown = (keyDownEvent) => {
-              if (keyDownEvent.repeat) return;
-              const {
-                repereEpisode,
-                repereSaison,
-                modeWatch,
-                ShowFormBadge,
-                ModeEditTitle,
-              } = this.state;
-              if (keyDownEvent.key === "f" && !ShowFormBadge && !ModeEditTitle)
-                return this.StartNextEP();
-              if (keyDownEvent.key === "Escape" && !modeWatch)
-                return this.setState({ RedirectTo: [true, "/"] });
-              if (!modeWatch) return;
-              if (keyDownEvent.key === "ArrowRight") {
-                return repereEpisode[2] !== null
-                  ? this.StartNextEP(repereSaison, repereEpisode[2].id)
-                  : this.verifiedEPRepere(repereSaison, true);
-              }
-              if (keyDownEvent.key === "Escape") return this.StopModeWatch();
-              if (keyDownEvent.key === "ArrowLeft")
-                return repereEpisode[0] !== null
-                  ? this.playEp(repereSaison, repereEpisode[0].id)
-                  : console.warn(
-                      "Impossible de charger un Episode innexistant !"
-                    );
-            };
-          }
-          if (
-            AnimToWatch.Objectif !== undefined &&
-            AnimToWatch.Objectif.End[2] < Date.now()
-          ) {
-            this.DisplayMsg("Vous avez râté votre objectif", 6000, "danger");
-            this.setState({ LetsNotCelebrate: true });
-            this.deleteValue(`${this.state.Pseudo}/serie/${id}/Objectif`);
-            if (!this.state.OfflineMode) {
-              this.fnDbOffline(
-                "DELETE",
-                `${this.state.Pseudo}/serie/${id}/Objectif`
-              );
+
+      if (this._isMounted)
+        this.setState(
+          {
+            AnimToWatch,
+            Newtitle: AnimToWatch.name,
+            SmartRepere:
+              Object.keys(ParamsOptn).length !== 0
+                ? ParamsOptn?.SmartRepere !== undefined
+                  ? ParamsOptn.SmartRepere
+                  : true
+                : true,
+            Shortcut:
+              Object.keys(ParamsOptn).length !== 0
+                ? ParamsOptn?.Shortcut !== undefined
+                  ? ParamsOptn.Shortcut
+                  : true
+                : true,
+            Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
+            LoadingMode: false,
+          },
+          () => {
+            // KeyShortcuts
+            if (
+              !window.mobileAndTabletCheck() &&
+              this.state.Shortcut &&
+              document.onkeydown === null
+            ) {
+              document.onkeydown = (keyDownEvent) => {
+                if (keyDownEvent.repeat) return;
+                const {
+                  repereEpisode,
+                  repereSaison,
+                  modeWatch,
+                  ShowFormBadge,
+                  ModeEditTitle,
+                } = this.state;
+                if (
+                  keyDownEvent.key === "f" &&
+                  !ShowFormBadge &&
+                  !ModeEditTitle
+                )
+                  return this.StartNextEP();
+                if (keyDownEvent.key === "Escape" && !modeWatch)
+                  return this.setState({ RedirectTo: [true, "/"] });
+                if (!modeWatch) return;
+                if (keyDownEvent.key === "ArrowRight") {
+                  return repereEpisode[2] !== null
+                    ? this.StartNextEP(repereSaison, repereEpisode[2].id)
+                    : this.verifiedEPRepere(repereSaison, true);
+                }
+                if (keyDownEvent.key === "Escape") return this.StopModeWatch();
+                if (keyDownEvent.key === "ArrowLeft")
+                  return repereEpisode[0] !== null
+                    ? this.playEp(repereSaison, repereEpisode[0].id)
+                    : console.warn(
+                        "Impossible de charger un Episode innexistant !"
+                      );
+              };
             }
-          } else if (AnimToWatch.Objectif !== undefined) this.StartNextEP();
-          if (this.state.WatchModeNow === "true") {
-            this.StartNextEP();
-            this.setState({ WatchModeNow: null });
+            if (
+              AnimToWatch.Objectif !== undefined &&
+              AnimToWatch.Objectif.End[2] < Date.now()
+            ) {
+              this.DisplayMsg("Vous avez râté votre objectif", 6000, "danger");
+              this.setState({ LetsNotCelebrate: true });
+              this.deleteValue(`${this.state.Pseudo}/serie/${id}/Objectif`);
+              if (!this.state.OfflineMode) {
+                this.fnDbOffline(
+                  "DELETE",
+                  `${this.state.Pseudo}/serie/${id}/Objectif`
+                );
+              }
+            } else if (AnimToWatch.Objectif !== undefined) this.StartNextEP();
+            if (this.state.WatchModeNow === "true") {
+              this.StartNextEP();
+              this.setState({ WatchModeNow: null });
+            }
+            if (next !== null) next();
+            if (AnimToWatch.DurationPerEP === undefined && type === "serie") {
+              this.ReTakeInfoFromName();
+            }
+            // Scroll EP
+            if (
+              document.getElementById("EpisodesList") !== undefined &&
+              document.getElementById("EpisodesList") !== null
+            ) {
+              document
+                .getElementById("EpisodesList")
+                .scrollTo(0, ScrollPosAccordeon);
+            }
           }
-          if (next !== null) next();
-          if (AnimToWatch.DurationPerEP === undefined && type === "serie") {
-            this.ReTakeInfoFromName();
-          }
-          // Scroll EP
-          if (
-            document.getElementById("EpisodesList") !== undefined &&
-            document.getElementById("EpisodesList") !== null
-          ) {
-            document
-              .getElementById("EpisodesList")
-              .scrollTo(0, ScrollPosAccordeon);
-          }
-        }
-      );
+        );
     } catch (err) {
       console.error(err);
     }
@@ -1499,6 +1516,7 @@ class Watch extends Component {
       type,
       isFirstTime,
       ShowModalRateAnime,
+      LoadingModeAuth,
       Rate,
       ShowFormBadge,
       LetsCelebrate,
@@ -1540,7 +1558,7 @@ class Watch extends Component {
     if (AnimToWatch.InWait) return <Redirect to="/notifuser/8" />;
     if (RedirectTo[0]) return <Redirect to={RedirectTo[1]} />;
 
-    if (LoadingMode) {
+    if (LoadingMode || LoadingModeAuth) {
       return (
         <section id="WatchSkeleton">
           <header>

@@ -46,20 +46,24 @@ export default class Notif extends Component {
     ShowTheChangeNotifColorBtn: false,
   };
 
+  _isMounted = false;
+  DataBaseWS = null;
+  connectedRef = null;
   setIntervalVar = null;
   NumberOfClick = [0, 0];
 
   componentDidMount() {
+    this._isMounted = true;
     const self = this;
     /* FB Conn */
-    this.refreshNotif();
-    if (this.state.Pseudo) {
+    if (this.state.Pseudo && this._isMounted) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           self.handleAuth({ user });
         }
       });
     }
+    this.refreshNotif();
     /* WS */
     this.ActiveWebSockets();
     /* Color */
@@ -67,6 +71,14 @@ export default class Notif extends Component {
       document.body.style.backgroundColor =
         window.localStorage.getItem("BGC-ACK");
     }
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+    if (this.DataBaseWS) this.DataBaseWS.off("value");
+    if (this.connectedRef) this.connectedRef.off("value");
+    this.DataBaseWS = null;
+    this.connectedRef = null;
   }
 
   reAuth = () => {
@@ -89,8 +101,8 @@ export default class Notif extends Component {
 
   ActiveWebSockets = () => {
     // WS
-    const DataBaseWS = firebase.database().ref(`${this.state.Pseudo}/Notif`);
-    DataBaseWS.on("value", (snap) => {
+    this.DataBaseWS = firebase.database().ref(`${this.state.Pseudo}/Notif`);
+    this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       this.refreshNotif(NewData);
     });
@@ -98,7 +110,7 @@ export default class Notif extends Component {
 
   handleAuth = async (authData) => {
     const box = await base.fetch(this.state.Pseudo, { context: this });
-    const connectedRef = firebase.database().ref(".info/connected");
+    this.connectedRef = firebase.database().ref(".info/connected");
 
     if (!box.proprio) {
       await base.post(`${this.state.Pseudo}/proprio`, {
@@ -107,7 +119,7 @@ export default class Notif extends Component {
     }
 
     // Verified listener Conn
-    connectedRef.on("value", (snap) => {
+    this.connectedRef.on("value", (snap) => {
       // Fast Loading Anime before FnRefresh
       this.refreshNotif();
 
@@ -169,7 +181,8 @@ export default class Notif extends Component {
         this.FetchAnime();
       }
 
-      this.setState({ Notif, PickAnime: false, RefreshNotif: true });
+      if (this._isMounted)
+        this.setState({ Notif, PickAnime: false, RefreshNotif: true });
     } catch (err) {
       console.error(err);
     }
@@ -625,7 +638,7 @@ export default class Notif extends Component {
         }
         ResultInComponents = [
           ...ResultInComponents,
-          <h3>
+          <h3 key={days}>
             {dayInLetter} ({nbOfNotif})<br />
           </h3>,
           ...NewNotifToStore,

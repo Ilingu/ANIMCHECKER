@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useHistory } from "react-router-dom";
 // CSS
 import {} from "react-bootstrap";
@@ -7,8 +7,11 @@ import base from "../db/base";
 import firebase from "firebase/app";
 
 let setIntervalVar = null;
+let DataBaseWS = null;
+let connectedRef = null;
 
 const WatchManga = (props) => {
+  const isMountedComponent = useRef(true);
   /* DefinedState */
   const [state, setRealState] = useState({
     // Firebase
@@ -55,7 +58,7 @@ const WatchManga = (props) => {
       return;
     }
     /* FB Conn */
-    if (state.Pseudo) {
+    if (state.Pseudo && isMountedComponent.current) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           handleAuth({ user });
@@ -69,13 +72,21 @@ const WatchManga = (props) => {
       document.body.style.backgroundColor =
         window.localStorage.getItem("BGC-ACK");
     }
+
+    // WillUnMount
+    return () => {
+      isMountedComponent.current = false;
+      if (DataBaseWS) DataBaseWS.off("value");
+      if (connectedRef) connectedRef.off("value");
+      DataBaseWS = connectedRef = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.Pseudo, state.id]);
   /* FN */
   const ActiveWebSockets = useCallback(() => {
     // WS
     const { Pseudo, id } = state;
-    const DataBaseWS = firebase.database().ref(`${Pseudo}/manga/0/${id}`);
+    DataBaseWS = firebase.database().ref(`${Pseudo}/manga/0/${id}`);
     DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       refreshMangaToWatch(NewData);
@@ -86,7 +97,7 @@ const WatchManga = (props) => {
   const handleAuth = useCallback(
     async (authData) => {
       const box = await base.fetch(state.Pseudo, { context: {} });
-      const connectedRef = firebase.database().ref(".info/connected");
+      connectedRef = firebase.database().ref(".info/connected");
 
       if (!box.proprio) {
         await base.post(`${state.Pseudo}/proprio`, {
@@ -149,7 +160,8 @@ const WatchManga = (props) => {
               });
 
         document.title = `MCK:${MangaToWatch.name}`;
-        setState({ MangaToWatch, LoadingMode: false });
+        if (isMountedComponent.current)
+          setState({ MangaToWatch, LoadingMode: false });
       } catch (err) {
         console.error(err);
       }
