@@ -60,6 +60,8 @@ export default class Notif extends Component {
         }
       });
     }
+    /* WS */
+    this.ActiveWebSockets();
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
       document.body.style.backgroundColor =
@@ -83,6 +85,15 @@ export default class Notif extends Component {
       window.localStorage.removeItem("firebase:previous_websocket_failure");
       i++;
     }, 1000);
+  };
+
+  ActiveWebSockets = () => {
+    // WS
+    const DataBaseWS = firebase.database().ref(`${this.state.Pseudo}/Notif`);
+    DataBaseWS.on("value", (snap) => {
+      const NewData = snap.val();
+      this.refreshNotif(NewData);
+    });
   };
 
   handleAuth = async (authData) => {
@@ -136,7 +147,7 @@ export default class Notif extends Component {
     this.setState({ AnimeList, RefreshAnimListRenderer: true });
   };
 
-  refreshNotif = async () => {
+  refreshNotif = async (WSData = null) => {
     try {
       const { OfflineMode } = this.state;
       const db = await openDB("AckDb", 1);
@@ -145,11 +156,14 @@ export default class Notif extends Component {
         .objectStore("NotifFirebase");
       const results = await Store.getAll();
 
-      const Notif = OfflineMode
-        ? results[0].data
-        : await base.fetch(`${this.state.Pseudo}/Notif`, {
-            context: this,
-          });
+      const Notif =
+        WSData !== null
+          ? WSData
+          : OfflineMode
+          ? results[0].data
+          : await base.fetch(`${this.state.Pseudo}/Notif`, {
+              context: this,
+            });
 
       if (this.state.PickAnime === true) {
         this.FetchAnime();
@@ -352,18 +366,20 @@ export default class Notif extends Component {
         } else {
           const AnimeObj = AnimeList[Lier];
           if (AnimeObj.Lier) {
-            const CopyNotif = { ...Notif };
-            delete CopyNotif[AnimeObj.Lier].Lier;
-            NewNotifTemplate = {
-              ...CopyNotif,
-              [IDNotif]: {
-                name,
-                Lier,
-                calledTime: GenerateCalledTime(),
-                paused: false,
-              },
-            };
-            base.remove(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
+            try {
+              const CopyNotif = { ...Notif };
+              delete CopyNotif[AnimeObj.Lier].Lier;
+              NewNotifTemplate = {
+                ...CopyNotif,
+                [IDNotif]: {
+                  name,
+                  Lier,
+                  calledTime: GenerateCalledTime(),
+                  paused: false,
+                },
+              };
+              base.remove(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
+            } catch (error) {}
           }
           base
             .update(`${Pseudo}/serie/${Lier}`, {
@@ -532,7 +548,8 @@ export default class Notif extends Component {
       );
     }
 
-    if (uid !== proprio) return <Redirect to="/notifuser/3" />;
+    if (uid !== proprio || !uid || !proprio)
+      return <Redirect to="/notifuser/3" />;
 
     let MyAnimName = "Vous n'avez pas d'anime, rajoutez-en !";
 

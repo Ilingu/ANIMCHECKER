@@ -10,62 +10,86 @@ let setIntervalVar = null;
 
 const WatchManga = (props) => {
   /* DefinedState */
-  // FireBase
-  const [Pseudo, setPseudo] = useState(props.match.params.pseudo);
-  const [Uid, setUid] = useState(null);
-  const [proprio, setProprio] = useState(null);
-  const [Id, setId] = useState(props.match.params.id);
-  const [MangaToWatch, setMangaToWatch] = useState({});
-  // App State
-  const [RedirectHome, setRedirectHome] = useState([false, ""]);
-  const [isFirstTime, setIsFirstTime] = useState(true);
-  const [LoadingMode, setLoadingMode] = useState(true);
+  const [state, setRealState] = useState({
+    // Firebase
+    Pseudo: props.match.params.pseudo,
+    uid: null,
+    proprio: null,
+    id: props.match.params.id,
+    MangaToWatch: {},
+    // App
+    RedirectHome: [false, ""],
+    isFirstTime: true,
+    LoadingMode: true,
+    LoadingModeAuth: true,
+  });
+  const setState = useCallback((data) => {
+    setRealState((prevState) => {
+      return {
+        ...prevState,
+        ...data,
+      };
+    });
+  }, []);
+  /* Hooks */
   let History = useHistory();
   /* componentDidMount */
   useEffect(() => {
     if (
-      Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo")) ||
-      !Pseudo
+      state.Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo")) ||
+      !state.Pseudo
     ) {
-      setRedirectHome([true, "/notifuser/2"]);
-      setUid(null);
+      setState({ uid: null, RedirectHome: [true, "/notifuser/2"] });
       return;
     }
-    if (Id) {
-      if (Id.split("-")[0] !== "scan" && Id.split("-")[0] !== "volume") {
-        setRedirectHome([true, "/notifuser/11"]);
-        setUid(null);
+    if (state.id) {
+      if (
+        state.id.split("-")[0] !== "scan" &&
+        state.id.split("-")[0] !== "volume"
+      ) {
+        setState({ uid: null, RedirectHome: [true, "/notifuser/11"] });
         return;
       }
     } else {
-      setRedirectHome([true, "/notifuser/10"]);
-      setUid(null);
+      setState({ uid: null, RedirectHome: [true, "/notifuser/10"] });
       return;
     }
     /* FB Conn */
-    if (Pseudo) {
+    if (state.Pseudo) {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
           handleAuth({ user });
         }
       });
     }
+    /* WS */
+    ActiveWebSockets();
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
       document.body.style.backgroundColor =
         window.localStorage.getItem("BGC-ACK");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Pseudo, setRedirectHome, Id, setUid]);
+  }, [state.Pseudo, state.id]);
   /* FN */
+  const ActiveWebSockets = useCallback(() => {
+    // WS
+    const { Pseudo, id } = state;
+    const DataBaseWS = firebase.database().ref(`${Pseudo}/manga/0/${id}`);
+    DataBaseWS.on("value", (snap) => {
+      const NewData = snap.val();
+      refreshMangaToWatch(NewData);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
   // Connection
   const handleAuth = useCallback(
     async (authData) => {
-      const box = await base.fetch(Pseudo, { context: {} });
+      const box = await base.fetch(state.Pseudo, { context: {} });
       const connectedRef = firebase.database().ref(".info/connected");
 
       if (!box.proprio) {
-        await base.post(`${Pseudo}/proprio`, {
+        await base.post(`${state.Pseudo}/proprio`, {
           data: authData.user.uid,
         });
       }
@@ -86,12 +110,15 @@ const WatchManga = (props) => {
           );
         }
       });
-      setUid(authData.user.uid);
-      setProprio(box.proprio || authData.user.uid);
+      setState({
+        uid: authData.user.uid,
+        proprio: box.proprio || authData.user.uid,
+        LoadingModeAuth: false,
+      });
       refreshMangaToWatch();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [Pseudo]
+    [state.Pseudo]
   );
   const reAuth = useCallback(() => {
     firebase.auth().onAuthStateChanged((user) => {
@@ -110,19 +137,26 @@ const WatchManga = (props) => {
     }, 1000);
   }, [reAuth]);
   // RefreshData
-  const refreshMangaToWatch = useCallback(async () => {
-    try {
-      const MangaToWatch = await base.fetch(`${Pseudo}/manga/0/${Id}`, {
-        context: this,
-      });
-      if (MangaToWatch) {
-        setMangaToWatch(MangaToWatch);
-        setLoadingMode(false);
+  const refreshMangaToWatch = useCallback(
+    async (WSData = null) => {
+      const { Pseudo, id } = state;
+      try {
+        const MangaToWatch =
+          WSData !== null
+            ? WSData
+            : await base.fetch(`${Pseudo}/manga/0/${id}`, {
+                context: this,
+              });
+
+        document.title = `MCK:${MangaToWatch.name}`;
+        setState({ MangaToWatch, LoadingMode: false });
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [Id, Pseudo]);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state]
+  );
   // FireBase
   const AddValue = useCallback(
     (path, value) => {
@@ -154,17 +188,28 @@ const WatchManga = (props) => {
   );
 
   /* Render */
+  const {
+    Pseudo,
+    uid,
+    proprio,
+    RedirectHome,
+    LoadingMode,
+    id,
+    isFirstTime,
+    LoadingModeAuth,
+  } = state;
   if (!Pseudo || typeof Pseudo !== "string") History.push("/notifuser/2");
   if (RedirectHome[0]) History.push(RedirectHome[1]);
-  if (LoadingMode) return <div></div>;
 
-  if (Uid !== proprio) History.push("/notifuser/3");
+  if (LoadingMode || LoadingModeAuth) return <div></div>;
 
-  if (Id === null) {
+  if (uid !== proprio || !uid || !proprio) History.push("/notifuser/3");
+
+  if (id === null) {
     History.push("/notifuser/4");
   }
   if (isFirstTime) {
-    setIsFirstTime(false);
+    setState({ isFirstTime: false });
     History.push("/WatchManga");
   }
 

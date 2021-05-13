@@ -120,6 +120,8 @@ class Watch extends Component {
             return;
           }
           this.refreshAnimToWatch();
+          /* WS */
+          this.ActiveWebSockets();
         }
       );
     } else {
@@ -147,6 +149,16 @@ class Watch extends Component {
   componentWillUnmount() {
     document.onkeydown = null;
   }
+
+  ActiveWebSockets = () => {
+    // WS
+    const { Pseudo, type, id } = this.state;
+    const DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
+    DataBaseWS.on("value", (snap) => {
+      const NewData = snap.val();
+      this.refreshAnimToWatch(null, NewData);
+    });
+  };
 
   reAuth = () => {
     firebase.auth().onAuthStateChanged((user) => {
@@ -207,14 +219,16 @@ class Watch extends Component {
     });
   };
 
-  refreshAnimToWatch = async (next = null) => {
+  refreshAnimToWatch = async (next = null, WSData = null) => {
     const { id, type, ScrollPosAccordeon } = this.state;
 
     try {
       const [AnimToWatch, ParamsOptn] = await Promise.all([
-        await base.fetch(`${this.state.Pseudo}/${type}/${id}`, {
-          context: this,
-        }),
+        WSData !== null
+          ? WSData
+          : await base.fetch(`${this.state.Pseudo}/${type}/${id}`, {
+              context: this,
+            }),
         await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
           context: this,
         }),
@@ -1551,7 +1565,8 @@ class Watch extends Component {
       );
     }
 
-    if (uid !== proprio) return <Redirect to="/notifuser/3" />;
+    if (uid !== proprio || !uid || !proprio)
+      return <Redirect to="/notifuser/3" />;
 
     if (id === null) {
       return <Redirect to="/notifuser/4" />;

@@ -356,6 +356,7 @@ export default class Home extends Component {
     DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       this.refreshValueFirebase(null, null, NewData);
+      if (NewData?.Notif) this.doNotif(NewData.Notif);
     });
   };
 
@@ -579,12 +580,6 @@ export default class Home extends Component {
             !SwitchMyAnim
               ? false
               : true,
-          MangaFirebase:
-            WithWSData !== null
-              ? !GlobalInfoUser.manga
-                ? []
-                : GlobalInfoUser.manga
-              : this.state.MangaFirebase,
           RefreshRandomizeAnime3: true,
           RefreshfromFnOffline: false,
           LoadingMode: [
@@ -612,7 +607,12 @@ export default class Home extends Component {
             : GlobalInfoUser.NextAnim,
           serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
           filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
-          MangaFirebase: !GlobalInfoUser.manga ? [] : GlobalInfoUser.manga,
+          MangaFirebase:
+            WithWSData !== null
+              ? !GlobalInfoUser.manga
+                ? this.state.MangaFirebase
+                : GlobalInfoUser.manga
+              : this.state.MangaFirebase,
           PhoneNumFireBase: GlobalInfoUser.PhoneNum,
           ParamsOptn: GlobalInfoUser.ParamsOptn,
         },
@@ -1205,6 +1205,7 @@ export default class Home extends Component {
             uid: null,
             proprio: null,
             ReConnectionFirebase: false,
+            UserOnLogin: false,
             // Bon fonctionnement de l'app
             PageMode:
               JSON.parse(window.localStorage.getItem("PageMode")) === null ||
@@ -1245,18 +1246,25 @@ export default class Home extends Component {
             ShowModalVerification: false,
             ShowModalAddManga: false,
             ////
+            OpenNextNewAnime: false,
             PalmaresModal: false,
+            SeasonPage: false,
             NotAskAgain: true,
             ModePreview: false,
             SwitchMyAnim: true,
+            SwipeActive: true,
             AddNotifWithAnim: false,
             animToDetails: [],
+            SeasonAnimeDetails: null,
             NextAnimToDelete: null,
             NextMangaToDelete: null,
             SearchInAnimeList: [false, null],
             RefreshRandomizeAnime: true,
             RefreshRandomizeAnime2: true,
             RefreshRandomizeAnime3: true,
+            HaveAlreadyBeenMix: [false, false],
+            NextReRenderOrderSerie: null,
+            NextReRenderOrderNA: null,
             MyMangaListSaved: [
               "Vous n'avez aucun Manga En Cours",
               "Vous n'avez aucun Manga à Regarder Prochainement",
@@ -1281,16 +1289,22 @@ export default class Home extends Component {
             // Form
             title: "",
             type: "serie",
+            typeManga: ["scan", false],
             Rate: 7.5,
             UrlUserImg: "",
             FileToImport: null,
             imageUrl: null,
+            AnimateFasIcon: [false, false],
             EpisodeName: null,
             DurationPerEp: null,
             AntiLostData: true,
             SeasonAnimCheck: false,
+            OpenSearchFilter: false,
             WaitAnimCheck: false,
             ModeCombinaisonSearch: "ET",
+            year: new Date().getFullYear(),
+            season: "spring",
+            SearchFilter: {},
             day: new Date().getDay().toString(),
             time:
               new Date().getHours() * 3600 +
@@ -1298,6 +1312,8 @@ export default class Home extends Component {
             durer: 110,
             nbEP: "",
             Scan: NaN,
+            Volumes: [NaN, NaN],
+            VolumesPersonnalize: {},
             NextManga: "",
             NextAnim: "",
             ImportanceNA: 0,
@@ -1309,11 +1325,17 @@ export default class Home extends Component {
             DeletePathVerif: null,
             // Alerts
             ResText: null,
+            ResTextMsg: null,
             typeAlert: null,
+            typeAlertMsg: null,
             // A2HS
             AddToHomeScreen: null,
           },
           async () => {
+            this.setIntervalVar = null;
+            this.setTimeOutMsgInfo = null;
+            this.setTimeOutMsgInfo2 = null;
+            this.NumberOfFailedConnection = 0;
             // IndexedDB
             const db = await openDB("AckDb", 1);
             const Store = [
@@ -2333,20 +2355,23 @@ export default class Home extends Component {
     }
   };
 
-  doNotif = async () => {
+  doNotif = async (WSData = null) => {
     try {
       const { OfflineMode } = this.state;
       const db = await openDB("AckDb", 1);
       const Store = db
         .transaction("NotifFirebase")
         .objectStore("NotifFirebase");
-      const results = await Store.getAll();
 
-      const NotifFirebase = OfflineMode
-        ? results[0].data
-        : await base.fetch(`${this.state.Pseudo}/Notif`, {
-            context: this,
-          });
+      const NotifFirebase =
+        WSData !== null
+          ? WSData
+          : OfflineMode
+          ? (await Store.getAll())[0].data
+          : await base.fetch(`${this.state.Pseudo}/Notif`, {
+              context: this,
+            });
+
       // Generate Notif
       const NotifCall = (notifKey) => {
         const UpdateNotifFB = () => {
@@ -3454,7 +3479,7 @@ export default class Home extends Component {
       );
     }
 
-    if (uid !== proprio) {
+    if (uid !== proprio || !uid || !proprio) {
       return (
         <div
           style={{

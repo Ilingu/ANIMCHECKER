@@ -51,6 +51,9 @@ class Settings extends Component {
         }
       });
     }
+    /* WS */
+    this.ActiveWebSockets();
+    /* UserInfo */
     this.GetUserConnInfo();
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
@@ -66,6 +69,16 @@ class Settings extends Component {
       navigator.webkitConnection;
     connection.removeEventListener("change", () => this.GetUserConnInfo(true));
   }
+
+  ActiveWebSockets = () => {
+    // WS
+    const { Pseudo } = this.state;
+    const DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
+    DataBaseWS.on("value", (snap) => {
+      const NewData = snap.val();
+      this.refreshParamsOptn(NewData);
+    });
+  };
 
   reAuth = () => {
     firebase.auth().onAuthStateChanged((user) => {
@@ -85,16 +98,19 @@ class Settings extends Component {
     }, 1000);
   };
 
-  refreshParamsOptn = async () => {
+  refreshParamsOptn = async (WSData = null) => {
     try {
       const { OfflineMode } = this.state;
       const db = await openDB("AckDb", 1);
       const Store = db.transaction("ParamsOptn").objectStore("ParamsOptn");
-      const results = await Store.getAll();
 
       const DataRequired = await Promise.all([
-        OfflineMode
-          ? results[0].data
+        WSData !== null
+          ? WSData
+          : OfflineMode
+          ? (
+              await Store.getAll()
+            )[0].data
           : await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
               context: this,
             }),
@@ -102,6 +118,7 @@ class Settings extends Component {
           context: this,
         }),
       ]);
+
       this.setState({
         ParamsOptn: DataRequired[0],
         TemplateAnimeFirebase: DataRequired[1],
@@ -302,7 +319,8 @@ class Settings extends Component {
       );
     }
 
-    if (uid !== proprio) return <Redirect to="/notifuser/3" />;
+    if (uid !== proprio || !uid || !proprio)
+      return <Redirect to="/notifuser/3" />;
 
     let TemplateAnime = "Tu n'as aucun template d'anime";
 
@@ -635,7 +653,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>11</b>
+                  Stable (LTS)<b>1</b>β<b>11</b> (F1)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
