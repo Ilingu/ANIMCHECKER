@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import EpisodeList from "./Episode";
 import { Button } from "react-bootstrap";
 // Context
-import Context from "../../Context/ContextEP";
+import Context from "../../../Context/ContextEP";
 
 const AnimEp = ({ ObjInfo, ToOpen, NextToOpen, AddEp, nbTotalSeason }) => {
   // Context

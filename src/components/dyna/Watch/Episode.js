@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 // Context
-import Context from "../../Context/ContextEP";
+import Context from "../../../Context/ContextEP";
 
 const Episode = ({
   imgUrl,

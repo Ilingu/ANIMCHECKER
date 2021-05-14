@@ -6,22 +6,22 @@ import ObjectPath from "object-path";
 import ReactStars from "react-rating-stars-component";
 import { Fireworks } from "fireworks/lib/react";
 // Components
-import AnimEpCo from "./dyna/AnimEp";
+import AnimEpCo from "../dyna/Watch/AnimEp";
 // Context
-import ContextSchema from "../Context/ContextEP";
+import ContextSchema from "../../Context/ContextEP";
 // Img
-import ADNLogo from "../Assets/Img/ADNLogo.png";
-import CrunchyrollLogo from "../Assets/Img/CrunchyrollLogo.png";
-import MavLogo from "../Assets/Img/MAVLogo.png";
-import NekoSamaLogo from "../Assets/Img/NekoSamaLogo.svg";
-import NetflixLogo from "../Assets/Img/NetflixLogo.png";
-import WakanimLogo from "../Assets/Img/WakanimLogo.png";
-import VoirAnimeLogo from "../Assets/Img/voiranime.png";
-import NineAnimeLogo from "../Assets/Img/9anime.png";
+import ADNLogo from "../../Assets/Img/ADNLogo.png";
+import CrunchyrollLogo from "../../Assets/Img/CrunchyrollLogo.png";
+import MavLogo from "../../Assets/Img/MAVLogo.png";
+import NekoSamaLogo from "../../Assets/Img/NekoSamaLogo.svg";
+import NetflixLogo from "../../Assets/Img/NetflixLogo.png";
+import WakanimLogo from "../../Assets/Img/WakanimLogo.png";
+import VoirAnimeLogo from "../../Assets/Img/voiranime.png";
+import NineAnimeLogo from "../../Assets/Img/9anime.png";
 // CSS
 import { Button, Modal, Form, Badge } from "react-bootstrap";
 // DB
-import base from "../db/base";
+import base from "../../db/base";
 import firebase from "firebase/app";
 
 class Watch extends Component {

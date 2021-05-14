@@ -9,8 +9,8 @@ import "./db/initIndexedDB";
 // Main Components
 import Home from "./Home";
 // Components
-import Watch from "./components/Watch";
-import WatchManga from "./components/WatchManga";
+import Watch from "./components/Watch/Watch";
+import WatchManga from "./components/Watch/WatchManga";
 import Notif from "./components/Notif";
 import Settings from "./components/Auth/Settings";
 import NotFound from "./components/Error/NotFound";

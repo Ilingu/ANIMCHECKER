@@ -1,7 +1,7 @@
 import React, { useState, Fragment, useEffect } from "react";
 import axios from "axios";
 // Components
-import Episode from "./dyna/Episode";
+import Episode from "../dyna/Watch/Episode";
 // CSS
 import { Button, ResponsiveEmbed } from "react-bootstrap";
 
@@ -23,8 +23,7 @@ const OneAnim = ({
       axios
         .request({
           method: "GET",
-          url:
-            "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate",
+          url: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate",
           params: {
             source: "en",
             target: UserCountry,

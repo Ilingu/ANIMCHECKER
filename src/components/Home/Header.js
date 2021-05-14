@@ -1,7 +1,7 @@
 import React, { useState, useContext, Fragment } from "react";
 import { Link } from "react-router-dom";
 // Context
-import ContextForMyAnim from "../Context/ContextSchema";
+import ContextForMyAnim from "../../Context/ContextSchema";
 // CSS
 import {
   Navbar,

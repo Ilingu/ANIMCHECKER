@@ -7,11 +7,11 @@ import ObjectPath from "object-path";
 import ReactStars from "react-rating-stars-component";
 import TimePicker from "react-bootstrap-time-picker";
 // Components
-import Poster from "./components/dyna/PosterAnim";
-import NextAnimCO from "./components/dyna/NextAnim";
-import OneAnim from "./components/OneAnim";
-import MyAnim from "./components/MyAnim";
-import MyManga from "./components/MyManga";
+import Poster from "./components/dyna/Home/PosterAnim";
+import NextAnimCO from "./components/dyna/Home/NextAnim";
+import OneAnim from "./components/Home/OneAnim";
+import MyAnim from "./components/Home/MyAnim";
+import MyManga from "./components/Home/MyManga";
 import Login from "./components/Auth/Login";
 import PseudoCO from "./components/Auth/Pseudo";
 // Context

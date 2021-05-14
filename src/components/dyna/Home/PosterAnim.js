@@ -2,7 +2,7 @@ import React, { Fragment, useState } from "react";
 import { Badge, Popover, OverlayTrigger, ProgressBar } from "react-bootstrap";
 import { Link } from "react-router-dom";
 // Img
-import PlaceHolderImg from "../../Assets/Img/PlaceHolderImg.png";
+import PlaceHolderImg from "../../../Assets/Img/PlaceHolderImg.png";
 
 const WhitchSeason = () => {
   const Month = new Date().getMonth() + 1;

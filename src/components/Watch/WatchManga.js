@@ -3,7 +3,7 @@ import { Link, useHistory } from "react-router-dom";
 // CSS
 import { Spinner, Button } from "react-bootstrap";
 // DB
-import base from "../db/base";
+import base from "../../db/base";
 import firebase from "firebase/app";
 
 let setIntervalVar = null;
@@ -21,6 +21,10 @@ const WatchManga = (props) => {
     id: props.match.params.id,
     type: null,
     MangaToWatch: {},
+    RenderVolumesSaved: [],
+    RenderScansSaved: [],
+    RefreshRenderVolumes: true,
+    RefreshRenderScans: true,
     // App
     RedirectHome: [false, ""],
     isFirstTime: true,
@@ -213,6 +217,10 @@ const WatchManga = (props) => {
     id,
     type,
     isFirstTime,
+    RenderVolumesSaved,
+    RenderScansSaved,
+    RefreshRenderVolumes,
+    RefreshRenderScans,
     LoadingModeAuth,
   } = state;
   if (!Pseudo || typeof Pseudo !== "string") History.push("/notifuser/2");
@@ -235,12 +243,27 @@ const WatchManga = (props) => {
   //   History.push("/WatchManga");
   // }
 
-  if (Object.keys(MangaToWatch).length !== 0 && type === "volume") {
-    console.log(MangaToWatch);
+  if (
+    MangaToWatch?.Scans &&
+    MangaToWatch?.Scans.length !== 0 &&
+    type === "volume" &&
+    RefreshRenderVolumes
+  ) {
+    let RenderVolumes = MangaToWatch.Scans.map((key, i) => {});
+    setState({
+      RefreshRenderVolumes: false,
+      RenderVolumesSaved: RenderVolumes,
+    });
   }
 
-  if (Object.keys(MangaToWatch).length !== 0 && type === "scan") {
-    console.log(MangaToWatch);
+  if (
+    MangaToWatch?.Scans &&
+    MangaToWatch?.Scans.length !== 0 &&
+    type === "scan" &&
+    RefreshRenderScans
+  ) {
+    let RenderScans = MangaToWatch.Scans.map((key, i) => {});
+    setState({ RefreshRenderScans: false, RenderScansSaved: RenderScans });
   }
 
   return (
