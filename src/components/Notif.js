@@ -123,7 +123,7 @@ export default class Notif extends Component {
     // Verified listener Conn
     this.connectedRef.on("value", (snap) => {
       // Fast Loading Anime before FnRefresh
-      this.refreshNotif();
+      this.refreshNotif(null, true);
 
       if (snap.val() === true) {
         if (this.setIntervalVar !== null) {
@@ -161,9 +161,10 @@ export default class Notif extends Component {
     this.setState({ AnimeList, RefreshAnimListRenderer: true });
   };
 
-  refreshNotif = async (WSData = null) => {
+  refreshNotif = async (WSData = null, BlockUpdate = false) => {
     try {
       const { OfflineMode } = this.state;
+      if (BlockUpdate && !OfflineMode) return;
       const db = await openDB("AckDb", 1);
       const Store = db
         .transaction("NotifFirebase")
@@ -308,7 +309,7 @@ export default class Notif extends Component {
               Lier: !Lier ? null : Lier,
             },
           })
-      ).then(this.refreshNotif);
+      ).then(() => this.refreshNotif(null, true));
 
       this.setState({
         ShowModalAddNotif: false,
@@ -414,7 +415,7 @@ export default class Notif extends Component {
           })
       )
         .then(() => {
-          this.refreshNotif();
+          this.refreshNotif(null, true);
           this.setState({
             ResText: "Notif ajouter",
             typeAlert: "success",
@@ -469,7 +470,7 @@ export default class Notif extends Component {
           data: { paused: value },
         })
     )
-      .then(this.refreshNotif)
+      .then(() => this.refreshNotif(null, true))
       .catch((err) => console.error(err));
   };
 
@@ -497,7 +498,7 @@ export default class Notif extends Component {
     )
       .then(() => {
         this.FetchAnime();
-        this.refreshNotif();
+        this.refreshNotif(null, true);
         this.setState({
           ResText: "Notif Supprimer avec succès",
           typeAlert: "success",

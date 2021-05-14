@@ -108,9 +108,10 @@ class Settings extends Component {
     }, 1000);
   };
 
-  refreshParamsOptn = async (WSData = null) => {
+  refreshParamsOptn = async (WSData = null, BlockUpdate = false) => {
     try {
       const { OfflineMode } = this.state;
+      if (BlockUpdate && !OfflineMode) return;
       const db = await openDB("AckDb", 1);
       const Store = db.transaction("ParamsOptn").objectStore("ParamsOptn");
 
@@ -184,7 +185,7 @@ class Settings extends Component {
         .remove(path)
         .then(() => {
           if (after !== null) after();
-          this.refreshParamsOptn();
+          this.refreshParamsOptn(null, true);
         })
         .catch((err) => console.error(err));
     }
@@ -437,7 +438,7 @@ class Settings extends Component {
                         {
                           NotifState: !ParamsOptn?.NotifState ? true : false,
                         },
-                        this.refreshParamsOptn
+                        () => this.refreshParamsOptn(null, true)
                       )
                     }
                   >
@@ -465,7 +466,7 @@ class Settings extends Component {
                             ? true
                             : false,
                         },
-                        this.refreshParamsOptn
+                        () => this.refreshParamsOptn(null, true)
                       )
                     }
                   >
@@ -481,7 +482,7 @@ class Settings extends Component {
                         {
                           Shortcut: !ParamsOptn?.Shortcut ? true : false,
                         },
-                        this.refreshParamsOptn
+                        () => this.refreshParamsOptn(null, true)
                       )
                     }
                   >
@@ -497,7 +498,7 @@ class Settings extends Component {
                         {
                           SmartRepere: !ParamsOptn?.SmartRepere ? true : false,
                         },
-                        this.refreshParamsOptn
+                        () => this.refreshParamsOptn(null, true)
                       )
                     }
                   >
@@ -519,7 +520,7 @@ class Settings extends Component {
                             {
                               TypeAnimeHomePage: event.target.value,
                             },
-                            this.refreshParamsOptn
+                            () => this.refreshParamsOptn(null, true)
                           );
                           this.setState({
                             ResText: `A votre retour sur votre page d'accueil vous verez maintenant ${
@@ -613,7 +614,7 @@ class Settings extends Component {
                       {
                         Country: country,
                       },
-                      this.refreshParamsOptn
+                      () => this.refreshParamsOptn(null, true)
                     );
                   }
                   this.setState({ Country: country });
@@ -664,7 +665,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>12</b>
+                  Stable (LTS)<b>1</b>β<b>12</b> (F1)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>

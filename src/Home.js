@@ -370,7 +370,7 @@ export default class Home extends Component {
       const NewData = snap.val();
       if (!NewData) this.logOut();
       if (this.state.FirstQuerie && NewData)
-        this.refreshValueFirebase(null, null, NewData);
+        this.refreshValueFirebase(null, NewData);
     });
   };
 
@@ -546,11 +546,7 @@ export default class Home extends Component {
     }
   };
 
-  refreshValueFirebase = async (
-    after = null,
-    HomePage = null,
-    WithWSData = null
-  ) => {
+  refreshValueFirebase = async (after = null, WithWSData = null) => {
     try {
       const GlobalInfoUser =
         WithWSData !== null
@@ -988,7 +984,7 @@ export default class Home extends Component {
       .then(() => {
         if (path.includes("manga")) {
           this.refreshManga();
-        } else this.refreshValueFirebase();
+        }
         this.setState({
           ResText: "Votre requête d'ajout a réussite.",
           typeAlert: "success",
@@ -1025,8 +1021,6 @@ export default class Home extends Component {
       .then(() => {
         if (path.includes("manga")) {
           this.refreshManga();
-        } else {
-          this.refreshValueFirebase();
         }
 
         if (Next !== null) Next();
@@ -1050,8 +1044,6 @@ export default class Home extends Component {
         this.cancelModal();
         if (path.includes("manga")) {
           this.refreshManga();
-        } else {
-          this.refreshValueFirebase();
         }
         this.setState({
           ResText: "Votre requête de suppression a réussite.",

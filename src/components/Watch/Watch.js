@@ -169,7 +169,7 @@ class Watch extends Component {
     this.DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      if(!NewData) this.setState({ RedirectTo: [true, "/notifuser/12"] });
+      if (!NewData) this.setState({ RedirectTo: [true, "/notifuser/12"] });
       if (!this.state.isFirstTime && NewData)
         this.refreshAnimToWatch(null, NewData);
     });
@@ -237,7 +237,6 @@ class Watch extends Component {
 
   refreshAnimToWatch = async (next = null, WSData = null) => {
     const { id, type, ScrollPosAccordeon } = this.state;
-
     try {
       const [AnimToWatch, ParamsOptn] = await Promise.all([
         WSData !== null
@@ -484,7 +483,6 @@ class Watch extends Component {
       .post(path, {
         data: value,
       })
-      .then(this.refreshAnimToWatch)
       .catch(console.error);
   };
 
@@ -500,7 +498,7 @@ class Watch extends Component {
       return;
     }
 
-    base.remove(path).then(this.refreshAnimToWatch).catch(console.error);
+    base.remove(path).catch(console.error);
   };
 
   updateValue = (path, value, next = null, nextAfterRefresh = false) => {
@@ -522,7 +520,7 @@ class Watch extends Component {
         data: value,
       })
       .then(() => {
-        this.refreshAnimToWatch(nextAfterRefresh ? next : null);
+        if (nextAfterRefresh) this.refreshAnimToWatch(next);
         if (next !== null && !nextAfterRefresh) next();
       })
       .catch((err) => console.error(err));

@@ -215,23 +215,16 @@ const WatchManga = (props) => {
     [Pseudo, id, setState]
   );
   // FireBase
-  const UpdateValue = useCallback(
-    (path, value) => {
-      base
-        .update(path, {
-          data: value,
-        })
-        .then(refreshMangaToWatch)
-        .catch((err) => console.error(err));
-    },
-    [refreshMangaToWatch]
-  );
-  const DeleteValue = useCallback(
-    (path) => {
-      base.remove(path).then(refreshMangaToWatch).catch(console.error);
-    },
-    [refreshMangaToWatch]
-  );
+  const UpdateValue = useCallback((path, value) => {
+    base
+      .update(path, {
+        data: value,
+      })
+      .catch((err) => console.error(err));
+  }, []);
+  const DeleteValue = useCallback((path) => {
+    base.remove(path).catch(console.error);
+  }, []);
   // App
   const handleAlleger = useCallback(() => {
     UpdateValue(`${Pseudo}/manga/0/${id}`, {
