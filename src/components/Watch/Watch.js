@@ -169,7 +169,9 @@ class Watch extends Component {
     this.DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      this.refreshAnimToWatch(null, NewData);
+      if(!NewData) this.setState({ RedirectTo: [true, "/notifuser/12"] });
+      if (!this.state.isFirstTime && NewData)
+        this.refreshAnimToWatch(null, NewData);
     });
   };
 

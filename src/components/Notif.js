@@ -21,6 +21,7 @@ export default class Notif extends Component {
     // Auth
     uid: null,
     proprio: null,
+    RedirectHome: false,
     // Bon fonctionnement de l'app
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
@@ -104,7 +105,8 @@ export default class Notif extends Component {
     this.DataBaseWS = firebase.database().ref(`${this.state.Pseudo}/Notif`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      this.refreshNotif(NewData);
+      if (!NewData) this.setState({ RedirectHome: true });
+      if (!this.state.isFirstTime && NewData) this.refreshNotif(NewData);
     });
   };
 
@@ -532,6 +534,7 @@ export default class Notif extends Component {
       ShowModalAddNotif,
       AnimeList,
       name,
+      RedirectHome,
       MyAnimNameStocked,
       UpdateNotif,
       day,
@@ -542,7 +545,12 @@ export default class Notif extends Component {
 
     if (!Pseudo || typeof Pseudo !== "string")
       return <Redirect to="/notifuser/2" />;
-    else if (isFirstTime) {
+
+    if (RedirectHome) {
+      return <Redirect to="/notifuser/12" />;
+    }
+
+    if (isFirstTime) {
       this.setState({ isFirstTime: false });
       return <Redirect to="/notificator" />;
     }

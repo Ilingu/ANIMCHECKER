@@ -85,7 +85,8 @@ class Settings extends Component {
     this.DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      this.refreshParamsOptn(NewData);
+      if (!NewData) this.setState({ RedirectHome: "/notifuser/12" });
+      if (!this.state.isFirstTime && NewData) this.refreshParamsOptn(NewData);
     });
   };
 
@@ -669,7 +670,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version MCK:
                   </span>{" "}
-                  β<b>2</b>
+                  β<b>3</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>

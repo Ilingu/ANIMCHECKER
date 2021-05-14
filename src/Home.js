@@ -339,6 +339,10 @@ export default class Home extends Component {
           ResText = "Type Inexistant";
           typeAlert = "danger";
           break;
+        case "12":
+          ResText = "Element inexistant (404)";
+          typeAlert = "danger";
+          break;
         default:
           break;
       }
@@ -364,7 +368,8 @@ export default class Home extends Component {
     this.DataBaseWS = firebase.database().ref(this.state.Pseudo);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      if (this.state.FirstQuerie)
+      if (!NewData) this.logOut();
+      if (this.state.FirstQuerie && NewData)
         this.refreshValueFirebase(null, null, NewData);
     });
   };
@@ -618,9 +623,7 @@ export default class Home extends Component {
               : GlobalInfoUser.NextAnim,
             serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
             filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
-            MangaFirebase: !GlobalInfoUser.manga
-              ? this.state.MangaFirebase
-              : GlobalInfoUser.manga,
+            MangaFirebase: !GlobalInfoUser.manga ? [] : GlobalInfoUser.manga,
             PhoneNumFireBase: GlobalInfoUser.PhoneNum,
             ParamsOptn: GlobalInfoUser.ParamsOptn,
           },
@@ -2013,7 +2016,8 @@ export default class Home extends Component {
           ScanArr = [
             ...ScanArr,
             {
-              volume: i + 1,
+              volumeId: i + 1,
+              finished: false,
               Scans: ScansPerso.length > 0 ? ScansPerso : Scans,
             },
           ];
