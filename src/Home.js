@@ -618,12 +618,9 @@ export default class Home extends Component {
               : GlobalInfoUser.NextAnim,
             serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
             filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
-            MangaFirebase:
-              WithWSData !== null
-                ? !GlobalInfoUser.manga
-                  ? this.state.MangaFirebase
-                  : GlobalInfoUser.manga
-                : this.state.MangaFirebase,
+            MangaFirebase: !GlobalInfoUser.manga
+              ? this.state.MangaFirebase
+              : GlobalInfoUser.manga,
             PhoneNumFireBase: GlobalInfoUser.PhoneNum,
             ParamsOptn: GlobalInfoUser.ParamsOptn,
           },
@@ -4230,10 +4227,9 @@ export default class Home extends Component {
                   : !animToDetails[1].duration
                   ? "none"
                   : animToDetails[1].duration,
-            });
-            this.setState({
               OpenNextNewAnime: true,
-              type: animToDetails[1].type === "Movie" ? "film" : "serie",
+              ShowModalAddAnime: true,
+              animToDetails: [],
             });
           }}
         />

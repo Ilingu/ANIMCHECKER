@@ -12,7 +12,7 @@
     "object-sizeof": "^1.6.1",
     "re-base": "^4.0.0",
     "react": "^17.0.2",
-    "react-bootstrap": "^1.5.2",
+    "react-bootstrap": "^1.6.0",
     "react-bootstrap-country-select": "^0.7.12",
     "react-bootstrap-time-picker": "^2.0.1",
     "react-color": "^2.19.3",

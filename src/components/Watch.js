@@ -1687,7 +1687,7 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={ADNLogo} alt="ADNLogo" />
+                <img draggable="false" src={ADNLogo} alt="ADNLogo" />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -1711,7 +1711,11 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={VoirAnimeLogo} alt="VoirAnimeLogo" />
+                <img
+                  draggable="false"
+                  src={VoirAnimeLogo}
+                  alt="VoirAnimeLogo"
+                />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -1735,7 +1739,11 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={NineAnimeLogo} alt="NineAnimeLogo" />
+                <img
+                  draggable="false"
+                  src={NineAnimeLogo}
+                  alt="NineAnimeLogo"
+                />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -1756,7 +1764,11 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={CrunchyrollLogo} alt="CrunchyrollLogo" />
+                <img
+                  draggable="false"
+                  src={CrunchyrollLogo}
+                  alt="CrunchyrollLogo"
+                />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -1790,7 +1802,7 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={MavLogo} alt="MavLogo" />
+                <img draggable="false" src={MavLogo} alt="MavLogo" />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -1818,7 +1830,7 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={NekoSamaLogo} alt="NekoSamaLogo" />
+                <img draggable="false" src={NekoSamaLogo} alt="NekoSamaLogo" />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -1839,7 +1851,7 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={NetflixLogo} alt="NetflixLogo" />
+                <img draggable="false" src={NetflixLogo} alt="NetflixLogo" />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -1860,7 +1872,7 @@ class Watch extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src={WakanimLogo} alt="WakanimLogo" />
+                <img draggable="false" src={WakanimLogo} alt="WakanimLogo" />
                 <div
                   id="CancelBadge"
                   onClick={(event) => {
@@ -2306,7 +2318,11 @@ class Watch extends Component {
               )}{" "}
             </h1>
             <div className="img">
-              <img src={AnimToWatch.imageUrl} alt="Img of anim" />
+              <img
+                draggable="false"
+                src={AnimToWatch.imageUrl}
+                alt="Img of anim"
+              />
               {AnimToWatch.Fav ? (
                 <span
                   title="Retirer des Favoris"

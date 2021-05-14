@@ -3590,6 +3590,165 @@ a:hover {
   }
 }
 
+#WatchManga {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 22% 78%;
+      grid-template-columns: 22% 78%;
+}
+
+#WatchManga #infoManga {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  border-right: 1px solid #e5e5e5;
+}
+
+#WatchManga #infoManga header {
+  padding: 5px;
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+#WatchManga #infoManga header h2 {
+  cursor: text;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+#WatchManga #infoManga header img {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  width: 240px;
+  border-radius: 3px;
+  margin-top: 30px;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+}
+
+#WatchManga #infoManga header img:hover {
+  -webkit-transform: scale(1.1);
+          transform: scale(1.1);
+}
+
+#WatchManga #infoManga #actionsManga {
+  overflow: auto;
+  width: 100%;
+  height: calc(100% - var(--sizeManga));
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+}
+
+#WatchManga #readManga {
+  position: relative;
+}
+
+#WatchManga #readManga #MangaScansContainer {
+  width: 100%;
+  height: 100%;
+  padding-bottom: 40px;
+  padding-top: 40px;
+}
+
+#WatchManga #readManga footer,
+#WatchManga #readManga header {
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  width: 100%;
+}
+
+#WatchManga #readManga footer button,
+#WatchManga #readManga header button {
+  width: 250px;
+}
+
+#WatchManga #readManga footer {
+  bottom: 0;
+}
+
+#WatchManga #readManga header {
+  top: 0;
+}
+
+@media screen and (max-width: 1730px) {
+  #WatchManga {
+    -ms-grid-columns: 25% 75%;
+        grid-template-columns: 25% 75%;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  #WatchManga {
+    -ms-grid-columns: 35% 65%;
+        grid-template-columns: 35% 65%;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  #WatchManga {
+    -ms-grid-columns: (1fr)[1];
+        grid-template-columns: repeat(1, 1fr);
+  }
+  #WatchManga #infoManga {
+    border-bottom: 1px solid #ddd;
+    border-right: none;
+  }
+  #WatchManga #infoManga hr {
+    display: none;
+  }
+  #WatchManga #infoManga header img {
+    width: 200px;
+    margin-top: 20px;
+  }
+  #WatchManga #infoManga #actionsManga button {
+    width: 70%;
+    margin-left: calc(50% - 35%);
+    margin-bottom: 5px;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  #WatchManga #infoManga #actionsManga button {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
 #SeasonAnime {
   position: relative;
   display: -webkit-box;

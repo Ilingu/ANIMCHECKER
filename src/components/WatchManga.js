@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 // CSS
-import {} from "react-bootstrap";
+import { Spinner, Button } from "react-bootstrap";
 // DB
 import base from "../db/base";
 import firebase from "firebase/app";
@@ -19,6 +19,7 @@ const WatchManga = (props) => {
     uid: null,
     proprio: null,
     id: props.match.params.id,
+    type: null,
     MangaToWatch: {},
     // App
     RedirectHome: [false, ""],
@@ -52,6 +53,8 @@ const WatchManga = (props) => {
       ) {
         setState({ uid: null, RedirectHome: [true, "/notifuser/11"] });
         return;
+      } else {
+        setState({ type: state.id.split("-")[0] });
       }
     } else {
       setState({ uid: null, RedirectHome: [true, "/notifuser/10"] });
@@ -204,28 +207,109 @@ const WatchManga = (props) => {
     Pseudo,
     uid,
     proprio,
+    MangaToWatch,
     RedirectHome,
     LoadingMode,
     id,
+    type,
     isFirstTime,
     LoadingModeAuth,
   } = state;
   if (!Pseudo || typeof Pseudo !== "string") History.push("/notifuser/2");
   if (RedirectHome[0]) History.push(RedirectHome[1]);
 
-  if (LoadingMode || LoadingModeAuth) return <div></div>;
+  if (LoadingMode || LoadingModeAuth)
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Spinner animation="border" variant="warning" />
+      </div>
+    );
 
   if (uid !== proprio || !uid || !proprio) History.push("/notifuser/3");
 
   if (id === null) {
     History.push("/notifuser/4");
   }
-  if (isFirstTime) {
-    setState({ isFirstTime: false });
-    History.push("/WatchManga");
+  // if (isFirstTime) {
+  //   setState({ isFirstTime: false });
+  //   History.push("/WatchManga");
+  // }
+
+  if (Object.keys(MangaToWatch).length !== 0 && type === "volume") {
+    console.log(MangaToWatch);
   }
 
-  return <section id="WatchManga"></section>;
+  if (Object.keys(MangaToWatch).length !== 0 && type === "scan") {
+    console.log(MangaToWatch);
+  }
+
+  return (
+    <section id="WatchManga">
+      <aside id="infoManga">
+        <Link push="true" to="/">
+          <Button className="btnBackDesing">
+            <span className="fas fa-arrow-left"></span>
+          </Button>
+        </Link>
+        <header>
+          <h2>{MangaToWatch.name}</h2>
+          <img
+            draggable="false"
+            src={MangaToWatch.imageUrl}
+            alt="MangaPoster"
+          />
+        </header>
+        <div
+          id="actionsManga"
+          ref={(el) => {
+            try {
+              el.style.setProperty(
+                "--sizeManga",
+                `${
+                  document
+                    .querySelector("#infoManga")
+                    .children[0].getBoundingClientRect().width
+                }px`
+              );
+            } catch (err) {}
+          }}
+        >
+          <hr />
+          <Link push="true" to="/">
+            <Button variant="outline-primary" block>
+              <span className="fas fa-arrow-left"></span> Retour
+            </Button>
+          </Link>
+          <Button variant="outline-success" block>
+            <span className="fas fa-plus"></span> Ajouter{" "}
+            {type === "volume" ? "volumes" : "scans"}
+          </Button>
+          <Button variant="outline-secondary" block>
+            <span className="fas fa-eye"></span> Load All
+          </Button>
+          <Button variant="outline-warning" block>
+            <span className="fas fa-file-archive"></span> Alléger
+          </Button>
+          <Button variant="danger" block>
+            <span className="fas fa-trash-alt"></span> Supprimer
+          </Button>
+        </div>
+      </aside>
+      <aside id="readManga">
+        <header>
+          <Button variant="secondary">
+            Load More <span className="fas fa-eye"></span>
+          </Button>
+        </header>
+        <aside id="MangaScansContainer"></aside>
+        <footer>
+          <Button variant="secondary">
+            Load More <span className="fas fa-eye"></span>
+          </Button>
+        </footer>
+      </aside>
+    </section>
+  );
 };
 
 export default WatchManga;
