@@ -23,6 +23,7 @@ class Settings extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
+    ManuallyChangeBlockWS: false,
     isFirstTime: true,
     ConnectionInfo: {},
     Country: null,
@@ -85,7 +86,9 @@ class Settings extends Component {
     this.DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      if (!NewData) this.setState({ RedirectHome: "/notifuser/12" });
+      if (!NewData) return this.setState({ RedirectHome: "/notifuser/12" });
+      if (this.state.ManuallyChangeBlockWS)
+        return this.setState({ ManuallyChangeBlockWS: false });
       if (!this.state.isFirstTime && NewData) this.refreshParamsOptn(NewData);
     });
   };
@@ -108,10 +111,9 @@ class Settings extends Component {
     }, 1000);
   };
 
-  refreshParamsOptn = async (WSData = null, BlockUpdate = false) => {
+  refreshParamsOptn = async (WSData = null) => {
     try {
       const { OfflineMode } = this.state;
-      if (BlockUpdate && !OfflineMode) return;
       const db = await openDB("AckDb", 1);
       const Store = db.transaction("ParamsOptn").objectStore("ParamsOptn");
 
@@ -142,18 +144,31 @@ class Settings extends Component {
     }
   };
 
-  addValue = (path, value, after = null) => {
+  addValue = (path, value, after) => {
     if (this.state.OfflineMode === false) {
-      base
-        .post(path, {
-          data: value,
-        })
-        .then(after)
-        .catch((err) => console.error(err));
+      this.setState(
+        {
+          ManuallyChangeBlockWS:
+            this.state.OfflineMode === true
+              ? this.state.ManuallyChangeBlockWS
+              : true,
+        },
+        () => {
+          base
+            .post(path, {
+              data: value,
+            })
+            .then(() => {
+              after();
+              this.refreshParamsOptn();
+            })
+            .catch((err) => console.error(err));
+        }
+      );
     }
   };
 
-  updateValue = async (path, value, after = null) => {
+  updateValue = async (path, value) => {
     const { OfflineMode } = this.state;
     let CopyDataGlobal = null;
     const db = await openDB("AckDb", 1);
@@ -166,28 +181,47 @@ class Settings extends Component {
       CopyDataGlobal = CopyData;
     }
 
-    (OfflineMode === true
+    OfflineMode === true
       ? Store.put({
           id: "ParamsOptn",
           data: CopyDataGlobal,
         })
-      : base.update(path, {
-          data: value,
-        })
-    )
-      .then(after)
-      .catch((err) => console.error(err));
+          .then(this.refreshParamsOptn)
+          .catch((err) => console.error(err))
+      : this.setState(
+          {
+            ManuallyChangeBlockWS: true,
+          },
+          () => {
+            base
+              .update(path, {
+                data: value,
+              })
+              .then(this.refreshParamsOptn)
+              .catch((err) => console.error(err));
+          }
+        );
   };
 
   deleteValue = (path, after = null) => {
     if (this.state.OfflineMode === false) {
-      base
-        .remove(path)
-        .then(() => {
-          if (after !== null) after();
-          this.refreshParamsOptn(null, true);
-        })
-        .catch((err) => console.error(err));
+      this.setState(
+        {
+          ManuallyChangeBlockWS:
+            this.state.OfflineMode === true
+              ? this.state.ManuallyChangeBlockWS
+              : true,
+        },
+        () => {
+          base
+            .remove(path)
+            .then(() => {
+              if (after !== null) after();
+              this.refreshParamsOptn();
+            })
+            .catch((err) => console.error(err));
+        }
+      );
     }
   };
 
@@ -433,13 +467,9 @@ class Settings extends Component {
                         : "outline-warning"
                     }
                     onClick={() =>
-                      this.updateValue(
-                        `${Pseudo}/ParamsOptn`,
-                        {
-                          NotifState: !ParamsOptn?.NotifState ? true : false,
-                        },
-                        () => this.refreshParamsOptn(null, true)
-                      )
+                      this.updateValue(`${Pseudo}/ParamsOptn`, {
+                        NotifState: !ParamsOptn?.NotifState ? true : false,
+                      })
                     }
                   >
                     {!ParamsOptn?.NotifState ? (
@@ -459,15 +489,9 @@ class Settings extends Component {
                     className="BtnOfOptn"
                     variant="outline-light"
                     onClick={() =>
-                      this.updateValue(
-                        `${Pseudo}/ParamsOptn`,
-                        {
-                          MyAnimRandom: !ParamsOptn?.MyAnimRandom
-                            ? true
-                            : false,
-                        },
-                        () => this.refreshParamsOptn(null, true)
-                      )
+                      this.updateValue(`${Pseudo}/ParamsOptn`, {
+                        MyAnimRandom: !ParamsOptn?.MyAnimRandom ? true : false,
+                      })
                     }
                   >
                     <span className="fas fa-dice"></span> Mélange de la liste
@@ -477,13 +501,9 @@ class Settings extends Component {
                     className="BtnOfOptn"
                     variant="outline-light"
                     onClick={() =>
-                      this.updateValue(
-                        `${Pseudo}/ParamsOptn`,
-                        {
-                          Shortcut: !ParamsOptn?.Shortcut ? true : false,
-                        },
-                        () => this.refreshParamsOptn(null, true)
-                      )
+                      this.updateValue(`${Pseudo}/ParamsOptn`, {
+                        Shortcut: !ParamsOptn?.Shortcut ? true : false,
+                      })
                     }
                   >
                     <span className="fas fa-keyboard"></span> Raccourci clavier:{" "}
@@ -493,13 +513,9 @@ class Settings extends Component {
                     className="BtnOfOptn"
                     variant="outline-light"
                     onClick={() =>
-                      this.updateValue(
-                        `${Pseudo}/ParamsOptn`,
-                        {
-                          SmartRepere: !ParamsOptn?.SmartRepere ? true : false,
-                        },
-                        () => this.refreshParamsOptn(null, true)
-                      )
+                      this.updateValue(`${Pseudo}/ParamsOptn`, {
+                        SmartRepere: !ParamsOptn?.SmartRepere ? true : false,
+                      })
                     }
                   >
                     <span className="fas fa-eye"></span> Progression
@@ -515,13 +531,9 @@ class Settings extends Component {
                             : "NotFinished"
                         }
                         onChange={(event) => {
-                          this.updateValue(
-                            `${Pseudo}/ParamsOptn`,
-                            {
-                              TypeAnimeHomePage: event.target.value,
-                            },
-                            () => this.refreshParamsOptn(null, true)
-                          );
+                          this.updateValue(`${Pseudo}/ParamsOptn`, {
+                            TypeAnimeHomePage: event.target.value,
+                          });
                           this.setState({
                             ResText: `A votre retour sur votre page d'accueil vous verez maintenant ${
                               event.target.value === "All"
@@ -609,13 +621,9 @@ class Settings extends Component {
                 value={Country}
                 onChange={(country) => {
                   if (country !== null) {
-                    this.updateValue(
-                      `${Pseudo}/ParamsOptn`,
-                      {
-                        Country: country,
-                      },
-                      () => this.refreshParamsOptn(null, true)
-                    );
+                    this.updateValue(`${Pseudo}/ParamsOptn`, {
+                      Country: country,
+                    });
                   }
                   this.setState({ Country: country });
                 }}
@@ -665,7 +673,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>12</b> (F1)
+                  Stable (LTS)<b>1</b>β<b>12</b> (F2)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>

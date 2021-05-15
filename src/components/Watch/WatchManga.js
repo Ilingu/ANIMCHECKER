@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Link, useHistory } from "react-router-dom";
+import { useStateWithCallbackLazy } from "use-state-with-callback";
 // Components
 import Scans from "../dyna/Watch/Scans";
 import VolumesCO from "../dyna/Watch/Volumes";
@@ -15,7 +16,7 @@ let connectedRef = null;
 
 const WatchManga = (props) => {
   /* DefinedState */
-  const [state, setRealState] = useState({
+  const [state, setRealState] = useStateWithCallbackLazy({
     // Firebase
     Pseudo: props.match.params.pseudo,
     uid: null,
@@ -24,6 +25,7 @@ const WatchManga = (props) => {
     type: null,
     MangaToWatch: {},
     // Render
+    ManuallyChangeBlockWS: false,
     RefreshRenderVolumes: true,
     RefreshRenderScans: true,
     RenderVolumesSaved: [],
@@ -41,14 +43,17 @@ const WatchManga = (props) => {
     ShowModalAddScan: false,
     ShowModalVerification: [false, null],
   });
-  const setState = useCallback((data) => {
-    setRealState((prevState) => {
-      return {
-        ...prevState,
-        ...data,
-      };
-    });
-  }, []);
+  const setState = useCallback(
+    (data, callBackNext = null) => {
+      setRealState((prevState) => {
+        return {
+          ...prevState,
+          ...data,
+        };
+      }, callBackNext);
+    },
+    [setRealState]
+  );
   /* Var State */
   const {
     Pseudo,
@@ -59,6 +64,7 @@ const WatchManga = (props) => {
     LoadingMode,
     id,
     ShowModalAddScan,
+    ManuallyChangeBlockWS,
     type,
     Scan,
     isFirstTime,
@@ -118,7 +124,6 @@ const WatchManga = (props) => {
     }
     // WillUnMount
     return () => {
-      console.log("GEGEG");
       if (DataBaseWS) DataBaseWS.off("value");
       if (connectedRef) connectedRef.off("value");
       DataBaseWS = connectedRef = null;
@@ -132,10 +137,12 @@ const WatchManga = (props) => {
     DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       if (!NewData) return setState({ RedirectHome: [true, "/notifuser/12"] });
+      if (ManuallyChangeBlockWS)
+        return setState({ ManuallyChangeBlockWS: false });
       refreshMangaToWatch(NewData);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Pseudo, id, setState]);
+  }, [ManuallyChangeBlockWS, Pseudo, id, setState]);
   // Connection
   const handleAuth = useCallback(
     async (authData) => {
@@ -215,16 +222,39 @@ const WatchManga = (props) => {
     [Pseudo, id, setState]
   );
   // FireBase
-  const UpdateValue = useCallback((path, value) => {
-    base
-      .update(path, {
-        data: value,
-      })
-      .catch((err) => console.error(err));
-  }, []);
-  const DeleteValue = useCallback((path) => {
-    base.remove(path).catch(console.error);
-  }, []);
+  const UpdateValue = useCallback(
+    (path, value) => {
+      setState(
+        {
+          ManuallyChangeBlockWS: true,
+        },
+        () => {
+          base
+            .update(path, {
+              data: value,
+            })
+            .then(() => {
+              refreshMangaToWatch();
+            })
+            .catch((err) => console.error(err));
+        }
+      );
+    },
+    [setState, refreshMangaToWatch]
+  );
+  const DeleteValue = useCallback(
+    (path) => {
+      setState(
+        {
+          ManuallyChangeBlockWS: true,
+        },
+        () => {
+          base.remove(path).then(refreshMangaToWatch).catch(console.error);
+        }
+      );
+    },
+    [setState, refreshMangaToWatch]
+  );
   // App
   const handleAlleger = useCallback(() => {
     UpdateValue(`${Pseudo}/manga/0/${id}`, {

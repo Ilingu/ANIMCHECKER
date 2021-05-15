@@ -26,6 +26,7 @@ export default class Notif extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
+    ManuallyChangeBlockWS: false,
     RefreshAnimListRenderer: true,
     isFirstTime: true,
     UpdateNotif: null,
@@ -102,12 +103,16 @@ export default class Notif extends Component {
 
   ActiveWebSockets = () => {
     // WS
-    this.DataBaseWS = firebase.database().ref(`${this.state.Pseudo}/Notif`);
-    this.DataBaseWS.on("value", (snap) => {
-      const NewData = snap.val();
-      if (!NewData) this.setState({ RedirectHome: true });
-      if (!this.state.isFirstTime && NewData) this.refreshNotif(NewData);
-    });
+    if (this.state.OfflineMode === false) {
+      this.DataBaseWS = firebase.database().ref(`${this.state.Pseudo}/Notif`);
+      this.DataBaseWS.on("value", (snap) => {
+        const NewData = snap.val();
+        if (!NewData) return this.setState({ RedirectHome: true });
+        if (this.state.ManuallyChangeBlockWS)
+          return this.setState({ ManuallyChangeBlockWS: false });
+        if (!this.state.isFirstTime && NewData) this.refreshNotif(NewData);
+      });
+    }
   };
 
   handleAuth = async (authData) => {
@@ -161,10 +166,9 @@ export default class Notif extends Component {
     this.setState({ AnimeList, RefreshAnimListRenderer: true });
   };
 
-  refreshNotif = async (WSData = null, BlockUpdate = false) => {
+  refreshNotif = async (WSData = null) => {
     try {
       const { OfflineMode } = this.state;
-      if (BlockUpdate && !OfflineMode) return;
       const db = await openDB("AckDb", 1);
       const Store = db
         .transaction("NotifFirebase")
@@ -189,6 +193,104 @@ export default class Notif extends Component {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  addValue = (path, value) => {
+    const { OfflineMode } = this.state;
+
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .post(path, {
+            data: value,
+          })
+          .then(() => {
+            if (path.includes("manga")) {
+              this.refreshManga();
+            } else this.refreshNotif();
+            this.setState({
+              ResText: "Votre requête d'ajout a réussite.",
+              typeAlert: "success",
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            this.OfflineMode(null, true);
+            this.setState({
+              ResText: "Votre requête d'ajout à echoué.",
+              typeAlert: "danger",
+            });
+          });
+
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2500);
+      }
+    );
+  };
+
+  updateValue = (path, value) => {
+    const { OfflineMode } = this.state;
+
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .update(path, {
+            data: value,
+          })
+          .then(this.refreshNotif)
+          .catch((err) => {
+            this.OfflineMode(null, true);
+            console.error(err);
+          });
+      }
+    );
+  };
+
+  deleteValue = async (path) => {
+    const { OfflineMode } = this.state;
+
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .remove(path)
+          .then(() => {
+            this.refreshNotif();
+            this.setState({
+              ResText: "Votre requête de suppression a réussite.",
+              typeAlert: "success",
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            this.setState({
+              ResText: "Votre requête de suppression a échoué.",
+              typeAlert: "danger",
+            });
+          });
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2000);
+      }
+    );
   };
 
   addNotif = async () => {
@@ -278,11 +380,11 @@ export default class Notif extends Component {
         } else {
           const AnimeObj = AnimeList[Lier];
           if (AnimeObj.Lier) {
-            base.remove(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
+            this.deleteValue(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
           }
           const NotifObj = Notif[UpdateNotif];
           if (NotifObj.Lier) {
-            base.remove(`${Pseudo}/serie/${NotifObj.Lier}/Lier`);
+            this.deleteValue(`${Pseudo}/serie/${NotifObj.Lier}/Lier`);
           }
           base
             .update(`${Pseudo}/serie/${Lier}`, {
@@ -293,23 +395,20 @@ export default class Notif extends Component {
       } else {
         const NotifObj = Notif[UpdateNotif];
         if (NotifObj.Lier) {
-          base.remove(`${Pseudo}/serie/${NotifObj.Lier}/Lier`);
+          this.deleteValue(`${Pseudo}/serie/${NotifObj.Lier}/Lier`);
         }
       }
 
-      (OfflineMode === true
+      OfflineMode === true
         ? Store.put({
             id: "NotifFirebase",
             data: CopyDataGlobal,
-          })
-        : base.update(`${Pseudo}/Notif/${UpdateNotif}`, {
-            data: {
-              name,
-              calledTime: GenerateCalledTime(),
-              Lier: !Lier ? null : Lier,
-            },
-          })
-      ).then(() => this.refreshNotif(null, true));
+          }).then(() => this.refreshNotif())
+        : this.updateValue(`${Pseudo}/Notif/${UpdateNotif}`, {
+            name,
+            calledTime: GenerateCalledTime(),
+            Lier: !Lier ? null : Lier,
+          });
 
       this.setState({
         ShowModalAddNotif: false,
@@ -394,7 +493,7 @@ export default class Notif extends Component {
                   paused: false,
                 },
               };
-              base.remove(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
+              this.deleteValue(`${Pseudo}/Notif/${AnimeObj.Lier}/Lier`);
             } catch (error) {}
           }
           base
@@ -405,29 +504,26 @@ export default class Notif extends Component {
         }
       }
 
-      (OfflineMode === true
+      OfflineMode === true
         ? Store.put({
             id: "NotifFirebase",
             data: NewNotifTemplate,
           })
-        : base.post(`${Pseudo}/Notif`, {
-            data: NewNotifTemplate,
-          })
-      )
-        .then(() => {
-          this.refreshNotif(null, true);
-          this.setState({
-            ResText: "Notif ajouter",
-            typeAlert: "success",
-          });
-        })
-        .catch((err) => {
-          console.error(err);
-          this.setState({
-            ResText: "Error: Impossible d'ajouter la notif",
-            typeAlert: "danger",
-          });
-        });
+            .then(() => {
+              this.refreshNotif(null, true);
+              this.setState({
+                ResText: "Notif ajouter",
+                typeAlert: "success",
+              });
+            })
+            .catch((err) => {
+              console.error(err);
+              this.setState({
+                ResText: "Error: Impossible d'ajouter la notif",
+                typeAlert: "danger",
+              });
+            })
+        : this.addValue(`${Pseudo}/Notif`, NewNotifTemplate);
 
       this.setState({
         ShowModalAddNotif: false,
@@ -461,17 +557,16 @@ export default class Notif extends Component {
       CopyDataGlobal = CopyData;
     }
 
-    (OfflineMode === true
+    OfflineMode === true
       ? Store.put({
           id: "NotifFirebase",
           data: CopyDataGlobal,
         })
-      : base.update(`${this.state.Pseudo}/Notif/${key}`, {
-          data: { paused: value },
-        })
-    )
-      .then(() => this.refreshNotif(null, true))
-      .catch((err) => console.error(err));
+          .then(this.refreshNotif)
+          .catch((err) => console.error(err))
+      : this.updateValue(`${this.state.Pseudo}/Notif/${key}`, {
+          paused: value,
+        });
   };
 
   handleDelete = async (key) => {
@@ -487,36 +582,37 @@ export default class Notif extends Component {
       CopyDataGlobal = CopyData;
     }
     if (Notif[key].Lier) {
-      base.remove(`${Pseudo}/serie/${Notif[key].Lier}/Lier`);
+      this.deleteValue(`${Pseudo}/serie/${Notif[key].Lier}/Lier`);
     }
-    (OfflineMode === true
-      ? Store.put({
-          id: "NotifFirebase",
-          data: CopyDataGlobal,
-        })
-      : base.remove(`${Pseudo}/Notif/${key}`)
-    )
-      .then(() => {
-        this.FetchAnime();
-        this.refreshNotif(null, true);
-        this.setState({
-          ResText: "Notif Supprimer avec succès",
-          typeAlert: "success",
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        this.setState({
-          ResText: "Error: Impossible de supprimer la notif :/",
-          typeAlert: "danger",
-        });
-      });
-    setTimeout(() => {
-      this.setState({
-        ResText: null,
-        typeAlert: null,
-      });
-    }, 3200);
+    OfflineMode === true
+      ? (() => {
+          Store.put({
+            id: "NotifFirebase",
+            data: CopyDataGlobal,
+          })
+            .then(() => {
+              this.FetchAnime();
+              this.refreshNotif(null, true);
+              this.setState({
+                ResText: "Notif Supprimer avec succès",
+                typeAlert: "success",
+              });
+            })
+            .catch((err) => {
+              console.error(err);
+              this.setState({
+                ResText: "Error: Impossible de supprimer la notif :/",
+                typeAlert: "danger",
+              });
+            });
+          setTimeout(() => {
+            this.setState({
+              ResText: null,
+              typeAlert: null,
+            });
+          }, 3600);
+        })()
+      : this.deleteValue(`${Pseudo}/Notif/${key}`);
   };
 
   render() {

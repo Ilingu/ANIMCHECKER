@@ -61,6 +61,7 @@ export default class Home extends Component {
         true
         ? true
         : JSON.parse(window.localStorage.getItem("LastSecurityAntiLostData")),
+    ManuallyChangeBlockWS: false,
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
@@ -365,13 +366,17 @@ export default class Home extends Component {
 
   ActiveWebSockets = () => {
     // WS
-    this.DataBaseWS = firebase.database().ref(this.state.Pseudo);
-    this.DataBaseWS.on("value", (snap) => {
-      const NewData = snap.val();
-      if (!NewData) this.logOut();
-      if (this.state.FirstQuerie && NewData)
-        this.refreshValueFirebase(null, NewData);
-    });
+    if (this.state.OfflineMode === false) {
+      this.DataBaseWS = firebase.database().ref(this.state.Pseudo);
+      this.DataBaseWS.on("value", (snap) => {
+        const NewData = snap.val();
+        if (!NewData) return this.logOut();
+        if (this.state.ManuallyChangeBlockWS)
+          return this.setState({ ManuallyChangeBlockWS: false });
+        if (this.state.FirstQuerie && NewData)
+          this.refreshValueFirebase(null, NewData);
+      });
+    }
   };
 
   OfflineMode = (forced, auto = false) => {
@@ -977,34 +982,42 @@ export default class Home extends Component {
       return;
     }
 
-    base
-      .post(path, {
-        data: value,
-      })
-      .then(() => {
-        if (path.includes("manga")) {
-          this.refreshManga();
-        }
-        this.setState({
-          ResText: "Votre requête d'ajout a réussite.",
-          typeAlert: "success",
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        this.OfflineMode(null, true);
-        this.setState({
-          ResText: "Votre requête d'ajout à echoué.",
-          typeAlert: "danger",
-        });
-      });
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .post(path, {
+            data: value,
+          })
+          .then(() => {
+            if (path.includes("manga")) {
+              this.refreshManga();
+            } else this.refreshValueFirebase();
+            this.setState({
+              ResText: "Votre requête d'ajout a réussite.",
+              typeAlert: "success",
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            this.OfflineMode(null, true);
+            this.setState({
+              ResText: "Votre requête d'ajout à echoué.",
+              typeAlert: "danger",
+            });
+          });
 
-    setTimeout(() => {
-      this.setState({
-        ResText: null,
-        typeAlert: null,
-      });
-    }, 2500);
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2500);
+      }
+    );
   };
 
   updateValue = (path, value, Next = null) => {
@@ -1014,21 +1027,29 @@ export default class Home extends Component {
       return;
     }
 
-    base
-      .update(path, {
-        data: value,
-      })
-      .then(() => {
-        if (path.includes("manga")) {
-          this.refreshManga();
-        }
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .update(path, {
+            data: value,
+          })
+          .then(() => {
+            if (path.includes("manga")) {
+              this.refreshManga();
+            } else this.refreshValueFirebase();
 
-        if (Next !== null) Next();
-      })
-      .catch((err) => {
-        this.OfflineMode(null, true);
-        console.error(err);
-      });
+            if (Next !== null) Next();
+          })
+          .catch((err) => {
+            this.OfflineMode(null, true);
+            console.error(err);
+          });
+      }
+    );
   };
 
   deleteValue = async (path) => {
@@ -1038,33 +1059,41 @@ export default class Home extends Component {
       return;
     }
 
-    base
-      .remove(path)
-      .then(() => {
-        this.cancelModal();
-        if (path.includes("manga")) {
-          this.refreshManga();
-        }
-        this.setState({
-          ResText: "Votre requête de suppression a réussite.",
-          typeAlert: "success",
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        this.OfflineMode(null, true);
-        this.cancelModal();
-        this.setState({
-          ResText: "Votre requête de suppression a échoué.",
-          typeAlert: "danger",
-        });
-      });
-    setTimeout(() => {
-      this.setState({
-        ResText: null,
-        typeAlert: null,
-      });
-    }, 2000);
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .remove(path)
+          .then(() => {
+            this.cancelModal();
+            if (path.includes("manga")) {
+              this.refreshManga();
+            } else this.refreshValueFirebase();
+            this.setState({
+              ResText: "Votre requête de suppression a réussite.",
+              typeAlert: "success",
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            this.OfflineMode(null, true);
+            this.cancelModal();
+            this.setState({
+              ResText: "Votre requête de suppression a échoué.",
+              typeAlert: "danger",
+            });
+          });
+        setTimeout(() => {
+          this.setState({
+            ResText: null,
+            typeAlert: null,
+          });
+        }, 2000);
+      }
+    );
   };
 
   handleAuth = async (authData) => {
@@ -2396,9 +2425,7 @@ export default class Home extends Component {
               `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
               {
                 NewEpMode: true,
-              },
-              null,
-              false
+              }
             );
             if (!OfflineMode) {
               this.fnDbOffline(

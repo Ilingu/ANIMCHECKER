@@ -38,6 +38,7 @@ class Watch extends Component {
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
+    ManuallyChangeBlockWS: false,
     modeWatch: false,
     type: "",
     LoadingMode: true,
@@ -169,7 +170,10 @@ class Watch extends Component {
     this.DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      if (!NewData) this.setState({ RedirectTo: [true, "/notifuser/12"] });
+      if (!NewData)
+        return this.setState({ RedirectTo: [true, "/notifuser/12"] });
+      if (this.state.ManuallyChangeBlockWS)
+        return this.setState({ ManuallyChangeBlockWS: false });
       if (!this.state.isFirstTime && NewData)
         this.refreshAnimToWatch(null, NewData);
     });
@@ -479,26 +483,20 @@ class Watch extends Component {
       return;
     }
 
-    base
-      .post(path, {
-        data: value,
-      })
-      .catch(console.error);
-  };
-
-  deleteValue = (path) => {
-    const { OfflineMode } = this.state;
-    try {
-      this.setState({
-        ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
-      });
-    } catch (err) {}
-    if (OfflineMode === true) {
-      this.fnDbOffline("DELETE", path);
-      return;
-    }
-
-    base.remove(path).catch(console.error);
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .post(path, {
+            data: value,
+          })
+          .then(this.refreshAnimToWatch)
+          .catch(console.error);
+      }
+    );
   };
 
   updateValue = (path, value, next = null, nextAfterRefresh = false) => {
@@ -515,15 +513,46 @@ class Watch extends Component {
       return;
     }
 
-    base
-      .update(path, {
-        data: value,
-      })
-      .then(() => {
-        if (nextAfterRefresh) this.refreshAnimToWatch(next);
-        if (next !== null && !nextAfterRefresh) next();
-      })
-      .catch((err) => console.error(err));
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base
+          .update(path, {
+            data: value,
+          })
+          .then(() => {
+            this.refreshAnimToWatch(nextAfterRefresh ? next : null);
+            if (next !== null && !nextAfterRefresh) next();
+          })
+          .catch((err) => console.error(err));
+      }
+    );
+  };
+
+  deleteValue = (path) => {
+    const { OfflineMode } = this.state;
+    try {
+      this.setState({
+        ScrollPosAccordeon: document.getElementById("EpisodesList").scrollTop,
+      });
+    } catch (err) {}
+    if (OfflineMode === true) {
+      this.fnDbOffline("DELETE", path);
+      return;
+    }
+
+    this.setState(
+      {
+        ManuallyChangeBlockWS:
+          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+      },
+      () => {
+        base.remove(path).then(this.refreshAnimToWatch).catch(console.error);
+      }
+    );
   };
 
   getAllTheEpisode = async (id) => {
