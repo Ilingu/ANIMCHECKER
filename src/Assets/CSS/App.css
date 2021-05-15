@@ -366,13 +366,9 @@ a:hover {
     display: none;
   }
   .container > .navbar .navbar-collapse.active {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-wrap: wrap;
-        flex-wrap: wrap;
+    display: unset;
   }
-  .container > .navbar .navbar-collapse.active .navbar-.navbar {
+  .container > .navbar .navbar-collapse.active .navbar-nav {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -384,22 +380,13 @@ a:hover {
         flex-wrap: wrap;
   }
   .container > .navbar .navbar-collapse.active #searchForm {
-    margin-top: 5px;
+    margin-top: 7px;
   }
   .container > .navbar .navbar-collapse.active #searchForm .form-group {
     margin-left: 10px;
   }
   .container > .navbar .navbar-collapse.active #searchForm .form-group #SearchFormBtnVoice {
     right: 0 !important;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .container > .navbar .navbar-collapse.active {
-    display: unset;
-  }
-  .container > .navbar .navbar-collapse.active #searchForm {
-    margin-top: 7px;
   }
 }
 
@@ -412,7 +399,7 @@ a:hover {
   }
 }
 
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 410px) {
   .container > .navbar .navbar-collapse.active #searchForm {
     width: 300px;
   }
