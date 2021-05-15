@@ -625,7 +625,9 @@ export default class Home extends Component {
             serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
             filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
             MangaFirebase: !GlobalInfoUser.manga ? [] : GlobalInfoUser.manga,
-            PhoneNumFireBase: GlobalInfoUser.PhoneNum,
+            PhoneNumFireBase: !GlobalInfoUser?.PhoneNum
+              ? false
+              : GlobalInfoUser.PhoneNum,
             ParamsOptn: GlobalInfoUser.ParamsOptn,
           },
           () => {
@@ -1205,7 +1207,7 @@ export default class Home extends Component {
     const { NumTel, PhoneNumFireBase, Pseudo } = this.state;
 
     if (NumTel !== "") {
-      if (Object.keys(PhoneNumFireBase).length === 0) {
+      if (PhoneNumFireBase === false) {
         this.updateValue(`${Pseudo}`, { PhoneNum: NumTel });
       } else if (NumTel !== PhoneNumFireBase) {
         window.localStorage.removeItem("Pseudo");

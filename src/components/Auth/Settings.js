@@ -685,7 +685,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.6</b>
+                  Stable (LTS)<b>1.7</b>
                 </li>
               </ul>
               <p>
