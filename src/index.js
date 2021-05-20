@@ -14,12 +14,22 @@ import WatchManga from "./components/Watch/WatchManga";
 import Notif from "./components/Notif";
 import Settings from "./components/Auth/Settings";
 import NotFound from "./components/Error/NotFound";
+import ErrorInApp from "./components/Error/ErrorInApp";
 // CSS
 import "bootstrap/dist/css/bootstrap.min.css";
 import "react-bootstrap-country-select/dist/react-bootstrap-country-select.css";
 import "./Assets/CSS/App.css";
 // DB
 import "firebase/auth";
+
+// OnError Page
+window.onerror = (msgErr) => {
+  window.history.pushState("", "", `/error/${msgErr}`);
+  window.history.pushState("", "", `/error/${msgErr}`);
+  window.history.go(-1);
+  document.location.reload();
+  return false;
+};
 
 const Root = () => (
   <Router>
@@ -42,6 +52,10 @@ const Root = () => (
       {/* Notif */}
       <Route exact path={`/notificator/:pseudo`} component={Notif} />
       <Route exact path="/notificator" component={Notif} />
+      {/* ErrorInApp */}
+      <Route exact path="/error" component={ErrorInApp} />
+      <Route exact path="/error/:msgerror" component={ErrorInApp} />
+      {/* 404 Error */}
       <Route component={NotFound} />
     </Switch>
   </Router>
