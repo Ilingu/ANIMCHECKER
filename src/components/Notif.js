@@ -64,10 +64,10 @@ export default class Notif extends Component {
           self.handleAuth({ user });
         }
       });
+      this.refreshNotif();
+      /* WS */
+      this.ActiveWebSockets();
     }
-    this.refreshNotif();
-    /* WS */
-    this.ActiveWebSockets();
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
       document.body.style.backgroundColor =

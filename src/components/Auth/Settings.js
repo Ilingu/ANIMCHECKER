@@ -54,10 +54,10 @@ class Settings extends Component {
           self.handleAuth({ user });
         }
       });
+      this.refreshParamsOptn();
+      /* WS */
+      this.ActiveWebSockets();
     }
-    this.refreshParamsOptn();
-    /* WS */
-    this.ActiveWebSockets();
     /* UserInfo */
     this.GetUserConnInfo();
     /* Color */
@@ -685,7 +685,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.7</b>
+                  Stable (LTS)<b>1.7.1</b>
                 </li>
               </ul>
               <p>

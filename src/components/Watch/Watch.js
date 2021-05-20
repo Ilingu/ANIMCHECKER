@@ -129,8 +129,6 @@ class Watch extends Component {
             return;
           }
           this.refreshAnimToWatch();
-          /* WS */
-          this.ActiveWebSockets();
         }
       );
     } else {
@@ -147,6 +145,8 @@ class Watch extends Component {
           self.handleAuth({ user });
         }
       });
+      /* WS */
+      this.ActiveWebSockets();
     }
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {

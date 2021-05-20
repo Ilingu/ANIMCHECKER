@@ -195,6 +195,8 @@ export default class Home extends Component {
         }
         // No User detected -> Login with phone number
         self.setState({ AuthenticateMethod: true });
+        // WS
+        this.ActiveWebSockets();
       });
     } else {
       self.setState({ AllowUseReAuth: true });
@@ -206,8 +208,7 @@ export default class Home extends Component {
       window.localStorage.setItem("OfflineMode", JSON.stringify(false));
     else if (JSON.parse(window.localStorage.getItem("OfflineMode")) === true)
       this.OfflineMode(null, true);
-    //  WS
-    this.ActiveWebSockets();
+
     // AntiLostData
     const VarAntiLostData = JSON.parse(
       window.localStorage.getItem("LastSecurityAntiLostData")

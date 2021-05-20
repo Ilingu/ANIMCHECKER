@@ -114,9 +114,9 @@ const WatchManga = (props) => {
           handleAuth({ user });
         }
       });
+      /* WS */
+      ActiveWebSockets();
     }
-    /* WS */
-    ActiveWebSockets();
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
       document.body.style.backgroundColor =
