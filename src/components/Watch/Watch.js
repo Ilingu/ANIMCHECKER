@@ -118,6 +118,7 @@ class Watch extends Component {
         this.setState({ uid: null, RedirectTo: [true, "/notifuser/11"] });
         return;
       }
+      console.log(this.props.match.params.id.split("-")[0]);
       this.setState(
         {
           type: this.props.match.params.id.split("-")[0],
@@ -129,6 +130,8 @@ class Watch extends Component {
             return;
           }
           this.refreshAnimToWatch();
+          /* WS */
+          if (this.state.Pseudo) this.ActiveWebSockets();
         }
       );
     } else {
@@ -145,8 +148,6 @@ class Watch extends Component {
           self.handleAuth({ user });
         }
       });
-      /* WS */
-      this.ActiveWebSockets();
     }
     /* Color */
     if (window.localStorage.getItem("BGC-ACK")) {
@@ -170,6 +171,8 @@ class Watch extends Component {
     this.DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
+      console.log(this.state.id, Pseudo, type, id);
+
       if (!NewData)
         return this.setState({ RedirectTo: [true, "/notifuser/12"] });
       if (this.state.ManuallyChangeBlockWS)
