@@ -778,74 +778,75 @@ export default class Home extends Component {
         db.transaction("ParamsOptn").objectStore("ParamsOptn"),
       ];
 
-      const results = await Promise.all(
-        Store.map(async (req) => await req.getAll())
-      );
-
-      this.setState(
-        {
-          serieFirebase: results[0]
-            ? results[0][0]
-              ? results[0][0].data
+      if (!this.state.FirstQuerie || this.state.OfflineMode) {
+        const results = await Promise.all(
+          Store.map(async (req) => await req.getAll())
+        );
+        this.setState(
+          {
+            serieFirebase: results[0]
+              ? results[0][0]
                 ? results[0][0].data
+                  ? results[0][0].data
+                  : {}
                 : {}
-              : {}
-            : {},
-          filmFireBase: results[1]
-            ? results[1][0]
-              ? results[1][0].data
-                ? results[1][0].data
-                : {}
-              : {}
-            : {},
-          NextAnimFireBase: results[2]
-            ? results[2][0]
-              ? results[2][0].data
-                ? results[2][0].data
-                : {}
-              : {}
-            : {},
-          ParamsOptn:
-            results[3] && results[3][0] && results[3][0].data
-              ? results[3][0].data
               : {},
-          RefreshfromFnOffline: true,
-          LoadingMode: [
-            results[0] && results[1]
-              ? results[0][0] && results[1][0]
-                ? results[0][0].data && results[1][0].data
-                  ? Object.keys(results[0][0].data).length !== 0 ||
-                    Object.keys(results[1][0].data).length !== 0
-                    ? false
-                    : true
-                  : true
-                : true
-              : true,
-            results[2]
+            filmFireBase: results[1]
+              ? results[1][0]
+                ? results[1][0].data
+                  ? results[1][0].data
+                  : {}
+                : {}
+              : {},
+            NextAnimFireBase: results[2]
               ? results[2][0]
                 ? results[2][0].data
-                  ? Object.keys(results[2][0].data).length !== 0
-                    ? false
+                  ? results[2][0].data
+                  : {}
+                : {}
+              : {},
+            ParamsOptn:
+              results[3] && results[3][0] && results[3][0].data
+                ? results[3][0].data
+                : {},
+            RefreshfromFnOffline: true,
+            LoadingMode: [
+              results[0] && results[1]
+                ? results[0][0] && results[1][0]
+                  ? results[0][0].data && results[1][0].data
+                    ? Object.keys(results[0][0].data).length !== 0 ||
+                      Object.keys(results[1][0].data).length !== 0
+                      ? false
+                      : true
                     : true
                   : true
-                : true
-              : true,
-          ],
-          ModeFindAnime: [false, null],
-          RefreshRandomizeAnime: true,
-          RefreshRandomizeAnime2: true,
-          ModeFilter:
-            results[3] &&
-            results[3][0] &&
-            results[3][0]?.data?.TypeAnimeHomePage &&
-            !this.state.FirstQuerie
-              ? results[3][0].data.TypeAnimeHomePage
-              : this.state.ModeFilter,
-        },
-        () => {
-          if (next !== null) next();
-        }
-      );
+                : true,
+              results[2]
+                ? results[2][0]
+                  ? results[2][0].data
+                    ? Object.keys(results[2][0].data).length !== 0
+                      ? false
+                      : true
+                    : true
+                  : true
+                : true,
+            ],
+            ModeFindAnime: [false, null],
+            RefreshRandomizeAnime: true,
+            RefreshRandomizeAnime2: true,
+            ModeFilter:
+              results[3] &&
+              results[3][0] &&
+              results[3][0]?.data?.TypeAnimeHomePage &&
+              !this.state.FirstQuerie
+                ? results[3][0].data.TypeAnimeHomePage
+                : this.state.ModeFilter,
+          },
+          () => {
+            if (next !== null) next();
+          }
+        );
+      }
     } else if (type === "GETReturn") {
       // Get Data IndexedDB
       const Store = [
