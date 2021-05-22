@@ -1685,12 +1685,17 @@ class Watch extends Component {
                 nbEpToAddToHave: [this.derterminateEpTotal(EpSaison) + 1, 1],
               })
             }
-            NextToOpen={(SaisonName) => {
-              if (SaisonName === ToOpen) {
-                this.setState({ ToOpen: "" });
-                return;
-              }
-              this.setState({ ToOpen: SaisonName });
+            NextToOpen={(SaisonId) => {
+              if (SaisonId === ToOpen)
+                return this.setState({
+                  ToOpen: "",
+                  RefreshAnimToWatchRenderer: true,
+                });
+
+              this.setState({
+                ToOpen: SaisonId,
+                RefreshAnimToWatchRenderer: true,
+              });
             }}
           />
         </ContextSchema.Provider>
