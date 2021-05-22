@@ -1,6 +1,5 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { useStateWithCallbackLazy } from "use-state-with-callback";
 // Components
 import Scans from "../dyna/Watch/Scans";
 import VolumesCO from "../dyna/Watch/Volumes";
@@ -18,7 +17,7 @@ let connectedRef = null;
 
 const WatchManga = (props) => {
   /* DefinedState */
-  const [state, setRealState] = useStateWithCallbackLazy({
+  const [state, setRealState] = useState({
     // Firebase
     Pseudo: props.match.params.pseudo,
     uid: null,
@@ -27,7 +26,7 @@ const WatchManga = (props) => {
     type: null,
     MangaToWatch: {},
     // Render
-    ManuallyChangeBlockWS: false,
+    FirstQuerie: false,
     RefreshRenderVolumes: true,
     RefreshRenderScans: true,
     RenderVolumesSaved: [],
@@ -65,8 +64,8 @@ const WatchManga = (props) => {
     RedirectHome,
     LoadingMode,
     id,
+    FirstQuerie,
     ShowModalAddScan,
-    ManuallyChangeBlockWS,
     type,
     Scan,
     isFirstTime,
@@ -139,12 +138,10 @@ const WatchManga = (props) => {
     DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       if (!NewData) return setState({ RedirectHome: [true, "/notifuser/12"] });
-      if (ManuallyChangeBlockWS)
-        return setState({ ManuallyChangeBlockWS: false });
       refreshMangaToWatch(NewData);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ManuallyChangeBlockWS, Pseudo, id, setState]);
+  }, [Pseudo, id, setState]);
   // Connection
   const handleAuth = useCallback(
     async (authData) => {
@@ -178,7 +175,6 @@ const WatchManga = (props) => {
         proprio: box.proprio || authData.user.uid,
         LoadingModeAuth: false,
       });
-      refreshMangaToWatch();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setState, state.Pseudo]
@@ -201,18 +197,18 @@ const WatchManga = (props) => {
   }, [reAuth]);
   // RefreshData
   const refreshMangaToWatch = useCallback(
-    async (WSData = null) => {
+    async (WSData, forced = false) => {
       try {
-        const MangaToWatch =
-          WSData !== null
-            ? WSData
-            : await base.fetch(`${Pseudo}/manga/0/${id}`, {
-                context: {},
-              });
+        const MangaToWatch = forced
+          ? await base.fetch(`${Pseudo}/manga/0/${id}`, {
+              context: {},
+            })
+          : WSData;
 
         document.title = `MCK:${MangaToWatch.name}`;
         setState({
-          MangaToWatch,
+          MangaToWatch: !MangaToWatch ? {} : MangaToWatch,
+          FirstQuerie: true,
           LoadingMode: false,
           RefreshRenderVolumes: true,
           RefreshRenderScans: true,
@@ -224,45 +220,22 @@ const WatchManga = (props) => {
     [Pseudo, id, setState]
   );
   // FireBase
-  const UpdateValue = useCallback(
-    (path, value) => {
-      setState(
-        {
-          ManuallyChangeBlockWS: true,
-        },
-        () => {
-          base
-            .update(path, {
-              data: value,
-            })
-            .then(() => {
-              refreshMangaToWatch();
-            })
-            .catch((err) => console.error(err));
-        }
-      );
-    },
-    [setState, refreshMangaToWatch]
-  );
-  const DeleteValue = useCallback(
-    (path, callBackNext) => {
-      setState(
-        {
-          ManuallyChangeBlockWS: true,
-        },
-        () => {
-          base
-            .remove(path)
-            .then(() => {
-              callBackNext();
-              refreshMangaToWatch();
-            })
-            .catch(console.error);
-        }
-      );
-    },
-    [setState, refreshMangaToWatch]
-  );
+  const UpdateValue = useCallback((path, value) => {
+    base
+      .update(path, {
+        data: value,
+      })
+
+      .catch((err) => console.error(err));
+  }, []);
+  const DeleteValue = useCallback((path, callBackNext) => {
+    base
+      .remove(path)
+      .then(() => {
+        callBackNext();
+      })
+      .catch(console.error);
+  }, []);
   // App
   const handleAlleger = useCallback(() => {
     UpdateValue(`${Pseudo}/manga/0/${id}`, {
@@ -426,6 +399,13 @@ const WatchManga = (props) => {
       RefreshRenderVolumes: false,
       RenderVolumesSaved: RenderVolumes,
     });
+  } else if (
+    !FirstQuerie &&
+    typeof MangaToWatch === "object" &&
+    (!MangaToWatch?.Scans || MangaToWatch?.Scans.length === 0)
+  ) {
+    // Forced Loading Anime
+    refreshMangaToWatch(null, true);
   } else if (type === "volume") {
     if (document.getElementById(`VM-${LastFinished}`)) {
       document.getElementById(`VM-${LastFinished}`).scrollIntoView();
@@ -468,6 +448,13 @@ const WatchManga = (props) => {
       LastFinished: LastFinished[1] + 1,
       RenderScansSaved: RenderScans,
     });
+  } else if (
+    !FirstQuerie &&
+    typeof MangaToWatch === "object" &&
+    (!MangaToWatch?.Scans || MangaToWatch?.Scans.length === 0)
+  ) {
+    // Forced Loading Anime
+    refreshMangaToWatch(null, true);
   } else if (type === "scan") {
     if (document.getElementById(`SM-${LastFinished}`)) {
       document.getElementById(`SM-${LastFinished}`).scrollIntoView();

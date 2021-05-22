@@ -37,10 +37,11 @@ class Watch extends Component {
     proprio: null,
     // Bon fonctionnement de l'app
     FirstQuerie: false,
+    MyAnimToWatchSaved: null,
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
-    ManuallyChangeBlockWS: false,
+    RefreshAnimToWatchRenderer: true,
     modeWatch: false,
     type: "",
     LoadingMode: true,
@@ -258,7 +259,8 @@ class Watch extends Component {
       if (this._isMounted)
         this.setState(
           {
-            AnimToWatch,
+            AnimToWatch: !AnimToWatch ? {} : AnimToWatch,
+            RefreshAnimToWatchRenderer: true,
             FirstQuerie: true,
             Newtitle: AnimToWatch.name,
             SmartRepere:
@@ -1530,6 +1532,8 @@ class Watch extends Component {
       Badges,
       uid,
       id,
+      MyAnimToWatchSaved,
+      RefreshAnimToWatchRenderer,
       RedirectTo,
       proprio,
       type,
@@ -1616,11 +1620,10 @@ class Watch extends Component {
       return <Redirect to="/Watch" />;
     }
 
-    let MyAnimAccordeon = null,
-      BadgesHtml = null;
+    let BadgesHtml = null;
 
-    if (type === "serie" && AnimToWatch?.AnimEP) {
-      MyAnimAccordeon = AnimToWatch.AnimEP.map((EpSaison) => (
+    if (type === "serie" && AnimToWatch?.AnimEP && RefreshAnimToWatchRenderer) {
+      let MyAnimAccordeon = AnimToWatch.AnimEP.map((EpSaison) => (
         <ContextSchema.Provider
           key={Date.now() + Math.random() * 100000 - Math.random() * -100000}
           value={{
@@ -1692,8 +1695,17 @@ class Watch extends Component {
           />
         </ContextSchema.Provider>
       ));
-    } else if (!FirstQuerie) {
-      // Fast Loading Anime before FnRefresh
+
+      this.setState({
+        RefreshAnimToWatchRenderer: false,
+        MyAnimToWatchSaved: MyAnimAccordeon,
+      });
+    } else if (
+      !FirstQuerie &&
+      typeof AnimToWatch === "object" &&
+      Object.keys(AnimToWatch)?.length === 0
+    ) {
+      // Loading Anime from IndexedDB
       this.fnDbOffline("GET");
       this.refreshAnimToWatch(null, null, true);
     }
@@ -2661,7 +2673,7 @@ class Watch extends Component {
                   {AnimToWatch.name}
                 </div>
               ) : (
-                <div id="accordeonAnimEP">{MyAnimAccordeon}</div>
+                <div id="accordeonAnimEP">{MyAnimToWatchSaved}</div>
               )}
             </div>
           </section>

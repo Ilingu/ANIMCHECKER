@@ -20,10 +20,10 @@ class Settings extends Component {
     uid: null,
     proprio: null,
     // Bon Fonctionnement
+    FirstQuerie: false,
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
-    ManuallyChangeBlockWS: false,
     isFirstTime: true,
     ConnectionInfo: {},
     Country: null,
@@ -54,7 +54,6 @@ class Settings extends Component {
           self.handleAuth({ user });
         }
       });
-      this.refreshParamsOptn();
       /* WS */
       this.ActiveWebSockets();
     }
@@ -87,9 +86,7 @@ class Settings extends Component {
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
       if (!NewData) return this.setState({ RedirectHome: "/notifuser/12" });
-      if (this.state.ManuallyChangeBlockWS)
-        return this.setState({ ManuallyChangeBlockWS: false });
-      if (!this.state.isFirstTime && NewData) this.refreshParamsOptn(NewData);
+      this.refreshParamsOptn(NewData);
     });
   };
 
@@ -111,25 +108,19 @@ class Settings extends Component {
     }, 1000);
   };
 
-  refreshParamsOptn = async (WSData = null) => {
+  refreshParamsOptn = async (WSData, forced = false) => {
     try {
-      const { OfflineMode } = this.state;
+      const { OfflineMode, FirstQuerie } = this.state;
       const db = await openDB("AckDb", 1);
       const Store = db.transaction("ParamsOptn").objectStore("ParamsOptn");
 
       const DataRequired = await Promise.all([
-        WSData !== null
-          ? WSData
-          : OfflineMode
-          ? (
-              await Store.getAll()
-            )[0].data
-          : await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
+        OfflineMode || forced ? (await Store.getAll())[0].data : WSData,
+        !FirstQuerie
+          ? await base.fetch(`${this.state.Pseudo}/TemplateAnim`, {
               context: this,
-            }),
-        await base.fetch(`${this.state.Pseudo}/TemplateAnim`, {
-          context: this,
-        }),
+            })
+          : {},
       ]);
 
       if (this._isMounted)
@@ -138,6 +129,7 @@ class Settings extends Component {
           TemplateAnimeFirebase: DataRequired[1],
           ACKColor: DataRequired[0].ACKColor,
           Country: DataRequired[0].Country,
+          FirstQuerie: true,
         });
     } catch (err) {
       console.error(err);
@@ -146,25 +138,14 @@ class Settings extends Component {
 
   addValue = (path, value, after) => {
     if (this.state.OfflineMode === false) {
-      this.setState(
-        {
-          ManuallyChangeBlockWS:
-            this.state.OfflineMode === true
-              ? this.state.ManuallyChangeBlockWS
-              : true,
-        },
-        () => {
-          base
-            .post(path, {
-              data: value,
-            })
-            .then(() => {
-              after();
-              this.refreshParamsOptn();
-            })
-            .catch((err) => console.error(err));
-        }
-      );
+      base
+        .post(path, {
+          data: value,
+        })
+        .then(() => {
+          after();
+        })
+        .catch((err) => console.error(err));
     }
   };
 
@@ -188,40 +169,21 @@ class Settings extends Component {
         })
           .then(this.refreshParamsOptn)
           .catch((err) => console.error(err))
-      : this.setState(
-          {
-            ManuallyChangeBlockWS: true,
-          },
-          () => {
-            base
-              .update(path, {
-                data: value,
-              })
-              .then(this.refreshParamsOptn)
-              .catch((err) => console.error(err));
-          }
-        );
+      : base
+          .update(path, {
+            data: value,
+          })
+          .catch((err) => console.error(err));
   };
 
   deleteValue = (path, after = null) => {
     if (this.state.OfflineMode === false) {
-      this.setState(
-        {
-          ManuallyChangeBlockWS:
-            this.state.OfflineMode === true
-              ? this.state.ManuallyChangeBlockWS
-              : true,
-        },
-        () => {
-          base
-            .remove(path)
-            .then(() => {
-              if (after !== null) after();
-              this.refreshParamsOptn();
-            })
-            .catch((err) => console.error(err));
-        }
-      );
+      base
+        .remove(path)
+        .then(() => {
+          if (after !== null) after();
+        })
+        .catch((err) => console.error(err));
     }
   };
 
@@ -370,7 +332,10 @@ class Settings extends Component {
 
     let TemplateAnime = "Tu n'as aucun template d'anime";
 
-    if (Object.keys(TemplateAnimeFirebase)?.length !== 0) {
+    if (
+      typeof TemplateAnimeFirebase === "object" &&
+      Object.keys(TemplateAnimeFirebase)?.length !== 0
+    ) {
       TemplateAnime = Object.keys(TemplateAnimeFirebase).map((key) => (
         <div className="TemplateAnim">
           <span
@@ -673,7 +638,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>12</b> (F4)
+                  Stable (LTS)<b>1</b>β<b>13</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>

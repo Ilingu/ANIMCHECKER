@@ -3986,15 +3986,15 @@ export default class Home extends Component {
       typeof filmFireBase === "object" &&
       typeof serieFirebase === "object" &&
       typeof NextAnimFireBase === "object" &&
-      ((Object.keys(filmFireBase).length === 0 && MyAnimListSaved === null) ||
-        (Object.keys(serieFirebase).length === 0 && MyAnimListSaved === null) ||
-        (Object.keys(NextAnimFireBase).length === 0 &&
+      ((Object.keys(filmFireBase)?.length === 0 && MyAnimListSaved === null) ||
+        (Object.keys(serieFirebase)?.length === 0 &&
+          MyAnimListSaved === null) ||
+        (Object.keys(NextAnimFireBase)?.length === 0 &&
           MyNextAnimListSaved === null)) &&
       Pseudo &&
       !FirstQuerie
     ) {
-      console.log("GEE");
-      // Fast Loading Anime before FnRefresh
+      // Loading Anime from IndexedDB
       this.fnDbOffline("GET");
       this.refreshValueFirebase(null, null, true);
     }

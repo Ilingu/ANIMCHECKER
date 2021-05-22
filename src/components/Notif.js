@@ -23,10 +23,10 @@ export default class Notif extends Component {
     proprio: null,
     RedirectHome: false,
     // Bon fonctionnement de l'app
+    FirstQuerie: false,
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
-    ManuallyChangeBlockWS: false,
     RefreshAnimListRenderer: true,
     isFirstTime: true,
     UpdateNotif: null,
@@ -64,7 +64,6 @@ export default class Notif extends Component {
           self.handleAuth({ user });
         }
       });
-      this.refreshNotif();
       /* WS */
       this.ActiveWebSockets();
     }
@@ -108,9 +107,7 @@ export default class Notif extends Component {
       this.DataBaseWS.on("value", (snap) => {
         const NewData = snap.val();
         if (!NewData) return this.setState({ RedirectHome: true });
-        if (this.state.ManuallyChangeBlockWS)
-          return this.setState({ ManuallyChangeBlockWS: false });
-        if (!this.state.isFirstTime && NewData) this.refreshNotif(NewData);
+        this.refreshNotif(NewData);
       });
     }
   };
@@ -127,9 +124,6 @@ export default class Notif extends Component {
 
     // Verified listener Conn
     this.connectedRef.on("value", (snap) => {
-      // Fast Loading Anime before FnRefresh
-      this.refreshNotif(null, true);
-
       if (snap.val() === true) {
         if (this.setIntervalVar !== null) {
           clearInterval(this.setIntervalVar);
@@ -166,131 +160,94 @@ export default class Notif extends Component {
     this.setState({ AnimeList, RefreshAnimListRenderer: true });
   };
 
-  refreshNotif = async (WSData = null) => {
+  refreshNotif = async (WSData, forced = false) => {
     try {
       const { OfflineMode } = this.state;
       const db = await openDB("AckDb", 1);
       const Store = db
         .transaction("NotifFirebase")
         .objectStore("NotifFirebase");
-      const results = await Store.getAll();
 
       const Notif =
-        WSData !== null
-          ? WSData
-          : OfflineMode
-          ? results[0].data
-          : await base.fetch(`${this.state.Pseudo}/Notif`, {
-              context: this,
-            });
+        OfflineMode || forced ? (await Store.getAll())[0].data : WSData;
 
       if (this.state.PickAnime === true) {
         this.FetchAnime();
       }
 
       if (this._isMounted)
-        this.setState({ Notif, PickAnime: false, RefreshNotif: true });
+        this.setState({
+          Notif,
+          PickAnime: false,
+          RefreshNotif: true,
+          FirstQuerie: true,
+        });
     } catch (err) {
       console.error(err);
     }
   };
 
   addValue = (path, value) => {
-    const { OfflineMode } = this.state;
+    base
+      .post(path, {
+        data: value,
+      })
+      .then(() => {
+        this.setState({
+          ResText: "Votre requête d'ajout a réussite.",
+          typeAlert: "success",
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        this.OfflineMode(null, true);
+        this.setState({
+          ResText: "Votre requête d'ajout à echoué.",
+          typeAlert: "danger",
+        });
+      });
 
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base
-          .post(path, {
-            data: value,
-          })
-          .then(() => {
-            if (path.includes("manga")) {
-              this.refreshManga();
-            } else this.refreshNotif();
-            this.setState({
-              ResText: "Votre requête d'ajout a réussite.",
-              typeAlert: "success",
-            });
-          })
-          .catch((err) => {
-            console.error(err);
-            this.OfflineMode(null, true);
-            this.setState({
-              ResText: "Votre requête d'ajout à echoué.",
-              typeAlert: "danger",
-            });
-          });
-
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2500);
-      }
-    );
+    setTimeout(() => {
+      this.setState({
+        ResText: null,
+        typeAlert: null,
+      });
+    }, 2500);
   };
 
   updateValue = (path, value) => {
-    const { OfflineMode } = this.state;
-
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base
-          .update(path, {
-            data: value,
-          })
-          .then(this.refreshNotif)
-          .catch((err) => {
-            this.OfflineMode(null, true);
-            console.error(err);
-          });
-      }
-    );
+    base
+      .update(path, {
+        data: value,
+      })
+      .catch((err) => {
+        this.OfflineMode(null, true);
+        console.error(err);
+      });
   };
 
   deleteValue = async (path) => {
-    const { OfflineMode } = this.state;
-
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base
-          .remove(path)
-          .then(() => {
-            this.refreshNotif();
-            this.setState({
-              ResText: "Votre requête de suppression a réussite.",
-              typeAlert: "success",
-            });
-          })
-          .catch((err) => {
-            console.error(err);
-            this.setState({
-              ResText: "Votre requête de suppression a échoué.",
-              typeAlert: "danger",
-            });
-          });
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2000);
-      }
-    );
+    base
+      .remove(path)
+      .then(() => {
+        this.setState({
+          ResText: "Votre requête de suppression a réussite.",
+          typeAlert: "success",
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        this.setState({
+          ResText: "Votre requête de suppression a échoué.",
+          typeAlert: "danger",
+        });
+      });
+    setTimeout(() => {
+      this.setState({
+        ResText: null,
+        typeAlert: null,
+      });
+    }, 2000);
   };
 
   addNotif = async () => {
@@ -510,7 +467,7 @@ export default class Notif extends Component {
             data: NewNotifTemplate,
           })
             .then(() => {
-              this.refreshNotif(null, true);
+              this.refreshNotif();
               this.setState({
                 ResText: "Notif ajouter",
                 typeAlert: "success",
@@ -592,7 +549,7 @@ export default class Notif extends Component {
           })
             .then(() => {
               this.FetchAnime();
-              this.refreshNotif(null, true);
+              this.refreshNotif();
               this.setState({
                 ResText: "Notif Supprimer avec succès",
                 typeAlert: "success",
@@ -623,6 +580,7 @@ export default class Notif extends Component {
       RefreshNotif,
       NotifRenderSaved,
       isFirstTime,
+      FirstQuerie,
       Notif,
       Lier,
       OfflineMode,
@@ -754,6 +712,13 @@ export default class Notif extends Component {
         RefreshNotif: false,
         NotifRenderSaved: ResultInComponents,
       });
+    } else if (
+      !FirstQuerie &&
+      typeof Notif === "object" &&
+      Object.keys(Notif)?.length === 0
+    ) {
+      // Fast Loading Anime before FnRefresh
+      this.refreshNotif(null, true);
     }
 
     if (AnimeList !== null && RefreshAnimListRenderer === true) {
