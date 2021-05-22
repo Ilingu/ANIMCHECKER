@@ -594,9 +594,22 @@ export default class Home extends Component {
         this.setState(
           {
             ModeFindAnime: [false, null],
-            RefreshRenderAnime: IsRefreshRenderAnime ? false : true,
-            RefreshRenderNA: IsRefreshRenderNA ? false : true,
-            RefreshRenderManga: IsRefreshRenderManga ? false : true,
+            RefreshRenderAnime: !this.state.FirstQuerie
+              ? true
+              : IsRefreshRenderAnime
+              ? false
+              : true,
+            RefreshRenderNA: !this.state.FirstQuerie
+              ? true
+              : IsRefreshRenderNA
+              ? false
+              : true,
+            RefreshRenderManga: !this.state.FirstQuerie
+              ? true
+              : IsRefreshRenderManga
+              ? false
+              : true,
+            FirstQuerie: true,
             LoadingMode: [
               typeof GlobalInfoUser.serie === "object" &&
               typeof GlobalInfoUser.film === "object"
@@ -616,7 +629,6 @@ export default class Home extends Component {
               !this.state.FirstQuerie
                 ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
                 : ModeFilter,
-            FirstQuerie: true,
             NextAnimFireBase: !GlobalInfoUser?.NextAnim
               ? {}
               : GlobalInfoUser.NextAnim,
@@ -1351,6 +1363,10 @@ export default class Home extends Component {
             AddToHomeScreen: null,
           },
           async () => {
+            if (this.DataBaseWS) this.DataBaseWS.off("value");
+            if (this.connectedRef) this.connectedRef.off("value");
+            this.DataBaseWS = null;
+            this.connectedRef = null;
             this.setIntervalVar = null;
             this.setTimeOutMsgInfo = null;
             this.setTimeOutMsgInfo2 = null;
