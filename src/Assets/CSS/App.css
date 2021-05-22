@@ -2519,12 +2519,36 @@ a:hover {
   transition: 0.4s;
 }
 
-#Watch #SideBarMenu #NavContent .NavItem .NavLink:hover .NavIcon {
+#Watch #SideBarMenu #NavContent .NavItem .NavLink:hover {
   color: #ff6d00;
 }
 
-#Watch #SideBarMenu #NavContent .NavItem .NavLink:hover .linkText {
-  color: #ff6d00;
+#Watch #SideBarMenu #NavContent .NavItem .NavLink.IconGreen:hover {
+  color: #01d332;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink.IconRed:hover {
+  color: #ff2600;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink.IconGold:hover {
+  color: gold;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink.IconViolet:hover {
+  color: #301c4d;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink.IconBlue:hover {
+  color: #17a2b8;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink.IconBlueBis:hover {
+  color: #007bff;
+}
+
+#Watch #SideBarMenu #NavContent .NavItem .NavLink.IconGrey:hover {
+  color: #686868;
 }
 
 #Watch #SideBarMenu #NavContent .NavItem.NavDropDown {

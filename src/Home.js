@@ -61,13 +61,11 @@ export default class Home extends Component {
         true
         ? true
         : JSON.parse(window.localStorage.getItem("LastSecurityAntiLostData")),
-    ManuallyChangeBlockWS: false,
     findAnim: [],
     JustDefined: false,
     RedirectPage: null,
     IdToAddEp: null,
     InfoAnimeToChangeNote: null,
-    RefreshfromFnOffline: false,
     //// Modal
     ShowModalSearch: false,
     ShowModalChangeNote: false,
@@ -92,9 +90,9 @@ export default class Home extends Component {
     NextAnimToDelete: null,
     NextMangaToDelete: null,
     SearchInAnimeList: [false, null],
-    RefreshRandomizeAnime: true,
-    RefreshRandomizeAnime2: true,
-    RefreshRandomizeAnime3: true,
+    RefreshRenderAnime: true,
+    RefreshRenderNA: true,
+    RefreshRenderManga: true,
     HaveAlreadyBeenMix: [false, false],
     NextReRenderOrderSerie: null,
     NextReRenderOrderNA: null,
@@ -372,10 +370,12 @@ export default class Home extends Component {
       this.DataBaseWS.on("value", (snap) => {
         const NewData = snap.val();
         if (!NewData) return this.logOut();
-        if (this.state.ManuallyChangeBlockWS)
-          return this.setState({ ManuallyChangeBlockWS: false });
-        if (this.state.FirstQuerie && NewData)
-          this.refreshValueFirebase(null, NewData);
+        this.refreshValueFirebase((DataNotif) => {
+          this.notifyMe(DataNotif);
+          if (this.state.NewLogin) {
+            this.verificateNum();
+          }
+        }, NewData);
       });
     }
   };
@@ -409,7 +409,7 @@ export default class Home extends Component {
     }
 
     async function next() {
-      self.setState({ OfflineMode: true, RefreshRandomizeAnime: true });
+      self.setState({ OfflineMode: true, RefreshRenderAnime: true });
       self.ShowMessageInfo("Mode hors ligne activé", 6000, "success");
 
       if (self.setIntervalVar !== null) {
@@ -508,98 +508,83 @@ export default class Home extends Component {
     }
   };
 
-  deepEqualObj(object1, object2) {
-    if (typeof object1 !== "object" || typeof object2 !== "object")
-      return false;
-    const keys1 = Object.keys(object1);
-    const keys2 = Object.keys(object2);
-
-    if (keys1.length !== keys2.length) {
-      return false;
-    }
-
-    for (const key of keys1) {
-      const val1 = object1[key];
-      const val2 = object2[key];
-      const areObjects = this.isObject(val1) && this.isObject(val2);
-      if (
-        (areObjects && !this.deepEqualObj(val1, val2)) ||
-        (!areObjects && val1 !== val2)
-      ) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  isObject(object) {
-    return object != null && typeof object === "object";
-  }
-
-  refreshManga = async () => {
+  refreshValueFirebase = async (after = null, WithWSData, forced = false) => {
     try {
-      const MangaInfo = await base.fetch(`${this.state.Pseudo}/manga`, {
-        context: this,
-      });
+      const deepEqualObj = (object1, object2) => {
+        const isObject = (object) => {
+          return object != null && typeof object === "object";
+        };
+        if (typeof object1 !== "object" || typeof object2 !== "object")
+          return false;
+        const keys1 = Object.keys(object1);
+        const keys2 = Object.keys(object2);
 
-      this.setState({
-        MangaFirebase: !MangaInfo ? [] : MangaInfo,
-        RefreshRandomizeAnime3: true,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        if (keys1.length !== keys2.length) {
+          return false;
+        }
 
-  refreshValueFirebase = async (after = null, WithWSData = null) => {
-    try {
-      const GlobalInfoUser =
-        WithWSData !== null
-          ? WithWSData
-          : await base.fetch(`${this.state.Pseudo}`, {
-              context: this,
-            });
+        for (const key of keys1) {
+          const val1 = object1[key];
+          const val2 = object2[key];
+          const areObjects = isObject(val1) && isObject(val2);
+          if (
+            (areObjects && !deepEqualObj(val1, val2)) ||
+            (!areObjects && val1 !== val2)
+          ) {
+            return false;
+          }
+        }
+
+        return true;
+      };
+
+      // Data In One Var
+      const GlobalInfoUser = forced
+        ? await base.fetch(`${this.state.Pseudo}`, {
+            context: this,
+          })
+        : WithWSData;
 
       const {
-        RefreshfromFnOffline,
         NextAnimFireBase,
         serieFirebase,
         filmFireBase,
-        SwitchMyAnim,
+        MangaFirebase,
         ToReSearchAfterRefresh,
         ModeFilter,
       } = this.state;
 
+      // RefreshVar for Render
       if (this._isMounted) {
+        const IsRefreshRenderAnime = deepEqualObj(
+          { ...serieFirebase, ...filmFireBase },
+          {
+            ...(GlobalInfoUser?.serie ? GlobalInfoUser.serie : {}),
+            ...(GlobalInfoUser?.film ? GlobalInfoUser.film : {}),
+          }
+        );
+        const IsRefreshRenderNA = deepEqualObj(
+          NextAnimFireBase,
+          GlobalInfoUser?.NextAnim ? GlobalInfoUser.NextAnim : {}
+        );
+        const IsRefreshRenderManga =
+          deepEqualObj(
+            MangaFirebase[0] ? MangaFirebase[0] : {},
+            GlobalInfoUser?.manga ? GlobalInfoUser.manga[0] : {}
+          ) &&
+          deepEqualObj(
+            MangaFirebase[1] ? MangaFirebase[1] : {},
+            GlobalInfoUser?.manga ? GlobalInfoUser.manga[1] : {}
+          )
+            ? true
+            : false;
+
         this.setState(
           {
             ModeFindAnime: [false, null],
-            RefreshRandomizeAnime:
-              RefreshfromFnOffline &&
-              this.deepEqualObj(
-                { ...serieFirebase, ...filmFireBase },
-                { ...GlobalInfoUser.serie, ...GlobalInfoUser.film }
-              ) === true &&
-              SwitchMyAnim &&
-              (GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage === "NotFinished" ||
-                !GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage ||
-                (this.state.FirstQuerie &&
-                  GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage !==
-                    "NotFinished" &&
-                  ModeFilter === "NotFinished"))
-                ? false
-                : true,
-            RefreshRandomizeAnime2:
-              RefreshfromFnOffline &&
-              this.deepEqualObj(NextAnimFireBase, GlobalInfoUser.NextAnim) ===
-                true &&
-              !SwitchMyAnim
-                ? false
-                : true,
-            RefreshRandomizeAnime3:
-              WithWSData !== null ? true : this.state.RefreshRandomizeAnime3,
-            RefreshfromFnOffline: false,
+            RefreshRenderAnime: IsRefreshRenderAnime ? false : true,
+            RefreshRenderNA: IsRefreshRenderNA ? false : true,
+            RefreshRenderManga: IsRefreshRenderManga ? false : true,
             LoadingMode: [
               typeof GlobalInfoUser.serie === "object" &&
               typeof GlobalInfoUser.film === "object"
@@ -632,10 +617,12 @@ export default class Home extends Component {
             ParamsOptn: GlobalInfoUser.ParamsOptn,
           },
           () => {
-            if (after !== null) after();
+            if (after !== null)
+              after(GlobalInfoUser?.Notif ? GlobalInfoUser.Notif : {});
             if (ToReSearchAfterRefresh) this.SearchAnimInList();
           }
         );
+
         // Check If Data Lost
         const AllDataIndexedDb = await this.fnDbOffline("GETReturn");
         let IsLostData = false;
@@ -778,75 +765,72 @@ export default class Home extends Component {
         db.transaction("ParamsOptn").objectStore("ParamsOptn"),
       ];
 
-      if (!this.state.FirstQuerie || this.state.OfflineMode) {
-        const results = await Promise.all(
-          Store.map(async (req) => await req.getAll())
-        );
-        this.setState(
-          {
-            serieFirebase: results[0]
-              ? results[0][0]
+      const results = await Promise.all(
+        Store.map(async (req) => await req.getAll())
+      );
+      this.setState(
+        {
+          serieFirebase: results[0]
+            ? results[0][0]
+              ? results[0][0].data
                 ? results[0][0].data
-                  ? results[0][0].data
-                  : {}
                 : {}
-              : {},
-            filmFireBase: results[1]
-              ? results[1][0]
+              : {}
+            : {},
+          filmFireBase: results[1]
+            ? results[1][0]
+              ? results[1][0].data
                 ? results[1][0].data
-                  ? results[1][0].data
-                  : {}
                 : {}
+              : {}
+            : {},
+          NextAnimFireBase: results[2]
+            ? results[2][0]
+              ? results[2][0].data
+                ? results[2][0].data
+                : {}
+              : {}
+            : {},
+          ParamsOptn:
+            results[3] && results[3][0] && results[3][0].data
+              ? results[3][0].data
               : {},
-            NextAnimFireBase: results[2]
+          LoadingMode: [
+            results[0] && results[1]
+              ? results[0][0] && results[1][0]
+                ? results[0][0].data && results[1][0].data
+                  ? Object.keys(results[0][0].data).length !== 0 ||
+                    Object.keys(results[1][0].data).length !== 0
+                    ? false
+                    : true
+                  : true
+                : true
+              : true,
+            results[2]
               ? results[2][0]
                 ? results[2][0].data
-                  ? results[2][0].data
-                  : {}
-                : {}
-              : {},
-            ParamsOptn:
-              results[3] && results[3][0] && results[3][0].data
-                ? results[3][0].data
-                : {},
-            RefreshfromFnOffline: true,
-            LoadingMode: [
-              results[0] && results[1]
-                ? results[0][0] && results[1][0]
-                  ? results[0][0].data && results[1][0].data
-                    ? Object.keys(results[0][0].data).length !== 0 ||
-                      Object.keys(results[1][0].data).length !== 0
-                      ? false
-                      : true
+                  ? Object.keys(results[2][0].data).length !== 0
+                    ? false
                     : true
                   : true
-                : true,
-              results[2]
-                ? results[2][0]
-                  ? results[2][0].data
-                    ? Object.keys(results[2][0].data).length !== 0
-                      ? false
-                      : true
-                    : true
-                  : true
-                : true,
-            ],
-            ModeFindAnime: [false, null],
-            RefreshRandomizeAnime: true,
-            RefreshRandomizeAnime2: true,
-            ModeFilter:
-              results[3] &&
-              results[3][0] &&
-              results[3][0]?.data?.TypeAnimeHomePage &&
-              !this.state.FirstQuerie
-                ? results[3][0].data.TypeAnimeHomePage
-                : this.state.ModeFilter,
-          },
-          () => {
-            if (next !== null) next();
-          }
-        );
-      }
+                : true
+              : true,
+          ],
+          ModeFindAnime: [false, null],
+          RefreshRenderAnime: true,
+          RefreshRenderNA: true,
+          ModeFilter:
+            results[3] &&
+            results[3][0] &&
+            results[3][0]?.data?.TypeAnimeHomePage &&
+            !this.state.FirstQuerie
+              ? results[3][0].data.TypeAnimeHomePage
+              : this.state.ModeFilter,
+        },
+        () => {
+          if (next !== null) next();
+        }
+      );
     } else if (type === "GETReturn") {
       // Get Data IndexedDB
       const Store = [
@@ -986,42 +970,31 @@ export default class Home extends Component {
       return;
     }
 
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base
-          .post(path, {
-            data: value,
-          })
-          .then(() => {
-            if (path.includes("manga")) {
-              this.refreshManga();
-            } else this.refreshValueFirebase();
-            this.setState({
-              ResText: "Votre requête d'ajout a réussite.",
-              typeAlert: "success",
-            });
-          })
-          .catch((err) => {
-            console.error(err);
-            this.OfflineMode(null, true);
-            this.setState({
-              ResText: "Votre requête d'ajout à echoué.",
-              typeAlert: "danger",
-            });
-          });
+    base
+      .post(path, {
+        data: value,
+      })
+      .then(() => {
+        this.setState({
+          ResText: "Votre requête d'ajout a réussite.",
+          typeAlert: "success",
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        this.OfflineMode(null, true);
+        this.setState({
+          ResText: "Votre requête d'ajout à echoué.",
+          typeAlert: "danger",
+        });
+      });
 
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2500);
-      }
-    );
+    setTimeout(() => {
+      this.setState({
+        ResText: null,
+        typeAlert: null,
+      });
+    }, 2500);
   };
 
   updateValue = (path, value, Next = null) => {
@@ -1031,29 +1004,17 @@ export default class Home extends Component {
       return;
     }
 
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base
-          .update(path, {
-            data: value,
-          })
-          .then(() => {
-            if (path.includes("manga")) {
-              this.refreshManga();
-            } else this.refreshValueFirebase();
-
-            if (Next !== null) Next();
-          })
-          .catch((err) => {
-            this.OfflineMode(null, true);
-            console.error(err);
-          });
-      }
-    );
+    base
+      .update(path, {
+        data: value,
+      })
+      .then(() => {
+        if (Next !== null) Next();
+      })
+      .catch((err) => {
+        this.OfflineMode(null, true);
+        console.error(err);
+      });
   };
 
   deleteValue = async (path) => {
@@ -1063,41 +1024,30 @@ export default class Home extends Component {
       return;
     }
 
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base
-          .remove(path)
-          .then(() => {
-            this.cancelModal();
-            if (path.includes("manga")) {
-              this.refreshManga();
-            } else this.refreshValueFirebase();
-            this.setState({
-              ResText: "Votre requête de suppression a réussite.",
-              typeAlert: "success",
-            });
-          })
-          .catch((err) => {
-            console.error(err);
-            this.OfflineMode(null, true);
-            this.cancelModal();
-            this.setState({
-              ResText: "Votre requête de suppression a échoué.",
-              typeAlert: "danger",
-            });
-          });
-        setTimeout(() => {
-          this.setState({
-            ResText: null,
-            typeAlert: null,
-          });
-        }, 2000);
-      }
-    );
+    base
+      .remove(path)
+      .then(() => {
+        this.cancelModal();
+        this.setState({
+          ResText: "Votre requête de suppression a réussite.",
+          typeAlert: "success",
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        this.OfflineMode(null, true);
+        this.cancelModal();
+        this.setState({
+          ResText: "Votre requête de suppression a échoué.",
+          typeAlert: "danger",
+        });
+      });
+    setTimeout(() => {
+      this.setState({
+        ResText: null,
+        typeAlert: null,
+      });
+    }, 2000);
   };
 
   handleAuth = async (authData) => {
@@ -1120,8 +1070,6 @@ export default class Home extends Component {
           this.setState({ UpdateDbFromIndexedDB: true });
           this.UpdateDbFromIndexeddb();
         }
-        // Fast Loading Anime before FnRefresh
-        this.fnDbOffline("GET");
         // Disable OfflineMode
         window.localStorage.setItem("OfflineMode", JSON.stringify(false));
         this.setState({ OfflineMode: false });
@@ -1149,12 +1097,6 @@ export default class Home extends Component {
       }
     });
 
-    this.refreshValueFirebase(() => {
-      this.notifyMe();
-      if (this.state.NewLogin) {
-        this.verificateNum();
-      }
-    });
     this.setState({
       uid: authData.user.uid,
       proprio: box.proprio || authData.user.uid,
@@ -1272,7 +1214,6 @@ export default class Home extends Component {
             RedirectPage: null,
             IdToAddEp: null,
             InfoAnimeToChangeNote: null,
-            RefreshfromFnOffline: false,
             //// Modal
             ShowModalSearch: false,
             ShowModalChangeNote: false,
@@ -1297,9 +1238,9 @@ export default class Home extends Component {
             NextAnimToDelete: null,
             NextMangaToDelete: null,
             SearchInAnimeList: [false, null],
-            RefreshRandomizeAnime: true,
-            RefreshRandomizeAnime2: true,
-            RefreshRandomizeAnime3: true,
+            RefreshRenderAnime: true,
+            RefreshRenderNA: true,
+            RefreshRenderManga: true,
             HaveAlreadyBeenMix: [false, false],
             NextReRenderOrderSerie: null,
             NextReRenderOrderNA: null,
@@ -1989,6 +1930,7 @@ export default class Home extends Component {
       console.error(err);
       this.setState({ ShowModalChooseImgURL: [true, id] });
       if (ModeRetake === true) return;
+      if (Manga) return "PlaceHolderImg";
       return next("PlaceHolderImg", "none", "none");
     }
   };
@@ -2364,7 +2306,7 @@ export default class Home extends Component {
     this.setState({ ShowModalVerification: true, DeletePathVerif: path });
   };
 
-  notifyMe = () => {
+  notifyMe = (DataNotif) => {
     const self = this;
     const { ParamsOptn } = this.state;
     if (window.Notification && ParamsOptn !== null) {
@@ -2375,12 +2317,12 @@ export default class Home extends Component {
         ParamsOptn.NotifState !== null &&
         ParamsOptn.NotifState !== undefined
       ) {
-        self.doNotif();
+        self.doNotif(DataNotif);
       } else if (Notification.permission !== "granted") {
         Notification.requestPermission()
           .then(function (p) {
             if (p === "granted") {
-              self.doNotif();
+              self.doNotif(DataNotif);
             } else {
               console.log("User blocked notifications succefuly.");
             }
@@ -2394,7 +2336,7 @@ export default class Home extends Component {
     }
   };
 
-  doNotif = async () => {
+  doNotif = async (DataNotif) => {
     try {
       const { OfflineMode } = this.state;
       const db = await openDB("AckDb", 1);
@@ -2404,9 +2346,7 @@ export default class Home extends Component {
 
       const NotifFirebase = OfflineMode
         ? (await Store.getAll())[0].data
-        : await base.fetch(`${this.state.Pseudo}/Notif`, {
-            context: this,
-          });
+        : DataNotif;
 
       // Generate Notif
       const NotifCall = (notifKey) => {
@@ -3454,9 +3394,9 @@ export default class Home extends Component {
       WaitAnimCheck,
       ShowModalChangeNote,
       SeasonPage,
-      RefreshRandomizeAnime,
-      RefreshRandomizeAnime2,
-      RefreshRandomizeAnime3,
+      RefreshRenderAnime,
+      RefreshRenderNA,
+      RefreshRenderManga,
       MyAnimListSaved,
       MyNextAnimListSaved,
       MyMangaListSaved,
@@ -3858,7 +3798,7 @@ export default class Home extends Component {
         Object.keys(serieFirebase).length !== 0) &&
       SwitchMyAnim &&
       !LoadingMode[0] &&
-      RefreshRandomizeAnime
+      RefreshRenderAnime
     ) {
       let AnimeKeySort = [];
       if (ModeFilter === "Rate") {
@@ -3956,7 +3896,7 @@ export default class Home extends Component {
       }
 
       this.setState({
-        RefreshRandomizeAnime: false,
+        RefreshRenderAnime: false,
         NextReRenderOrderSerie: !HaveAlreadyBeenMix[0]
           ? MyAnimListTemplateKey
           : HaveAlreadyBeenMix[0] &&
@@ -3973,7 +3913,7 @@ export default class Home extends Component {
       NextAnimFireBase !== undefined &&
       Object.keys(NextAnimFireBase).length !== 0 &&
       !LoadingMode[1] &&
-      RefreshRandomizeAnime2
+      RefreshRenderNA
     ) {
       let MyNextAnimListTemplateKey = Object.keys(NextAnimFireBase).map(
           (key) => key
@@ -4031,7 +3971,7 @@ export default class Home extends Component {
       }
 
       this.setState({
-        RefreshRandomizeAnime2: false,
+        RefreshRenderNA: false,
         NextReRenderOrderNA: !HaveAlreadyBeenMix[1]
           ? MyNextAnimListTemplateKey
           : HaveAlreadyBeenMix[1] &&
@@ -4051,18 +3991,21 @@ export default class Home extends Component {
         (Object.keys(NextAnimFireBase).length === 0 &&
           MyNextAnimListSaved === null)) &&
       Pseudo &&
-      FirstQuerie
+      !FirstQuerie
     ) {
-      this.refreshValueFirebase();
+      console.log("GEE");
+      // Fast Loading Anime before FnRefresh
+      this.fnDbOffline("GET");
+      this.refreshValueFirebase(null, null, true);
     }
 
     if (
       PageMode === false &&
       MangaFirebase.length !== 0 &&
-      RefreshRandomizeAnime3
+      RefreshRenderManga
     ) {
       this.setState({
-        RefreshRandomizeAnime3: false,
+        RefreshRenderManga: false,
         MyMangaListSaved: [
           MangaFirebase[0]
             ? Object.keys(MangaFirebase[0])
@@ -4431,8 +4374,8 @@ export default class Home extends Component {
                   : (document.title = "ACK:Anim-Checker");
                 this.setState({
                   PageMode: !PageMode,
-                  RefreshRandomizeAnime: true,
-                  RefreshRandomizeAnime3: true,
+                  RefreshRenderAnime: true,
+                  RefreshRenderManga: true,
                   ModeFilter: "NotFinished",
                 });
                 window.localStorage.setItem(
@@ -4520,7 +4463,7 @@ export default class Home extends Component {
                   this.setState({
                     ModeFilter: filter,
                     SwitchMyAnim: true,
-                    RefreshRandomizeAnime3: true,
+                    RefreshRenderManga: true,
                   });
                 }}
                 openModalAddNextManga={() =>
@@ -4588,7 +4531,7 @@ export default class Home extends Component {
                   );
                   this.setState({
                     ModeDisplayNextAnim: NewMode,
-                    RefreshRandomizeAnime2: true,
+                    RefreshRenderNA: true,
                   });
                 }}
                 ResText={ResText}
@@ -4599,7 +4542,7 @@ export default class Home extends Component {
                   this.setState({
                     ModeFilter: filter,
                     SwitchMyAnim: true,
-                    RefreshRandomizeAnime: true,
+                    RefreshRenderAnime: true,
                   });
                 }}
                 MyAnimList={

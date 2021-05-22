@@ -2,6 +2,13 @@
   "name": "anim-checker",
   "version": "1.0.0",
   "private": true,
+  "description": "Modern App for List Your Anime.",
+  "author": "Chollet Arthur",
+  "license": "GPL V3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ilingu/ANIMCHECKER"
+  },
   "dependencies": {
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",

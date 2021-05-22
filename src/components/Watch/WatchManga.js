@@ -4,6 +4,8 @@ import { useStateWithCallbackLazy } from "use-state-with-callback";
 // Components
 import Scans from "../dyna/Watch/Scans";
 import VolumesCO from "../dyna/Watch/Volumes";
+// Img
+import PlaceHolderImg from "../../Assets/Img/PlaceHolderImg.png";
 // CSS
 import { Spinner, Button, Modal, Form } from "react-bootstrap";
 // DB
@@ -243,13 +245,19 @@ const WatchManga = (props) => {
     [setState, refreshMangaToWatch]
   );
   const DeleteValue = useCallback(
-    (path) => {
+    (path, callBackNext) => {
       setState(
         {
           ManuallyChangeBlockWS: true,
         },
         () => {
-          base.remove(path).then(refreshMangaToWatch).catch(console.error);
+          base
+            .remove(path)
+            .then(() => {
+              callBackNext();
+              refreshMangaToWatch();
+            })
+            .catch(console.error);
         }
       );
     },
@@ -264,8 +272,9 @@ const WatchManga = (props) => {
   }, [Pseudo, UpdateValue, id, setState]);
 
   const handleDelete = useCallback(() => {
-    DeleteValue(`${Pseudo}/manga/0/${id}`);
-    setState({ RedirectHome: [true, "/notifuser/5"] });
+    DeleteValue(`${Pseudo}/manga/0/${id}`, () =>
+      setState({ RedirectHome: [true, "/notifuser/5"] })
+    );
   }, [DeleteValue, Pseudo, id, setState]);
 
   const addVolumeScan = useCallback(() => {
@@ -477,7 +486,11 @@ const WatchManga = (props) => {
           <h2>{MangaToWatch.name}</h2>
           <img
             draggable="false"
-            src={MangaToWatch.imageUrl}
+            src={
+              MangaToWatch.imageUrl === "PlaceHolderImg"
+                ? PlaceHolderImg
+                : MangaToWatch.imageUrl
+            }
             alt="MangaPoster"
           />
         </header>

@@ -18,6 +18,7 @@ import NetflixLogo from "../../Assets/Img/NetflixLogo.png";
 import WakanimLogo from "../../Assets/Img/WakanimLogo.png";
 import VoirAnimeLogo from "../../Assets/Img/voiranime.png";
 import NineAnimeLogo from "../../Assets/Img/9anime.png";
+import PlaceHolderImg from "../../Assets/Img/PlaceHolderImg.png";
 // CSS
 import { Button, Modal, Form, Badge } from "react-bootstrap";
 // DB
@@ -35,6 +36,7 @@ class Watch extends Component {
     uid: null,
     proprio: null,
     // Bon fonctionnement de l'app
+    FirstQuerie: false,
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
       ? false
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
@@ -60,6 +62,7 @@ class Watch extends Component {
     SmartRepere: true,
     SecondMessage: false,
     PauseWithAlleged: false,
+    FnToExeAfterRefresh: null,
     DropWithAlleged: false,
     ScrollPosAccordeon: 0,
     AlreadyClicked: false,
@@ -128,7 +131,6 @@ class Watch extends Component {
             self.fnDbOffline("GET");
             return;
           }
-          this.refreshAnimToWatch();
           /* WS */
           if (this.state.Pseudo) this.ActiveWebSockets();
         }
@@ -172,10 +174,7 @@ class Watch extends Component {
       const NewData = snap.val();
       if (!NewData)
         return this.setState({ RedirectTo: [true, "/notifuser/12"] });
-      if (this.state.ManuallyChangeBlockWS)
-        return this.setState({ ManuallyChangeBlockWS: false });
-      if (!this.state.isFirstTime && NewData)
-        this.refreshAnimToWatch(null, NewData);
+      this.refreshAnimToWatch(null, NewData);
     });
   };
 
@@ -210,9 +209,6 @@ class Watch extends Component {
     // Verified listener Conn
     this.connectedRef.on("value", (snap) => {
       if (snap.val() === true) {
-        // Fast Loading Anime before FnRefresh
-        this.fnDbOffline("GET");
-
         // Reconected
         if (this.setIntervalVar !== null) {
           clearInterval(this.setIntervalVar);
@@ -239,18 +235,22 @@ class Watch extends Component {
     });
   };
 
-  refreshAnimToWatch = async (next = null, WSData = null) => {
-    const { id, type, ScrollPosAccordeon } = this.state;
+  refreshAnimToWatch = async (next = null, WSData, forced = false) => {
     try {
+      const { id, type, ScrollPosAccordeon, FirstQuerie, FnToExeAfterRefresh } =
+        this.state;
+
       const [AnimToWatch, ParamsOptn] = await Promise.all([
-        WSData !== null
-          ? WSData
-          : await base.fetch(`${this.state.Pseudo}/${type}/${id}`, {
+        forced
+          ? await base.fetch(`${this.state.Pseudo}/${type}/${id}`, {
               context: this,
-            }),
-        await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
-          context: this,
-        }),
+            })
+          : WSData,
+        !FirstQuerie
+          ? await base.fetch(`${this.state.Pseudo}/ParamsOptn`, {
+              context: this,
+            })
+          : {},
       ]);
 
       document.title = `ACK:${AnimToWatch.name}`;
@@ -259,29 +259,34 @@ class Watch extends Component {
         this.setState(
           {
             AnimToWatch,
+            FirstQuerie: true,
             Newtitle: AnimToWatch.name,
             SmartRepere:
               Object.keys(ParamsOptn).length !== 0
                 ? ParamsOptn?.SmartRepere !== undefined
                   ? ParamsOptn.SmartRepere
-                  : true
-                : true,
+                  : this.state.SmartRepere
+                : this.state.SmartRepere,
             Shortcut:
               Object.keys(ParamsOptn).length !== 0
                 ? ParamsOptn?.Shortcut !== undefined
                   ? ParamsOptn.Shortcut
-                  : true
-                : true,
+                  : this.state.Shortcut
+                : this.state.Shortcut,
             Badges: AnimToWatch.Badge ? AnimToWatch.Badge : [],
             LoadingMode: false,
           },
           () => {
-            // KeyShortcuts
+            if (FnToExeAfterRefresh !== null) {
+              FnToExeAfterRefresh();
+              this.setState({ FnToExeAfterRefresh: null });
+            }
             if (
               !window.mobileAndTabletCheck() &&
               this.state.Shortcut &&
               document.onkeydown === null
             ) {
+              // KeyShortcuts
               document.onkeydown = (keyDownEvent) => {
                 if (keyDownEvent.repeat) return;
                 const {
@@ -374,6 +379,7 @@ class Watch extends Component {
           ? AnimToWatch.name
           : "Anim-Checker"
       }`;
+
       this.setState(
         {
           AnimToWatch,
@@ -483,20 +489,11 @@ class Watch extends Component {
       return;
     }
 
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base
-          .post(path, {
-            data: value,
-          })
-          .then(this.refreshAnimToWatch)
-          .catch(console.error);
-      }
-    );
+    base
+      .post(path, {
+        data: value,
+      })
+      .catch(console.error);
   };
 
   updateValue = (path, value, next = null, nextAfterRefresh = false) => {
@@ -515,8 +512,7 @@ class Watch extends Component {
 
     this.setState(
       {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
+        FnToExeAfterRefresh: nextAfterRefresh ? next : null,
       },
       () => {
         base
@@ -524,7 +520,6 @@ class Watch extends Component {
             data: value,
           })
           .then(() => {
-            this.refreshAnimToWatch(nextAfterRefresh ? next : null);
             if (next !== null && !nextAfterRefresh) next();
           })
           .catch((err) => console.error(err));
@@ -544,15 +539,7 @@ class Watch extends Component {
       return;
     }
 
-    this.setState(
-      {
-        ManuallyChangeBlockWS:
-          OfflineMode === true ? this.state.ManuallyChangeBlockWS : true,
-      },
-      () => {
-        base.remove(path).then(this.refreshAnimToWatch).catch(console.error);
-      }
-    );
+    base.remove(path).catch(console.error);
   };
 
   getAllTheEpisode = async (id) => {
@@ -1553,6 +1540,7 @@ class Watch extends Component {
       ShowFormBadge,
       LetsCelebrate,
       NewBadgeName,
+      FirstQuerie,
       DateObjectif,
       nbEpToAddToHave,
       LetsNotCelebrate,
@@ -1631,7 +1619,7 @@ class Watch extends Component {
     let MyAnimAccordeon = null,
       BadgesHtml = null;
 
-    if (type === "serie") {
+    if (type === "serie" && AnimToWatch?.AnimEP) {
       MyAnimAccordeon = AnimToWatch.AnimEP.map((EpSaison) => (
         <ContextSchema.Provider
           key={Date.now() + Math.random() * 100000 - Math.random() * -100000}
@@ -1704,6 +1692,10 @@ class Watch extends Component {
           />
         </ContextSchema.Provider>
       ));
+    } else if (!FirstQuerie) {
+      // Fast Loading Anime before FnRefresh
+      this.fnDbOffline("GET");
+      this.refreshAnimToWatch(null, null, true);
     }
 
     if (Badges.length !== 0) {
@@ -2006,7 +1998,7 @@ class Watch extends Component {
                 <Fragment>
                   <li className="DropDownItem">
                     <button
-                      className="NavLink"
+                      className="NavLink IconGreen"
                       onClick={() =>
                         this.setState({ ShowModalAddSeasonEp: true })
                       }
@@ -2018,7 +2010,7 @@ class Watch extends Component {
                   {AnimToWatch.AnimeSeason === true ? null : (
                     <li className="DropDownItem">
                       <button
-                        className="NavLink"
+                        className="NavLink IconViolet"
                         onClick={() => {
                           this.setRepere(
                             AnimToWatch.AnimEP[
@@ -2037,7 +2029,7 @@ class Watch extends Component {
                   )}
                   <li className="DropDownItem">
                     <button
-                      className="NavLink"
+                      className="NavLink IconGreen"
                       onClick={() => {
                         this.updateValue(
                           `${this.state.Pseudo}/serie/${id}`,
@@ -2080,7 +2072,7 @@ class Watch extends Component {
               {AnimToWatch.finished || AnimToWatch.finishedAnim ? (
                 <li className="DropDownItem">
                   <button
-                    className="NavLink"
+                    className="NavLink IconGold"
                     onClick={() =>
                       this.setState({
                         ShowModalRateAnime: true,
@@ -2094,7 +2086,7 @@ class Watch extends Component {
               ) : null}
               <li className="DropDownItem">
                 <button
-                  className="NavLink"
+                  className="NavLink IconGrey"
                   onClick={() => {
                     this.updateValue(`${Pseudo}/${type}/${id}`, {
                       InWait: true,
@@ -2118,7 +2110,7 @@ class Watch extends Component {
               AnimToWatch.finishedAnim === false ? (
                 <li className="DropDownItem">
                   <button
-                    className="NavLink"
+                    className="NavLink IconRed"
                     onClick={() => {
                       this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                         Drop: true,
@@ -2155,7 +2147,7 @@ class Watch extends Component {
               ) : null}
               <li className="DropDownItem">
                 <button
-                  className="NavLink"
+                  className="NavLink IconBlue"
                   onClick={() => {
                     this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                       Paused: true,
@@ -2193,7 +2185,7 @@ class Watch extends Component {
                 <Fragment>
                   <li className="DropDownItem">
                     <button
-                      className="NavLink"
+                      className="NavLink IconBlueBis"
                       onClick={this.ReTakeInfoFromName}
                     >
                       <span className="fas fa-undo-alt NavIcon">
@@ -2229,7 +2221,7 @@ class Watch extends Component {
                     <Fragment>
                       <li className="DropDownItem">
                         <button
-                          className="NavLink"
+                          className="NavLink IconGold"
                           onClick={() =>
                             this.setState({
                               ShowModalVerification: [true, "alleger"],
@@ -2243,7 +2235,7 @@ class Watch extends Component {
                       {!AnimToWatch.finishedAnim ? (
                         <li className="DropDownItem">
                           <button
-                            className="NavLink"
+                            className="NavLink IconGold"
                             onClick={() =>
                               this.setState({
                                 DropWithAlleged: true,
@@ -2260,7 +2252,7 @@ class Watch extends Component {
                       ) : null}
                       <li className="DropDownItem">
                         <button
-                          className="NavLink"
+                          className="NavLink IconGold"
                           onClick={() =>
                             this.setState({
                               PauseWithAlleged: true,
@@ -2280,7 +2272,7 @@ class Watch extends Component {
               ) : null}
               <li className="DropDownItem">
                 <button
-                  className="NavLink"
+                  className="NavLink IconRed"
                   onClick={() =>
                     this.setState({
                       ShowModalVerification: [true, "supprimer"],
@@ -2349,7 +2341,11 @@ class Watch extends Component {
             <div className="img">
               <img
                 draggable="false"
-                src={AnimToWatch.imageUrl}
+                src={
+                  AnimToWatch.imageUrl === "PlaceHolderImg"
+                    ? PlaceHolderImg
+                    : AnimToWatch.imageUrl
+                }
                 alt="Img of anim"
               />
               {AnimToWatch.Fav ? (
