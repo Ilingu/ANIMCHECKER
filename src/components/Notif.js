@@ -106,7 +106,6 @@ export default class Notif extends Component {
       this.DataBaseWS = firebase.database().ref(`${this.state.Pseudo}/Notif`);
       this.DataBaseWS.on("value", (snap) => {
         const NewData = snap.val();
-        if (!NewData) return this.setState({ RedirectHome: true });
         this.refreshNotif(NewData);
       });
     }
@@ -629,7 +628,7 @@ export default class Notif extends Component {
 
     let MyAnimName = "Vous n'avez pas d'anime, rajoutez-en !";
 
-    if (Object.keys(Notif)?.length !== 0 && RefreshNotif) {
+    if (Notif && Object.keys(Notif)?.length !== 0 && RefreshNotif) {
       // Render Notif
       let ResultInComponents = [];
       [1, 2, 3, 4, 5, 6, 0].forEach((days) => {
@@ -781,7 +780,7 @@ export default class Notif extends Component {
             ></span>
             <span style={{ userSelect: "none", color: "#ff6d00" }}>
               {" "}
-              Notif ({Object.keys(Notif)?.length}){" "}
+              Notif ({Notif ? Object.keys(Notif)?.length : 0}){" "}
             </span>
             <span
               className="fas fa-bell"

@@ -85,7 +85,6 @@ class Settings extends Component {
     this.DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
     this.DataBaseWS.on("value", (snap) => {
       const NewData = snap.val();
-      if (!NewData) return this.setState({ RedirectHome: "/notifuser/12" });
       this.refreshParamsOptn(NewData);
     });
   };
@@ -421,141 +420,149 @@ class Settings extends Component {
                   "Changer la couleur"
                 )}
               </Button>
-              {ParamsOptn === null ? null : (
-                <Fragment>
-                  <div className="hrDiv"></div>
-                  <Button
-                    className="BtnOfOptn"
-                    variant={
-                      ParamsOptn.NotifState === false
-                        ? "outline-info"
-                        : "outline-warning"
+
+              <div className="hrDiv"></div>
+              <Button
+                className="BtnOfOptn"
+                variant={
+                  !ParamsOptn || !ParamsOptn?.NotifState
+                    ? "outline-info"
+                    : "outline-warning"
+                }
+                onClick={() =>
+                  this.updateValue(`${Pseudo}/ParamsOptn`, {
+                    NotifState: !ParamsOptn?.NotifState ? true : false,
+                  })
+                }
+              >
+                {!ParamsOptn?.NotifState ? (
+                  <Fragment>
+                    <span className="fas fa-bell"></span>
+                    Activer{" "}
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <span className="fas fa-bell-slash"></span>
+                    Désactiver{" "}
+                  </Fragment>
+                )}
+                les Notif
+              </Button>
+              <Button
+                className="BtnOfOptn"
+                variant="outline-light"
+                onClick={() =>
+                  this.updateValue(`${Pseudo}/ParamsOptn`, {
+                    MyAnimRandom: !ParamsOptn?.MyAnimRandom ? true : false,
+                  })
+                }
+              >
+                <span className="fas fa-dice"></span> Mélange de la liste
+                d'anime:{" "}
+                {ParamsOptn?.MyAnimRandom === false
+                  ? "Off"
+                  : !ParamsOptn?.MyAnimRandom
+                  ? "On (par défaut)"
+                  : "On"}
+              </Button>
+              <Button
+                className="BtnOfOptn"
+                variant="outline-light"
+                onClick={() =>
+                  this.updateValue(`${Pseudo}/ParamsOptn`, {
+                    Shortcut: !ParamsOptn?.Shortcut ? true : false,
+                  })
+                }
+              >
+                <span className="fas fa-keyboard"></span> Raccourci clavier:{" "}
+                {ParamsOptn?.Shortcut === false
+                  ? "Off"
+                  : !ParamsOptn?.Shortcut
+                  ? "On (par défaut)"
+                  : "On"}
+              </Button>
+              <Button
+                className="BtnOfOptn"
+                variant="outline-light"
+                onClick={() =>
+                  this.updateValue(`${Pseudo}/ParamsOptn`, {
+                    SmartRepere: !ParamsOptn?.SmartRepere ? true : false,
+                  })
+                }
+              >
+                <span className="fas fa-eye"></span> Progression intelligente:{" "}
+                {ParamsOptn?.SmartRepere === false
+                  ? "Off"
+                  : !ParamsOptn?.SmartRepere
+                  ? "On (par défaut)"
+                  : "On"}
+              </Button>
+              <Form>
+                <Form.Group controlId="animeAcueill">
+                  <Form.Control
+                    value={
+                      ParamsOptn?.TypeAnimeHomePage
+                        ? ParamsOptn?.TypeAnimeHomePage
+                        : "NotFinished"
                     }
-                    onClick={() =>
+                    onChange={(event) => {
                       this.updateValue(`${Pseudo}/ParamsOptn`, {
-                        NotifState: !ParamsOptn?.NotifState ? true : false,
-                      })
-                    }
+                        TypeAnimeHomePage: event.target.value,
+                      });
+                      this.setState({
+                        ResText: `A votre retour sur votre page d'accueil vous verez maintenant ${
+                          event.target.value === "All"
+                            ? "Tous vos Anime"
+                            : `vos animes ${event.target.value}`
+                        }`,
+                        typeAlert: "success",
+                      });
+                      setTimeout(() => {
+                        this.setState({
+                          ResText: null,
+                          typeAlert: null,
+                        });
+                      }, 3600);
+                    }}
+                    as="select"
+                    custom
+                    block
                   >
-                    {!ParamsOptn?.NotifState ? (
-                      <Fragment>
-                        <span className="fas fa-bell"></span>
-                        Activer{" "}
-                      </Fragment>
-                    ) : (
-                      <Fragment>
-                        <span className="fas fa-bell-slash"></span>
-                        Désactiver{" "}
-                      </Fragment>
-                    )}
-                    les Notif
-                  </Button>
-                  <Button
-                    className="BtnOfOptn"
-                    variant="outline-light"
-                    onClick={() =>
-                      this.updateValue(`${Pseudo}/ParamsOptn`, {
-                        MyAnimRandom: !ParamsOptn?.MyAnimRandom ? true : false,
-                      })
-                    }
-                  >
-                    <span className="fas fa-dice"></span> Mélange de la liste
-                    d'anime: {ParamsOptn?.MyAnimRandom === false ? "Off" : "On"}
-                  </Button>
-                  <Button
-                    className="BtnOfOptn"
-                    variant="outline-light"
-                    onClick={() =>
-                      this.updateValue(`${Pseudo}/ParamsOptn`, {
-                        Shortcut: !ParamsOptn?.Shortcut ? true : false,
-                      })
-                    }
-                  >
-                    <span className="fas fa-keyboard"></span> Raccourci clavier:{" "}
-                    {!ParamsOptn.Shortcut ? "Off" : "On"}
-                  </Button>
-                  <Button
-                    className="BtnOfOptn"
-                    variant="outline-light"
-                    onClick={() =>
-                      this.updateValue(`${Pseudo}/ParamsOptn`, {
-                        SmartRepere: !ParamsOptn?.SmartRepere ? true : false,
-                      })
-                    }
-                  >
-                    <span className="fas fa-eye"></span> Progression
-                    intelligente:{" "}
-                    {ParamsOptn?.SmartRepere === false ? "Off" : "On"}
-                  </Button>
-                  <Form>
-                    <Form.Group controlId="animeAcueill">
-                      <Form.Control
-                        value={
-                          ParamsOptn.TypeAnimeHomePage
-                            ? ParamsOptn.TypeAnimeHomePage
-                            : "NotFinished"
-                        }
-                        onChange={(event) => {
-                          this.updateValue(`${Pseudo}/ParamsOptn`, {
-                            TypeAnimeHomePage: event.target.value,
-                          });
-                          this.setState({
-                            ResText: `A votre retour sur votre page d'accueil vous verez maintenant ${
-                              event.target.value === "All"
-                                ? "Tous vos Anime"
-                                : `vos animes ${event.target.value}`
-                            }`,
-                            typeAlert: "success",
-                          });
-                          setTimeout(() => {
-                            this.setState({
-                              ResText: null,
-                              typeAlert: null,
-                            });
-                          }, 3600);
-                        }}
-                        as="select"
-                        custom
-                        block
-                      >
-                        <option value="NotFinished">
-                          Page d'accueil sur tes animes En Cours
-                        </option>
-                        <option value="Finished">
-                          Page d'accueil sur tes animes Finis
-                        </option>
-                        <option value="seasonAnim">
-                          Page d'accueil sur tes animes De Saison
-                        </option>
-                        <option value="Paused">
-                          Page d'accueil sur tes animes En Pauses
-                        </option>
-                        <option value="Drop">
-                          Page d'accueil sur tes animes que ta arrêter en cours
-                        </option>
-                        <option value="WaitAnim">
-                          Page d'accueil sur tes animes en attentes
-                        </option>
-                        <option value="Rate">
-                          Page d'accueil sur tes animes Notés
-                        </option>
-                        <option value="BySeries">
-                          Page d'accueil sur tes séries
-                        </option>
-                        <option value="ByFilm">
-                          Page d'accueil sur tes films
-                        </option>
-                        <option value="fav">
-                          Page d'accueil sur tes animes Favoris
-                        </option>
-                        <option value="All">
-                          Page d'accueil sur Tous tes animes
-                        </option>
-                      </Form.Control>
-                    </Form.Group>
-                  </Form>
-                </Fragment>
-              )}
+                    <option value="NotFinished">
+                      Page d'accueil sur tes animes En Cours
+                      {!ParamsOptn?.TypeAnimeHomePage ? " (par défaut)" : null}
+                    </option>
+                    <option value="Finished">
+                      Page d'accueil sur tes animes Finis
+                    </option>
+                    <option value="seasonAnim">
+                      Page d'accueil sur tes animes De Saison
+                    </option>
+                    <option value="Paused">
+                      Page d'accueil sur tes animes En Pauses
+                    </option>
+                    <option value="Drop">
+                      Page d'accueil sur tes animes que ta arrêter en cours
+                    </option>
+                    <option value="WaitAnim">
+                      Page d'accueil sur tes animes en attentes
+                    </option>
+                    <option value="Rate">
+                      Page d'accueil sur tes animes Notés
+                    </option>
+                    <option value="BySeries">
+                      Page d'accueil sur tes séries
+                    </option>
+                    <option value="ByFilm">Page d'accueil sur tes films</option>
+                    <option value="fav">
+                      Page d'accueil sur tes animes Favoris
+                    </option>
+                    <option value="All">
+                      Page d'accueil sur Tous tes animes
+                    </option>
+                  </Form.Control>
+                </Form.Group>
+              </Form>
             </aside>
             <aside id="User">
               <h3>Utilisateur (Données):</h3>
@@ -600,6 +607,20 @@ class Settings extends Component {
                 placeholder="Type or select country"
               />
               <br />
+              <ul style={{ listStyle: "none", fontSize: "20px" }}>
+                <li>
+                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
+                    Identifiant:
+                  </span>{" "}
+                  {Pseudo}
+                </li>
+                <li>
+                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
+                    Numéros de Téléphone:
+                  </span>{" "}
+                  {firebase.auth().currentUser.phoneNumber}
+                </li>
+              </ul>
               <Button
                 className="BtnOfOptn"
                 variant="outline-primary"
@@ -650,7 +671,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.8</b>
+                  Stable (LTS)<b>1.9</b>
                 </li>
               </ul>
               <p>
@@ -794,39 +815,65 @@ class Settings extends Component {
             <Button variant="secondary" onClick={this.cancelState}>
               Annuler
             </Button>
-            <Link to="/notifuser/6">
-              <Button
-                variant="danger"
-                onClick={async () => {
-                  this.cancelState();
-                  if (OfflineMode) return;
-                  this.deleteValue(`/${Pseudo}`);
-                  // IndexedDB
-                  const db = await openDB("AckDb", 1);
-                  const Store = [
-                    db
-                      .transaction("serieFirebase", "readwrite")
-                      .objectStore("serieFirebase"),
-                    db
-                      .transaction("filmFireBase", "readwrite")
-                      .objectStore("filmFireBase"),
-                    db
-                      .transaction("NextAnimFireBase", "readwrite")
-                      .objectStore("NextAnimFireBase"),
-                    db
-                      .transaction("ParamsOptn", "readwrite")
-                      .objectStore("ParamsOptn"),
-                    db
-                      .transaction("NotifFirebase", "readwrite")
-                      .objectStore("NotifFirebase"),
-                  ];
+            <Button
+              variant="danger"
+              onClick={async () => {
+                this.cancelState();
+                if (OfflineMode) return;
+                // IndexedDB
+                const db = await openDB("AckDb", 1);
+                const Store = [
+                  db
+                    .transaction("serieFirebase", "readwrite")
+                    .objectStore("serieFirebase"),
+                  db
+                    .transaction("filmFireBase", "readwrite")
+                    .objectStore("filmFireBase"),
+                  db
+                    .transaction("NextAnimFireBase", "readwrite")
+                    .objectStore("NextAnimFireBase"),
+                  db
+                    .transaction("ParamsOptn", "readwrite")
+                    .objectStore("ParamsOptn"),
+                  db
+                    .transaction("NotifFirebase", "readwrite")
+                    .objectStore("NotifFirebase"),
+                ];
 
-                  Store.forEach((req) => req.delete(req.name));
-                }}
-              >
-                Supprimer ce compte
-              </Button>
-            </Link>
+                Store.forEach((req) => req.clear());
+
+                // Delete Data And User
+                this.deleteValue(`/${Pseudo}`, () => {
+                  this.setState({
+                    ResText: "Suppression du compte en cours...",
+                    typeAlert: "info",
+                  });
+                  firebase
+                    .auth()
+                    .currentUser.delete()
+                    .then(() => {
+                      console.log("Successfully Remove Account !");
+                      this.setState({ RedirectHome: "/notifuser/6" });
+                    })
+                    .catch((err) => {
+                      console.error(`Failed to Delete Account`, err);
+                      this.setState({
+                        ResText:
+                          "Impossible de supprimer votre compte. Réessayer ultérieurement.",
+                        typeAlert: "danger",
+                      });
+                      setTimeout(() => {
+                        this.setState({
+                          ResText: null,
+                          typeAlert: null,
+                        });
+                      }, 6000);
+                    });
+                });
+              }}
+            >
+              Supprimer ce compte
+            </Button>
           </Modal.Footer>
         </Modal>
         <Modal

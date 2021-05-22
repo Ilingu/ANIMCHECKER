@@ -14,6 +14,7 @@ const Login = ({
   ShowMessageHtml,
   ShowMessage,
   ResText,
+  typeAlertMsg,
 }) => {
   const [NumTel, setNumTel] = useState("");
 
@@ -85,7 +86,6 @@ const Login = ({
         </div>
       ) : (
         <Fragment>
-          {" "}
           {JustDefined ? (
             <Button
               variant="primary"
@@ -108,7 +108,20 @@ const Login = ({
 
       {ShowMessageHtml ? (
         <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
-          <span className="fas fa-info"></span> {ResText}
+          <span
+            className={`fas fa-${
+              typeAlertMsg === "info"
+                ? "info"
+                : typeAlertMsg === "success"
+                ? "check"
+                : typeAlertMsg === "warn"
+                ? "exclamation-triangle"
+                : typeAlertMsg === "danger"
+                ? "times-circle"
+                : "info"
+            }`}
+          ></span>{" "}
+          {ResText}
         </div>
       ) : null}
     </section>

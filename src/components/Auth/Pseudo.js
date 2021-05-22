@@ -2,7 +2,13 @@ import React, { useState } from "react";
 // Design
 import { Button, Form } from "react-bootstrap";
 
-const Pseudo = ({ Submit }) => {
+const Pseudo = ({
+  Submit,
+  ShowMessageHtml,
+  ShowMessage,
+  typeAlertMsg,
+  ResText,
+}) => {
   const [Pseudo, setPseudo] = useState("");
 
   return (
@@ -26,7 +32,7 @@ const Pseudo = ({ Submit }) => {
           <Form.Control
             type="text"
             required
-            placeholder="0. Votre (nom de compte)"
+            placeholder="0. Identifiant de votre de compte"
             autoComplete="off"
             value={Pseudo}
             onChange={(event) => setPseudo(event.target.value)}
@@ -36,6 +42,24 @@ const Pseudo = ({ Submit }) => {
           Suivant <span className="fas fa-arrow-right"></span>
         </Button>
       </Form>
+      {ShowMessageHtml ? (
+        <div className={`ackmessage${ShowMessage ? " show" : " hide"}`}>
+          <span
+            className={`fas fa-${
+              typeAlertMsg === "info"
+                ? "info"
+                : typeAlertMsg === "success"
+                ? "check"
+                : typeAlertMsg === "warn"
+                ? "exclamation-triangle"
+                : typeAlertMsg === "danger"
+                ? "times-circle"
+                : "info"
+            }`}
+          ></span>{" "}
+          {ResText}
+        </div>
+      ) : null}
     </section>
   );
 };

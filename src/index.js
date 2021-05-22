@@ -23,13 +23,14 @@ import "./Assets/CSS/App.css";
 import "firebase/auth";
 
 // OnError Page
-window.onerror = (msgErr) => {
-  window.history.pushState("", "", `/error/${msgErr}`);
-  window.history.pushState("", "", `/error/${msgErr}`);
-  window.history.go(-1);
-  document.location.reload();
-  return false;
-};
+if (process.env.NODE_ENV === "production")
+  window.onerror = (msgErr) => {
+    window.history.pushState("", "", `/error/${msgErr}`);
+    window.history.pushState("", "", `/error/${msgErr}`);
+    window.history.go(-1);
+    document.location.reload();
+    return false;
+  };
 
 const Root = () => (
   <Router>

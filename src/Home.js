@@ -190,13 +190,25 @@ export default class Home extends Component {
           // User Detected
           this.setState({ UserOnLogin: true });
           self.handleAuth({ user });
+        } else {
+          // No User detected -> Login with phone number
+          this.ShowMessageInfo(
+            "Aucun Compte Détecter, Veuillez vous connectez.",
+            6500,
+            "info"
+          );
         }
-        // No User detected -> Login with phone number
         self.setState({ AuthenticateMethod: true });
         // WS
         this.ActiveWebSockets();
       });
     } else {
+      // No User -> Login with phone number
+      this.ShowMessageInfo(
+        "Aucun Compte Détecter, Veuillez vous connectez.",
+        6500,
+        "info"
+      );
       self.setState({ AllowUseReAuth: true });
     }
     // Verified Conn
@@ -314,7 +326,7 @@ export default class Home extends Component {
           typeAlert = "success";
           break;
         case "6":
-          this.logOut();
+          this.logOut(true);
           break;
         case "7":
           ResText =
@@ -605,16 +617,15 @@ export default class Home extends Component {
                 ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
                 : ModeFilter,
             FirstQuerie: true,
-            NextAnimFireBase: !GlobalInfoUser.NextAnim
+            NextAnimFireBase: !GlobalInfoUser?.NextAnim
               ? {}
               : GlobalInfoUser.NextAnim,
-            serieFirebase: !GlobalInfoUser.serie ? {} : GlobalInfoUser.serie,
-            filmFireBase: !GlobalInfoUser.film ? {} : GlobalInfoUser.film,
-            MangaFirebase: !GlobalInfoUser.manga ? [] : GlobalInfoUser.manga,
-            PhoneNumFireBase: !GlobalInfoUser?.PhoneNum
-              ? false
-              : GlobalInfoUser.PhoneNum,
-            ParamsOptn: GlobalInfoUser.ParamsOptn,
+            serieFirebase: !GlobalInfoUser?.serie ? {} : GlobalInfoUser.serie,
+            filmFireBase: !GlobalInfoUser?.film ? {} : GlobalInfoUser.film,
+            MangaFirebase: !GlobalInfoUser?.manga ? [] : GlobalInfoUser.manga,
+            ParamsOptn: !GlobalInfoUser?.ParamsOptn
+              ? {}
+              : GlobalInfoUser.ParamsOptn,
           },
           () => {
             if (after !== null)
@@ -696,6 +707,25 @@ export default class Home extends Component {
             this.addValue(
               `${this.state.Pseudo}/NextAnim`,
               AllDataIndexedDb[2][0]?.data
+            );
+          } else {
+            UserNo = false;
+          }
+        }
+        if (
+          (typeof GlobalInfoUser.ParamsOptn !== "object" ||
+            Object.keys(GlobalInfoUser.ParamsOptn).length === 0) &&
+          AllDataIndexedDb[3][0]?.data
+        ) {
+          CheckLastAntiLostData("Configuration Paramètre");
+          if (!UserNo) {
+            console.warn(
+              "Perte des données Paramètre, procedure de réparage enclenché."
+            );
+            IsLostData = true;
+            this.addValue(
+              `${this.state.Pseudo}/film`,
+              AllDataIndexedDb[1][0]?.data
             );
           } else {
             UserNo = false;
@@ -837,6 +867,7 @@ export default class Home extends Component {
         db.transaction("serieFirebase").objectStore("serieFirebase"),
         db.transaction("filmFireBase").objectStore("filmFireBase"),
         db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
+        db.transaction("ParamsOptn").objectStore("ParamsOptn"),
       ];
 
       const results = await Promise.all(
@@ -1126,7 +1157,14 @@ export default class Home extends Component {
       .confirm(this.state.CodeNumber[0])
       .then(() => {
         // Connected Successfully
-        this.setState({ NewLogin: true, JustDefined: false });
+        this.setState({
+          NewLogin: true,
+          JustDefined: false,
+          RefreshRenderAnime: true,
+          RefreshRenderNA: true,
+          RefreshRenderManga: true,
+        });
+        this.ActiveWebSockets();
         this.NumberOfFailedConnection = 0;
       })
       .catch(() => {
@@ -1147,13 +1185,15 @@ export default class Home extends Component {
       });
   };
 
+  // Test With Other Account
+
   verificateNum = () => {
-    const { NumTel, PhoneNumFireBase, Pseudo } = this.state;
+    const { NumTel } = this.state;
 
     if (NumTel !== "") {
-      if (PhoneNumFireBase === false) {
-        this.updateValue(`${Pseudo}`, { PhoneNum: NumTel });
-      } else if (NumTel !== PhoneNumFireBase) {
+      const UserNum = firebase.auth()?.currentUser?.phoneNumber;
+
+      if (UserNum && NumTel !== UserNum) {
         window.localStorage.removeItem("Pseudo");
         this.logOut(true);
       }
@@ -1335,7 +1375,9 @@ export default class Home extends Component {
                 .objectStore("NotifFirebase"),
             ];
 
-            Store.forEach((req) => req.delete(req.name));
+            Store.forEach((req) => req.clear());
+            window.localStorage.clear();
+            // Refresh ALl
             if (refresh) {
               window.location.reload();
             }
@@ -3414,7 +3456,11 @@ export default class Home extends Component {
     if (!Pseudo || typeof Pseudo !== "string") {
       return (
         <PseudoCO
-          Submit={(PseudoArgs) => {
+          ShowMessage={ShowMessage}
+          typeAlertMsg={typeAlertMsg}
+          ShowMessageHtml={ShowMessageHtml}
+          ResText={ResTextMsg}
+          Submit={async (PseudoArgs) => {
             this.setState({ Pseudo: PseudoArgs, JustDefined: true });
             window.localStorage.setItem("Pseudo", JSON.stringify(PseudoArgs));
           }}
@@ -3442,8 +3488,9 @@ export default class Home extends Component {
           ])}
           JustDefined={JustDefined}
           ShowMessage={ShowMessage}
+          typeAlertMsg={typeAlertMsg}
           ShowMessageHtml={ShowMessageHtml}
-          ResText={ResText}
+          ResText={ResTextMsg}
           OfflineMode={this.OfflineMode}
           resetPseudo={() => {
             window.localStorage.removeItem("Pseudo");
