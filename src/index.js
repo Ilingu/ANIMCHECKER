@@ -32,6 +32,9 @@ if (process.env.NODE_ENV === "production")
     return false;
   };
 
+// Page Confi
+document.cookie = "promo_shown=1; Max-Age=2600000; Secure";
+
 const Root = () => (
   <Router>
     <Switch>

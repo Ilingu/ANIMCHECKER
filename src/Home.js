@@ -594,20 +594,14 @@ export default class Home extends Component {
         this.setState(
           {
             ModeFindAnime: [false, null],
-            RefreshRenderAnime: !this.state.FirstQuerie
-              ? true
-              : IsRefreshRenderAnime
-              ? false
+            RefreshRenderAnime: IsRefreshRenderAnime
+              ? this.state.RefreshRenderAnime
               : true,
-            RefreshRenderNA: !this.state.FirstQuerie
-              ? true
-              : IsRefreshRenderNA
-              ? false
+            RefreshRenderNA: IsRefreshRenderNA
+              ? this.state.RefreshRenderNA
               : true,
-            RefreshRenderManga: !this.state.FirstQuerie
-              ? true
-              : IsRefreshRenderManga
-              ? false
+            RefreshRenderManga: IsRefreshRenderManga
+              ? this.state.RefreshRenderManga
               : true,
             FirstQuerie: true,
             LoadingMode: [
