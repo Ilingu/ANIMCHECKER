@@ -2876,7 +2876,10 @@ export default class Home extends Component {
         return await axios.get(
           `https://api.jikan.moe/v3/search/${
             PageMode ? "anime" : "manga"
-          }?q=${name}&limit=2`
+          }?q=${this.replaceSpace(
+            `${name}${name.length <= 2 ? " " : ""}`,
+            "%20"
+          )}&limit=2`
         );
       } catch (err) {
         console.error(err);
@@ -2916,9 +2919,10 @@ export default class Home extends Component {
     } else {
       Request = `https://api.jikan.moe/v3/search/${
         PageMode ? "anime" : "manga"
-      }?q=${
-        name.includes(" ") ? this.replaceSpace(name, "%20") : name
-      }&limit=16`;
+      }?q=${this.replaceSpace(
+        `${name}${name.length <= 2 ? " " : ""}`,
+        "%20"
+      )}&limit=16`;
     }
 
     axios
@@ -2946,49 +2950,48 @@ export default class Home extends Component {
       });
   };
 
-  getAllTheEpisode = async (id) => {
-    let Episodes = [
-      ...(await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`)).data
-        .episodes,
-    ];
-    let i = 0;
-    const fetchOtherEP = async () => {
-      if (Episodes.length === 100) {
-        return axios
-          .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i + 2}`)
+  getAllTheEpisode = (id) => {
+    return new Promise(async (resolve, reject) => {
+      let Episodes = [];
+
+      let i = 1;
+      const fetchOtherEP = async () => {
+        axios
+          .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i}`)
           .then(async (res) => {
+            if (!res?.data?.episodes || res?.data?.episodes?.length <= 0) {
+              return resolve(Episodes);
+            }
             Episodes = [...Episodes, ...res.data.episodes];
             i++;
-            return await fetchOtherEP();
-          });
-      } else {
-        i = 0;
-        return Episodes;
-      }
-    };
-    return await fetchOtherEP();
+            setTimeout(fetchOtherEP, 500);
+          })
+          .catch(reject);
+      };
+      fetchOtherEP();
+    });
   };
 
   SeeInDetails = async (id, toReturn = false, toReturnAndJustEP = false) => {
-    const { PageMode } = this.state;
-    if (toReturnAndJustEP === true) {
-      if (this.state.type === "serie") return await this.getAllTheEpisode(id);
-      else return await axios.get(`https://api.jikan.moe/v3/anime/${id}`);
-    }
-    if (toReturn === true) {
-      return (
-        await Promise.all([
-          PageMode ? await this.getAllTheEpisode(id) : null,
-          await axios.get(
-            `https://api.jikan.moe/v3/${PageMode ? "anime" : "manga"}/${id}`
-          ),
-        ])
-      ).map((dataAnime, i) =>
-        i > 0 ? dataAnime.data : PageMode ? { episodes: dataAnime } : null
-      );
-    }
-    this.setState({ ShowModalSearch: false });
     try {
+      const { PageMode } = this.state;
+      if (toReturnAndJustEP === true) {
+        if (this.state.type === "serie") return await this.getAllTheEpisode(id);
+        else return await axios.get(`https://api.jikan.moe/v3/anime/${id}`);
+      }
+      if (toReturn === true) {
+        return (
+          await Promise.all([
+            PageMode ? await this.getAllTheEpisode(id) : null,
+            await axios.get(
+              `https://api.jikan.moe/v3/${PageMode ? "anime" : "manga"}/${id}`
+            ),
+          ])
+        ).map((dataAnime, i) =>
+          i > 0 ? dataAnime.data : PageMode ? { episodes: dataAnime } : null
+        );
+      }
+      this.setState({ ShowModalSearch: false });
       const result = await Promise.all([
         await axios.get(
           `https://api.jikan.moe/v3/${PageMode ? "anime" : "manga"}/${id}`
@@ -3003,6 +3006,11 @@ export default class Home extends Component {
         findAnim: [],
       });
     } catch (err) {
+      this.ShowMessageInfo(
+        "Erreur dans le chargement de l'anime.",
+        5000,
+        "danger"
+      );
       console.error(err);
     }
   };

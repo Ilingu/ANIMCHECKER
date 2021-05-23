@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === "production")
   };
 
 // Page Confi
-document.cookie = "promo_shown=1; Max-Age=2600000; Secure";
+document.cookie = "promo_shown=1; Max-Age=2600000; Secure; SameSite=Strict";
 
 const Root = () => (
   <Router>

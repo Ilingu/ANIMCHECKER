@@ -544,27 +544,33 @@ class Watch extends Component {
     base.remove(path).catch(console.error);
   };
 
-  getAllTheEpisode = async (id) => {
-    let Episodes = [
-      ...(await axios.get(`https://api.jikan.moe/v3/anime/${id}/episodes`)).data
-        .episodes,
-    ];
-    let i = 0;
-    const fetchOtherEP = async () => {
-      if (Episodes.length === 100) {
-        return axios
-          .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i + 2}`)
+  getAllTheEpisode = (id) => {
+    return new Promise(async (resolve, reject) => {
+      let Episodes = [];
+
+      let i = 1;
+      const fetchOtherEP = async () => {
+        axios
+          .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i}`)
           .then(async (res) => {
+            if (!res?.data?.episodes || res?.data?.episodes?.length <= 0) {
+              return resolve(Episodes);
+            }
             Episodes = [...Episodes, ...res.data.episodes];
             i++;
-            return await fetchOtherEP();
-          });
-      } else {
-        i = 0;
-        return Episodes;
-      }
-    };
-    return await fetchOtherEP();
+            setTimeout(fetchOtherEP, 500);
+          })
+          .catch(reject);
+      };
+      fetchOtherEP();
+    });
+  };
+
+  replaceSpace = (data, remplaceStr) => {
+    return data
+      .split("")
+      .map((char) => (char === " " ? remplaceStr : char))
+      .join("");
   };
 
   ReTakeInfoFromName = async () => {
@@ -574,7 +580,10 @@ class Watch extends Component {
     try {
       const AnimeID = (
         await axios.get(
-          `https://api.jikan.moe/v3/search/anime?q=${AnimToWatch.name}&limit=1`
+          `https://api.jikan.moe/v3/search/anime?q=${this.replaceSpace(
+            `${AnimToWatch.name}${AnimToWatch.name.length <= 2 ? " " : ""}`,
+            "%20"
+          )}&limit=1`
         )
       ).data.results[0].mal_id;
       const InfoAnimeRes = await Promise.all([
