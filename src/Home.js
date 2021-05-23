@@ -34,7 +34,6 @@ export default class Home extends Component {
     MangaFirebase: [],
     filmFireBase: {},
     serieFirebase: {},
-    PhoneNumFireBase: null,
     ParamsOptn: null,
     FirstQuerie: false,
     AuthenticateMethod: false,
@@ -1223,7 +1222,6 @@ export default class Home extends Component {
             MangaFirebase: [],
             filmFireBase: {},
             serieFirebase: {},
-            PhoneNumFireBase: null,
             ParamsOptn: null,
             FirstQuerie: false,
             AuthenticateMethod: false,
@@ -2557,6 +2555,8 @@ export default class Home extends Component {
       serieFirebase,
       filmFireBase,
       NextAnimFireBase,
+      MangaFirebase,
+      ParamsOptn,
     } = this.state;
     let NotAutoCloseAlert = false;
 
@@ -2583,7 +2583,9 @@ export default class Home extends Component {
         !fileContent.serie &&
         !fileContent.film &&
         !fileContent.NextAnim &&
-        !fileContent.Notif
+        !fileContent.Notif &&
+        !fileContent.manga &&
+        !fileContent.ParamsOptn
       ) {
         NotAutoCloseAlert = true;
         this.setState({
@@ -2597,7 +2599,9 @@ export default class Home extends Component {
         (!fileContent.serie ||
           !fileContent.film ||
           !fileContent.NextAnim ||
-          !fileContent.Notif) &&
+          !fileContent.Notif ||
+          !fileContent.manga ||
+          !fileContent.ParamsOptn) &&
         !AntiLostData
       ) {
         if (
@@ -2607,6 +2611,8 @@ export default class Home extends Component {
               !fileContent.film ? "- Les films\n" : ""
             }${!fileContent.NextAnim ? "- Les prochains animes\n" : ""}${
               !fileContent.Notif ? "- Les notifications\n" : ""
+            }${!fileContent.manga ? "- Les mangas\n" : ""}${
+              !fileContent.ParamsOptn ? "- Les paramètres\n" : ""
             }Cela supprimera de votre liste ces/cette entrer(s). Imaginons qu'il manque les films et les séries alors en validant vos séries et films seront supprimer et remplacé par... RIEN (donc seront supprimer). Si vous voulez que ces entrers vide soit ignorer et que ACK remplisse uniquement les entrers non vide, veuillez cochez l'option "Anti perte de données" dans importer (cette option aura pour effet d'empêcher tous ce que je viens de vous dire).
 
             Voulez vous continué ? Si oui les données annoncés seront supprimer.
@@ -2641,7 +2647,9 @@ export default class Home extends Component {
         Object.keys(data).forEach((key) => {
           DataToReturn = {
             ...DataToReturn,
-            [`${type}-${this.token(10)}${Date.now()}`]: {
+            [`${type === true ? key.split("-")[0] : type}-${this.token(
+              10
+            )}${Date.now()}`]: {
               ...data[key],
             },
           };
@@ -2652,7 +2660,9 @@ export default class Home extends Component {
       this.updateValue(`${Pseudo}`, {
         serie: AntiLostData
           ? !fileContent.serie
-            ? !serieFirebase
+            ? !serieFirebase ||
+              (typeof serieFirebase === "object" &&
+                Object.keys(serieFirebase).length === 0)
               ? null
               : serieFirebase
             : GiveNewKey(fileContent.serie, "serie")
@@ -2661,7 +2671,9 @@ export default class Home extends Component {
           : GiveNewKey(fileContent.serie, "serie"),
         film: AntiLostData
           ? !fileContent.film
-            ? !filmFireBase
+            ? !filmFireBase ||
+              (typeof filmFireBase === "object" &&
+                Object.keys(filmFireBase).length === 0)
               ? null
               : filmFireBase
             : GiveNewKey(fileContent.film, "film")
@@ -2670,13 +2682,30 @@ export default class Home extends Component {
           : GiveNewKey(fileContent.film, "film"),
         NextAnim: AntiLostData
           ? !fileContent.NextAnim
-            ? !NextAnimFireBase
+            ? !NextAnimFireBase ||
+              (typeof NextAnimFireBase === "object" &&
+                Object.keys(NextAnimFireBase).length === 0)
               ? null
               : NextAnimFireBase
             : GiveNewKey(fileContent.NextAnim, "NextAnim")
           : !fileContent.NextAnim
           ? null
           : GiveNewKey(fileContent.NextAnim, "NextAnim"),
+        manga: AntiLostData
+          ? !fileContent.manga
+            ? !MangaFirebase
+              ? null
+              : MangaFirebase
+            : [
+                GiveNewKey(fileContent.manga[0], true),
+                GiveNewKey(fileContent.manga[1], "NM"),
+              ]
+          : !fileContent.manga
+          ? null
+          : [
+              GiveNewKey(fileContent.manga[0], true),
+              GiveNewKey(fileContent.manga[1], "NM"),
+            ],
         Notif: AntiLostData
           ? !fileContent.Notif
             ? !(await GetNotifIndexedDB())
@@ -2686,6 +2715,17 @@ export default class Home extends Component {
           : !fileContent.Notif
           ? null
           : GiveNewKey(fileContent.Notif, "Notif"),
+        ParamsOptn: AntiLostData
+          ? !fileContent.ParamsOptn
+            ? !ParamsOptn ||
+              (typeof ParamsOptn === "object" &&
+                Object.keys(ParamsOptn).length === 0)
+              ? null
+              : ParamsOptn
+            : fileContent.ParamsOptn
+          : !fileContent.ParamsOptn
+          ? null
+          : fileContent.ParamsOptn,
       });
     };
 
@@ -4505,7 +4545,9 @@ export default class Home extends Component {
                   serie: serieFirebase,
                   film: filmFireBase,
                   NextAnim: NextAnimFireBase,
+                  manga: MangaFirebase,
                   Notif: results[0].data,
+                  ParamsOptn,
                 };
                 const filename = `ACKSnapshot-${Date.now()}.json`;
                 const jsonStr = JSON.stringify(JsonExport);
