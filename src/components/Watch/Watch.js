@@ -547,16 +547,16 @@ class Watch extends Component {
   getAllTheEpisode = (id) => {
     return new Promise(async (resolve, reject) => {
       let Episodes = [];
-
       let i = 1;
+
       const fetchOtherEP = async () => {
         axios
           .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i}`)
           .then(async (res) => {
-            if (!res?.data?.episodes || res?.data?.episodes?.length <= 0) {
+            if (!res?.data?.episodes || res?.data?.episodes?.length <= 0)
               return resolve(Episodes);
-            }
             Episodes = [...Episodes, ...res.data.episodes];
+            if (i === res?.data?.episodes_last_page) return resolve(Episodes);
             i++;
             setTimeout(fetchOtherEP, 500);
           })
@@ -568,6 +568,7 @@ class Watch extends Component {
 
   replaceSpace = (data, remplaceStr) => {
     return data
+      .trim()
       .split("")
       .map((char) => (char === " " ? remplaceStr : char))
       .join("");

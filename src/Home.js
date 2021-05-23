@@ -2835,6 +2835,7 @@ export default class Home extends Component {
 
   replaceSpace = (data, remplaceStr) => {
     return data
+      .trim()
       .split("")
       .map((char) => (char === " " ? remplaceStr : char))
       .join("");
@@ -2953,16 +2954,16 @@ export default class Home extends Component {
   getAllTheEpisode = (id) => {
     return new Promise(async (resolve, reject) => {
       let Episodes = [];
-
       let i = 1;
+
       const fetchOtherEP = async () => {
         axios
           .get(`https://api.jikan.moe/v3/anime/${id}/episodes/${i}`)
           .then(async (res) => {
-            if (!res?.data?.episodes || res?.data?.episodes?.length <= 0) {
+            if (!res?.data?.episodes || res?.data?.episodes?.length <= 0)
               return resolve(Episodes);
-            }
             Episodes = [...Episodes, ...res.data.episodes];
+            if (i === res?.data?.episodes_last_page) return resolve(Episodes);
             i++;
             setTimeout(fetchOtherEP, 500);
           })
@@ -2992,19 +2993,32 @@ export default class Home extends Component {
         );
       }
       this.setState({ ShowModalSearch: false });
-      const result = await Promise.all([
-        await axios.get(
-          `https://api.jikan.moe/v3/${PageMode ? "anime" : "manga"}/${id}`
-        ),
-        PageMode ? await this.getAllTheEpisode(id) : null,
-      ]);
-      this.setState({
-        animToDetails: [
-          PageMode ? { episodes: result[1] } : null,
-          result[0].data,
-        ],
-        findAnim: [],
-      });
+      axios
+        .get(`https://api.jikan.moe/v3/${PageMode ? "anime" : "manga"}/${id}`)
+        .then((res) => {
+          this.setState({
+            animToDetails: [
+              !this.state.animToDetails[0] ? null : this.state.animToDetails[0],
+              res.data,
+            ],
+            findAnim: [],
+          });
+        })
+        .catch(console.error);
+      if (PageMode)
+        this.getAllTheEpisode(id)
+          .then((res) => {
+            this.setState({
+              animToDetails: [
+                { episodes: res },
+                !this.state.animToDetails[1]
+                  ? null
+                  : this.state.animToDetails[1],
+              ],
+              findAnim: [],
+            });
+          })
+          .catch(console.error);
     } catch (err) {
       this.ShowMessageInfo(
         "Erreur dans le chargement de l'anime.",
@@ -4179,7 +4193,7 @@ export default class Home extends Component {
       return (
         <OneAnim
           details={animToDetails}
-          back={() => this.setState({ animToDetails: null })}
+          back={() => this.setState({ animToDetails: [] })}
           ShowMessage={ShowMessage}
           ShowMessageHtml={ShowMessageHtml}
           ResText={ResText}

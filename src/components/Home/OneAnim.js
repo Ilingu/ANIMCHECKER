@@ -3,7 +3,7 @@ import axios from "axios";
 // Components
 import Episode from "../dyna/Watch/Episode";
 // CSS
-import { Button, ResponsiveEmbed } from "react-bootstrap";
+import { Button, ResponsiveEmbed, Spinner } from "react-bootstrap";
 
 const OneAnim = ({
   details,
@@ -15,11 +15,11 @@ const OneAnim = ({
   ResText,
   Manga,
 }) => {
-  const [SynopsisText, setSynopsisText] = useState(details[1].synopsis);
+  const [SynopsisText, setSynopsisText] = useState(details[1]?.synopsis);
   const [TranslatedCacheSynopsis, setTranslatedCacheSynopsis] = useState("");
   const [Original, setOriginal] = useState(true);
   useEffect(() => {
-    if (typeof UserCountry === "string")
+    if (typeof UserCountry === "string" && details[1])
       axios
         .request({
           method: "GET",
@@ -27,7 +27,7 @@ const OneAnim = ({
           params: {
             source: "en",
             target: UserCountry,
-            input: details[1].synopsis,
+            input: details[1]?.synopsis,
           },
           headers: {
             "x-rapidapi-key":
@@ -43,23 +43,41 @@ const OneAnim = ({
         })
         .catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [details[1]]);
+  if (!details[1]) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Button
+          variant="primary"
+          onClick={back}
+          className="btnBackDesing fixed"
+        >
+          <span className="fas fa-arrow-left"></span>
+        </Button>
+        <Spinner variant="warning" animation="border" />
+      </div>
+    );
+  }
   if (Manga) {
     // Extra render
-    const Genres = details[1]?.genres.map((genre) => genre.name).join(", ");
-    const Authors = details[1]?.authors.map((author) => author.name).join(", ");
+    const Genres = details[1]?.genres?.map((genre) => genre.name).join(", ");
+    const Authors = details[1]?.authors
+      ?.map((author) => author.name)
+      .join(", ");
     const SynonymsTitles = `${
       details[1]?.title_english
-    }, ${details[1]?.title_synonyms.join(", ")}, ${details[1]?.title_japanese}`;
+    }, ${details[1]?.title_synonyms?.join(", ")}, ${
+      details[1]?.title_japanese
+    }`;
     return (
       <Fragment>
         <div className="container" id="oneAnim">
           <header>
-            <h1 className="title">{`${details[1].title}`}</h1>
+            <h1 className="title">{`${details[1]?.title}`}</h1>
             <div className="img">
-              <img src={details[1].image_url} alt="Img of anim" />
+              <img src={details[1]?.image_url} alt="Img of anim" />
               <a
-                href={details[1].url}
+                href={details[1]?.url}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -69,10 +87,10 @@ const OneAnim = ({
               </a>
             </div>
             <h5>
-              <span className="score">{`${details[1].score}/10 (${
-                details[1].scored_by >= 2
-                  ? details[1].scored_by + " votes"
-                  : details[1].scored_by + " vote"
+              <span className="score">{`${details[1]?.score}/10 (${
+                details[1]?.scored_by >= 2
+                  ? details[1]?.scored_by + " votes"
+                  : details[1]?.scored_by + " vote"
               })`}</span>
               <br />
             </h5>
@@ -95,10 +113,10 @@ const OneAnim = ({
                   <span className="info">{SynonymsTitles}</span>
                 </li>
                 <li>
-                  Type: <span className="info">{details[1].type}</span>
+                  Type: <span className="info">{details[1]?.type}</span>
                 </li>
                 <li>
-                  Genre{details[1].genres > 1 ? "s" : null}:{" "}
+                  Genre{details[1]?.genres > 1 ? "s" : null}:{" "}
                   <span className="info">
                     <b>{Genres}</b>
                   </span>
@@ -106,20 +124,20 @@ const OneAnim = ({
                 <li>
                   Popularité:{" "}
                   <span className="info">
-                    {details[1].popularity}
+                    {details[1]?.popularity}
                     <sup>ème</sup>
                   </span>
                 </li>
                 <li>
                   Scan:{" "}
                   <span className="info">
-                    {!details[1].chapters
+                    {!details[1]?.chapters
                       ? "Non précisé, manga non finis"
-                      : details[1].chapters}
+                      : details[1]?.chapters}
                   </span>
                 </li>
                 <li>
-                  Status: <span className="info">{details[1].status}</span>
+                  Status: <span className="info">{details[1]?.status}</span>
                 </li>
                 <li>
                   Auteur(s): <span className="info">{Authors}</span>
@@ -140,7 +158,7 @@ const OneAnim = ({
                           if (TranslatedCacheSynopsis === "") {
                             setSynopsisText("Traduction impossible.");
                             setTimeout(
-                              () => setSynopsisText(details[1].synopsis),
+                              () => setSynopsisText(details[1]?.synopsis),
                               5000
                             );
                             return;
@@ -149,7 +167,7 @@ const OneAnim = ({
                           setOriginal(false);
                           return;
                         }
-                        setSynopsisText(details[1].synopsis);
+                        setSynopsisText(details[1]?.synopsis);
                         setOriginal(true);
                       }}
                     >
@@ -177,7 +195,7 @@ const OneAnim = ({
           >
             <span className="fas fa-plus"></span>{" "}
             <span className="textContent">
-              Ajouter {details[1]?.title.split(":")[0]}
+              Ajouter {details[1]?.title?.split(":")[0]}
             </span>
           </Button>
         </div>
@@ -190,44 +208,46 @@ const OneAnim = ({
       </Fragment>
     );
   }
-  const Episodes = details[0]?.episodes.map((EP) => (
+
+  /* ANIME */
+  const Episodes = details[0]?.episodes?.map((EP) => (
     <Episode
       key={EP.episode_id}
-      imgUrl={details[1].image_url}
+      imgUrl={details[1]?.image_url}
       nbEp={EP.episode_id}
       urlVideo={EP.video_url}
       title={EP.title}
     />
   ));
   // Extra render
-  const Genres = details[1]?.genres.map((genre) => genre.name).join(", ");
-  const Studios = details[1]?.studios.map((studio) => studio.name).join(", ");
+  const Genres = details[1]?.genres?.map((genre) => genre.name).join(", ");
+  const Studios = details[1]?.studios?.map((studio) => studio.name).join(", ");
   const SynonymsTitles = `${
     details[1]?.title_english
-  }, ${details[1]?.title_synonyms.join(", ")}, ${details[1]?.title_japanese}`;
+  }, ${details[1]?.title_synonyms?.join(", ")}, ${details[1]?.title_japanese}`;
   // Render
   return (
     <Fragment>
       <div className="container" id="oneAnim">
         <header>
-          <h1 className="title">{`${details[1].title}`}</h1>
+          <h1 className="title">{`${details[1]?.title}`}</h1>
           <div className="img">
-            <img src={details[1].image_url} alt="Img of anim" />
-            <a href={details[1].url} target="_blank" rel="noopener noreferrer">
+            <img src={details[1]?.image_url} alt="Img of anim" />
+            <a href={details[1]?.url} target="_blank" rel="noopener noreferrer">
               <div className="info">
                 <span className="fas fa-info-circle"></span>
               </div>
             </a>
           </div>
           <h5>
-            <span className="score">{`${details[1].score}/10 (${
-              details[1].scored_by >= 2
-                ? details[1].scored_by + " votes"
-                : details[1].scored_by + " vote"
+            <span className="score">{`${details[1]?.score}/10 (${
+              details[1]?.scored_by >= 2
+                ? details[1]?.scored_by + " votes"
+                : details[1]?.scored_by + " vote"
             })`}</span>
             <br />
             <span className="broadcast">
-              One episodes every {details[1].broadcast}
+              One episodes every {details[1]?.broadcast}
             </span>
           </h5>
         </header>
@@ -251,11 +271,11 @@ const OneAnim = ({
               <li>
                 Type:{" "}
                 <span className="info">
-                  {details[1].type === "Movie" ? details[1].type : "Series"}
+                  {details[1]?.type === "Movie" ? details[1]?.type : "Series"}
                 </span>
               </li>
               <li>
-                Genre{details[1].genres > 1 ? "s" : null}:{" "}
+                Genre{details[1]?.genres > 1 ? "s" : null}:{" "}
                 <span className="info">
                   <b>{Genres}</b>
                 </span>
@@ -263,25 +283,25 @@ const OneAnim = ({
               <li>
                 Popularité:{" "}
                 <span className="info">
-                  {details[1].popularity}
+                  {details[1]?.popularity}
                   <sup>ème</sup>
                 </span>
               </li>
               <li>
-                Durée: <span className="info">{details[1].duration}</span>
+                Durée: <span className="info">{details[1]?.duration}</span>
               </li>
               <li>
-                Status: <span className="info">{details[1].status}</span>
+                Status: <span className="info">{details[1]?.status}</span>
               </li>
               <li>
-                Studio{details[1].studios > 1 ? "s" : null}:{" "}
+                Studio{details[1]?.studios > 1 ? "s" : null}:{" "}
                 <span className="info">{Studios}</span>
               </li>
               <li>
-                Premiere: <span className="info">{details[1].premiered}</span>
+                Premiere: <span className="info">{details[1]?.premiered}</span>
               </li>
               <li>
-                Age requis: <span className="info">{details[1].rating}</span>
+                Age requis: <span className="info">{details[1]?.rating}</span>
               </li>
               <li>
                 Résumé: <span className="info">{SynopsisText}</span>{" "}
@@ -299,7 +319,7 @@ const OneAnim = ({
                         if (TranslatedCacheSynopsis === "") {
                           setSynopsisText("Traduction impossible.");
                           setTimeout(
-                            () => setSynopsisText(details[1].synopsis),
+                            () => setSynopsisText(details[1]?.synopsis),
                             5000
                           );
                           return;
@@ -308,7 +328,7 @@ const OneAnim = ({
                         setOriginal(false);
                         return;
                       }
-                      setSynopsisText(details[1].synopsis);
+                      setSynopsisText(details[1]?.synopsis);
                       setOriginal(true);
                     }}
                   >
@@ -334,8 +354,8 @@ const OneAnim = ({
           >
             <ResponsiveEmbed aspectRatio="16by9">
               <iframe
-                title={`Trailer de ${details[1].title}`}
-                src={details[1].trailer_url?.split("?")[0]}
+                title={`Trailer de ${details[1]?.title}`}
+                src={details[1]?.trailer_url?.split("?")[0]}
                 frameBorder="0"
                 allowFullScreen={true}
               ></iframe>
@@ -345,12 +365,20 @@ const OneAnim = ({
         <section id="episodesOneAnim">
           <header>
             <h1>
-              {details[0].episodes.length >= 2
-                ? `Episodes (${details[0].episodes.length})`
-                : `Episode (${details[0].episodes.length})`}
+              {!details[0]?.episodes
+                ? `Episodes: Chargement...`
+                : details[0]?.episodes?.length >= 2
+                ? `Episodes (${details[0]?.episodes?.length})`
+                : `Episode (${details[0]?.episodes?.length})`}
             </h1>
           </header>
-          <div className="EpContent">{Episodes}</div>
+          <div className={`EpContent${!details[0]?.episodes ? " load" : ""}`}>
+            {!details[0]?.episodes ? (
+              <Spinner variant="warning" animation="border" />
+            ) : (
+              Episodes
+            )}
+          </div>
         </section>
         <Button
           variant="primary"
@@ -362,7 +390,7 @@ const OneAnim = ({
         <Button variant="success" block id="fixedOnBottom" onClick={handleAdd}>
           <span className="fas fa-plus"></span>{" "}
           <span className="textContent">
-            Ajouter {details[1]?.title.split(":")[0]}
+            Ajouter {details[1]?.title?.split(":")[0]}
           </span>
         </Button>
       </div>

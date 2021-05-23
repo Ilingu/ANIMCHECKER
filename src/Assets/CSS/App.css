@@ -950,6 +950,15 @@ a:hover {
   font-size: 1rem;
 }
 
+#oneAnim #episodesOneAnim .EpContent.load {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
 @media screen and (max-width: 1385px) {
   #oneAnim #episodesOneAnim .EpContent {
     -ms-grid-columns: (1fr)[4];
