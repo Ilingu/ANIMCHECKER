@@ -856,6 +856,7 @@ class Settings extends Component {
                       this.setState({ RedirectHome: "/notifuser/6" });
                     })
                     .catch((err) => {
+                      this.addValue(`/${Pseudo}`);
                       console.error(`Failed to Delete Account`, err);
                       this.setState({
                         ResText:
@@ -906,6 +907,7 @@ class Settings extends Component {
                 this.deleteValue(`${Pseudo}/film`);
                 this.deleteValue(`${Pseudo}/NextAnim`);
                 this.deleteValue(`${Pseudo}/Notif`);
+                this.deleteValue(`${Pseudo}/manga`);
                 this.deleteValue(`${Pseudo}/ParamsOptn`);
 
                 // IndexedDB
@@ -928,7 +930,7 @@ class Settings extends Component {
                     .objectStore("NotifFirebase"),
                 ];
 
-                Store.forEach((req) => req.delete(req.name));
+                Store.forEach((req) => req.clear());
                 this.setState({
                   ResText: "Toutes vos données ont bien été réinitialisées",
                   typeAlert: "success",

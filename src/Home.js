@@ -191,6 +191,7 @@ export default class Home extends Component {
           self.handleAuth({ user });
         } else {
           // No User detected -> Login with phone number
+          this.setState({ UserOnLogin: null });
           this.ShowMessageInfo(
             "Aucun Compte Détecter, Veuillez vous connectez.",
             6500,
@@ -452,7 +453,7 @@ export default class Home extends Component {
   reconectFirebase = () => {
     let i = 0;
     this.setIntervalVar = setInterval(() => {
-      if (i === 5) this.reAuth();
+      if (i === 5 && this.state.UserOnLogin !== null) this.reAuth();
       if (i === 10) this.OfflineMode(null, true);
       // Allow Vpn
       window.localStorage.removeItem("firebase:previous_websocket_failure");
@@ -463,7 +464,7 @@ export default class Home extends Component {
   AllowVpn = () => {
     let i = 0;
     this.setIntervalVar = setInterval(() => {
-      if (i === 5) this.reAuth();
+      if (i === 5 && this.state.UserOnLogin !== null) this.reAuth();
       if (i === 10) this.OfflineMode(null, true);
       if (this.state.uid === null && this.state.proprio === null) {
         // Allow Vpn
@@ -1099,7 +1100,7 @@ export default class Home extends Component {
       });
     }
     // Verified listener Conn
-    this.connectedRef.on("value", (snap) => {
+    this?.connectedRef?.on("value", (snap) => {
       if (snap.val() === true) {
         // Verified if OfflineMode In an another session
         if (this.state.OfflineMode === true) {
@@ -1189,8 +1190,6 @@ export default class Home extends Component {
         }
       });
   };
-
-  // Test With Other Account
 
   verificateNum = () => {
     const { NumTel } = this.state;
@@ -2646,9 +2645,10 @@ export default class Home extends Component {
         Object.keys(data).forEach((key) => {
           DataToReturn = {
             ...DataToReturn,
-            [`${type === true ? key.split("-")[0] : type}-${this.token(
-              10
-            )}${Date.now() + (Math.random() * 10000).toString().split(".").join("")}`]: {
+            [`${type === true ? key.split("-")[0] : type}-${this.token(10)}${
+              Date.now() +
+              (Math.random() * 10000).toString().split(".").join("")
+            }`]: {
               ...data[key],
             },
           };
