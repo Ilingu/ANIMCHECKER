@@ -2,32 +2,40 @@ import React, { useContext } from "react";
 // Context
 import Context from "../../../Context/ContextEP";
 
-const Episode = ({
-  imgUrl,
-  nbEp,
-  urlVideo,
-  title,
-  ForWatch = false,
-  AllDataEp,
-  idSaison,
-  LastEP,
-}) => {
+const Episode = ({ imgUrl, ForWatch = false, AllDataEp, idSaison, LastEP }) => {
   // Context
   const ContextVar = useContext(Context);
   // APP
   if (!ForWatch)
     return (
-      <div className="EP">
-        <a href={urlVideo} target="_blank" rel="noopener noreferrer">
+      <div
+        className={`EPOneAnim${
+          AllDataEp?.filler ? " fillerEp" : AllDataEp?.recap ? " recapEp" : ""
+        }`}
+      >
+        <a
+          href={AllDataEp?.video_url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <div className="img">
             <img src={imgUrl} alt="Ep img" />
+            {AllDataEp?.filler || AllDataEp?.recap ? (
+              <div
+                className={`BadgeFillerRecap ${
+                  AllDataEp.filler ? "FillerEp" : "RecapEp"
+                }`}
+              >
+                {AllDataEp.filler ? "Filler" : "Recap"}
+              </div>
+            ) : null}
             <div className="play">
               <span className="fas fa-play"></span>
             </div>
           </div>
           <h4>
-            <span className="EpNb">{nbEp}: </span>
-            <span className="title">{title}</span>
+            <span className="EpNb">{AllDataEp?.episode_id}: </span>
+            <span className="title">{AllDataEp?.title}</span>
           </h4>
         </a>
       </div>

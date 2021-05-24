@@ -900,24 +900,46 @@ a:hover {
   width: 70%;
 }
 
-#oneAnim #episodesOneAnim .EpContent .EP {
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim {
   width: 180px;
 }
 
-#oneAnim #episodesOneAnim .EpContent .EP a {
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a {
   text-decoration: none;
 }
 
-#oneAnim #episodesOneAnim .EpContent .EP a .img {
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a .img {
   position: relative;
 }
 
-#oneAnim #episodesOneAnim .EpContent .EP a .img img {
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a .img img {
   width: 180px;
   border-radius: 5px;
 }
 
-#oneAnim #episodesOneAnim .EpContent .EP a .img .play {
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a .img .BadgeFillerRecap {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  position: absolute;
+  top: 0;
+  padding: 2px;
+  border-radius: 5px;
+  letter-spacing: 2px;
+  font-weight: bold;
+  color: #fff;
+}
+
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a .img .BadgeFillerRecap.FillerEp {
+  background-color: #dc3545;
+}
+
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a .img .BadgeFillerRecap.RecapEp {
+  background-color: #999;
+}
+
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a .img .play {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -940,14 +962,28 @@ a:hover {
   transition: 0.7s;
 }
 
-#oneAnim #episodesOneAnim .EpContent .EP a .img .play:hover {
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a .img .play:hover {
   -webkit-transform: scale(1.12);
           transform: scale(1.12);
 }
 
-#oneAnim #episodesOneAnim .EpContent .EP a h4 {
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim a h4 {
   color: #ff6d00;
   font-size: 1rem;
+}
+
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim.fillerEp {
+  background-color: rgba(220, 53, 70, 0.13);
+  -webkit-transform: scale(0.9);
+          transform: scale(0.9);
+  border-radius: 5px;
+}
+
+#oneAnim #episodesOneAnim .EpContent .EPOneAnim.recapEp {
+  background-color: rgba(153, 153, 153, 0.2);
+  -webkit-transform: scale(0.85);
+          transform: scale(0.85);
+  border-radius: 5px;
 }
 
 #oneAnim #episodesOneAnim .EpContent.load {
@@ -975,13 +1011,13 @@ a:hover {
 }
 
 @media screen and (max-width: 786px) {
-  #oneAnim #episodesOneAnim .EpContent .EP {
+  #oneAnim #episodesOneAnim .EpContent .EPOneAnim {
     width: 140px;
   }
-  #oneAnim #episodesOneAnim .EpContent .EP img {
+  #oneAnim #episodesOneAnim .EpContent .EPOneAnim img {
     width: 140px !important;
   }
-  #oneAnim #episodesOneAnim .EpContent .EP h4 {
+  #oneAnim #episodesOneAnim .EpContent .EPOneAnim h4 {
     font-size: 0.8rem !important;
   }
 }
@@ -2680,7 +2716,7 @@ a:hover {
   width: 100vw;
   height: 100vh;
   position: absolute;
-  background-color: rgba(24, 24, 24, 0.5);
+  background-color: rgba(24, 24, 24, 0.6);
   top: 0;
   z-index: 100;
 }
@@ -3323,12 +3359,25 @@ a:hover {
   display: flex;
 }
 
-#Watch .StartMod.active header {
+#Watch .StartMod.active #titleEPStartMod {
+  position: absolute;
+  z-index: 155;
+  top: 0.5vh;
+  left: calc(50% - var(--size) / 2);
+  font-size: 20px;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.45);
+  border-radius: 5px;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+}
+
+#Watch .StartMod.active #HeaderStartModSizeDyna {
   position: absolute;
   z-index: 155;
   top: 29vh;
   left: calc(50% - var(--size) / 2);
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.45);
   padding: 5px;
   border-radius: 5px;
   min-width: 300px;
@@ -3342,17 +3391,30 @@ a:hover {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-  -webkit-transition: 0.7s;
-  transition: 0.7s;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
 }
 
-#Watch .StartMod.active header h2 {
+#Watch .StartMod.active #HeaderStartModSizeDyna .badge {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  position: absolute;
+  top: calc(-27px / 2);
+  left: calc(-68.52px / 2);
+  -webkit-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+  letter-spacing: 1px;
+}
+
+#Watch .StartMod.active #HeaderStartModSizeDyna h2 {
   line-height: 30px;
   text-align: center;
   font-size: 2.5rem;
 }
 
-#Watch .StartMod.active header h2 #TotalEP {
+#Watch .StartMod.active #HeaderStartModSizeDyna h2 #TotalEP {
   font-size: 16px;
   font-weight: bold;
 }

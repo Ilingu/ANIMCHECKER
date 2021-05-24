@@ -214,9 +214,7 @@ const OneAnim = ({
     <Episode
       key={EP.episode_id}
       imgUrl={details[1]?.image_url}
-      nbEp={EP.episode_id}
-      urlVideo={EP.video_url}
-      title={EP.title}
+      AllDataEp={EP}
     />
   ));
   // Extra render

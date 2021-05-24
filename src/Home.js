@@ -1919,7 +1919,6 @@ export default class Home extends Component {
     try {
       const AnimeID = (await this.SearchAnim(title, true)).data.results[0]
         .mal_id;
-      console.log(AnimeID);
       const InfoAnimeRes = await this.SeeInDetails(AnimeID, true, true);
       this.setState({
         AnimateFasIcon: [false, false],
@@ -2649,7 +2648,7 @@ export default class Home extends Component {
             ...DataToReturn,
             [`${type === true ? key.split("-")[0] : type}-${this.token(
               10
-            )}${Date.now()}`]: {
+            )}${Date.now() + (Math.random() * 10000).toString().split(".").join("")}`]: {
               ...data[key],
             },
           };

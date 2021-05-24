@@ -2749,6 +2749,21 @@ class Watch extends Component {
           </div>
           {type === "serie" ? (
             <Fragment>
+              {repereEpisode[1] && repereEpisode[1]?.Info?.title ? (
+                <h3
+                  id="titleEPStartMod"
+                  ref={(el) => {
+                    try {
+                      el.style.setProperty(
+                        "--size",
+                        `${el.getBoundingClientRect().width}px`
+                      );
+                    } catch (err) {}
+                  }}
+                >
+                  {repereEpisode[1]?.Info?.title}
+                </h3>
+              ) : null}
               <header
                 id="HeaderStartModSizeDyna"
                 ref={(el) => {
@@ -2760,10 +2775,21 @@ class Watch extends Component {
                   } catch (err) {}
                 }}
               >
+                {repereEpisode[1] &&
+                (repereEpisode[1]?.Info?.recap ||
+                  repereEpisode[1]?.Info?.filler) ? (
+                  <h4>
+                    <Badge
+                      variant={
+                        repereEpisode[1]?.Info?.recap ? "secondary" : "danger"
+                      }
+                    >
+                      {repereEpisode[1]?.Info?.recap ? "Recap" : "Filler"}
+                    </Badge>
+                  </h4>
+                ) : null}
                 <h2>
-                  Épisode{" "}
-                  {repereEpisode[1] === undefined ? null : repereEpisode[1].id}{" "}
-                  (S
+                  Épisode {!repereEpisode[1] ? null : repereEpisode[1].id} (S
                   {Object.keys(repereSaison).length === 0
                     ? null
                     : repereSaison.name.split(" ")[1]}
@@ -2771,8 +2797,7 @@ class Watch extends Component {
                   <br />
                   <span id="TotalEP">
                     (
-                    {repereEpisode[1] === undefined ||
-                    Object.keys(repereSaison).length === 0
+                    {!repereEpisode[1] || Object.keys(repereSaison).length === 0
                       ? null
                       : this.derterminateEpTotal()}
                     <sup>ème</sup> épisode au total)
