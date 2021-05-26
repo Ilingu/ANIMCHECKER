@@ -61,12 +61,10 @@ class Watch extends Component {
     ShowMessage: false,
     ShowMessageHtml: false,
     SmartRepere: true,
-    SecondMessage: false,
     PauseWithAlleged: false,
     FnToExeAfterRefresh: null,
     DropWithAlleged: false,
     ScrollPosAccordeon: 0,
-    AlreadyClicked: false,
     // Message
     ResText: null,
     typeAlertMsg: null,
@@ -328,12 +326,6 @@ class Watch extends Component {
               this.DisplayMsg("Vous avez râté votre objectif", 6000, "danger");
               this.setState({ LetsNotCelebrate: true });
               this.deleteValue(`${this.state.Pseudo}/serie/${id}/Objectif`);
-              if (!this.state.OfflineMode) {
-                this.fnDbOffline(
-                  "DELETE",
-                  `${this.state.Pseudo}/serie/${id}/Objectif`
-                );
-              }
             } else if (AnimToWatch.Objectif !== undefined) this.StartNextEP();
             if (this.state.WatchModeNow === "true") {
               this.StartNextEP();
@@ -344,10 +336,7 @@ class Watch extends Component {
               this.ReTakeInfoFromName();
             }
             // Scroll EP
-            if (
-              document.getElementById("EpisodesList") !== undefined &&
-              document.getElementById("EpisodesList") !== null
-            ) {
+            if (document.contains(document.getElementById("EpisodesList"))) {
               document
                 .getElementById("EpisodesList")
                 .scrollTo(0, ScrollPosAccordeon);
@@ -648,28 +637,11 @@ class Watch extends Component {
           ? "none"
           : InfoAnimeRes[1].data.duration,
       });
-
-      if (!this.state.OfflineMode) {
-        this.fnDbOffline("PUT", `${this.state.Pseudo}/${type}/${id}`, {
-          imageUrl: ChangeAnime
-            ? InfoAnimeRes[1].data.image_url.split("?s=")[0]
-            : AnimToWatch.imageUrl,
-          AnimEP: !AnimSEP || !ChangeAnime ? AnimToWatch.AnimEP : AnimSEP,
-          DurationPerEP: !InfoAnimeRes[1].data.duration
-            ? "none"
-            : InfoAnimeRes[1].data.duration,
-        });
-      }
     } catch (err) {
       console.error(err);
       this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
         DurationPerEP: "none",
       });
-      if (!this.state.OfflineMode) {
-        this.fnDbOffline("PUT", `${this.state.Pseudo}/${type}/${id}`, {
-          DurationPerEP: "none",
-        });
-      }
     }
   };
 
@@ -708,25 +680,6 @@ class Watch extends Component {
       Rate: null,
     });
 
-    if (!this.state.OfflineMode) {
-      this.fnDbOffline(
-        "POST",
-        `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes`,
-        AnimToWatch.AnimEP[idSaison].Episodes.concat(Stockage)
-      );
-      this.fnDbOffline(
-        "PUT",
-        `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}`,
-        {
-          finished: false,
-        }
-      );
-      this.fnDbOffline("PUT", `${this.state.Pseudo}/serie/${id}`, {
-        finishedAnim: false,
-        Rate: null,
-      });
-    }
-
     this.setState({
       nbEpToAdd: 1,
       ShowModalAddEp: false,
@@ -758,17 +711,6 @@ class Watch extends Component {
       finishedAnim: false,
     });
 
-    if (!this.state.OfflineMode) {
-      this.fnDbOffline(
-        "POST",
-        `${this.state.Pseudo}/serie/${id}/AnimEP`,
-        Stockage
-      );
-      this.fnDbOffline("PUT", `${this.state.Pseudo}/serie/${id}`, {
-        finishedAnim: false,
-      });
-    }
-
     this.setState({
       nbEpToAdd: 1,
       ShowModalAddSeasonEp: false,
@@ -778,7 +720,11 @@ class Watch extends Component {
   StartModeWatch = () => {
     window.scrollTo(0, 0);
     document.body.style.overflow = "hidden";
-    this.setState({ modeWatch: true });
+    this.setState({
+      modeWatch: true,
+      ToOpen: "",
+      RefreshAnimToWatchRenderer: true,
+    });
   };
 
   StopModeWatch = () => {
@@ -866,17 +812,6 @@ class Watch extends Component {
       () => this.setState({ ShowModalRateAnime: true })
     );
 
-    if (!this.state.OfflineMode) {
-      this.fnDbOffline("PUT", `${this.state.Pseudo}/serie/${id}`, {
-        finishedAnim: true,
-        AnimeSeason: null,
-        Info: {
-          Begin: AnimToWatch?.Info?.Begin ? AnimToWatch.Info.Begin : null,
-          End: Date.now(),
-        },
-      });
-    }
-
     this.StopModeWatch();
   };
 
@@ -886,16 +821,6 @@ class Watch extends Component {
     this.updateValue(`${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}`, {
       finished: true,
     });
-
-    if (!this.state.OfflineMode) {
-      this.fnDbOffline(
-        "PUT",
-        `${this.state.Pseudo}/serie/${id}/AnimEP/${idSaison}`,
-        {
-          finished: true,
-        }
-      );
-    }
 
     if (repereEpisode[2] === null) this.StopModeWatch();
   };
@@ -939,14 +864,7 @@ class Watch extends Component {
   };
 
   finishedEp = (Saison, EpFinishedID, verified = true, next = null) => {
-    const {
-      Pseudo,
-      id,
-      AnimToWatch,
-      repereEpisode,
-      repereSaison,
-      AlreadyClicked,
-    } = this.state;
+    const { Pseudo, id, AnimToWatch, repereEpisode, repereSaison } = this.state;
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
     if (!AnimToWatch.AnimEP[idSaison].Episodes[EpFinishedID - 2].finished) {
@@ -970,59 +888,27 @@ class Watch extends Component {
           if (verified) this.verifiedEPRepere(Saison, false);
           if (next !== null) next();
 
-          this.setState(
-            {
-              SecondMessage: AlreadyClicked ? true : false,
-              AlreadyClicked: true,
-            },
-            () =>
-              this.DisplayMsg(
-                `Episode ${repereEpisode[1].id}(S${
-                  Object.keys(repereSaison).length === 0
-                    ? null
-                    : repereSaison.name.split(" ")[1]
-                }) fini !`,
-                3000,
-                "success"
-              )
-          );
-        },
-        true
-      );
-
-      if (!this.state.OfflineMode) {
-        if (AnimToWatch.NewEpMode)
-          this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-            NewEpMode: null,
-          });
-        if (IsFirstWatch)
-          this.fnDbOffline("POST", `${Pseudo}/serie/${id}/Info`, {
-            Begin: Date.now(),
-          });
-        this.fnDbOffline(
-          "PUT",
-          `${Pseudo}/serie/${id}/AnimEP/${idSaison}/Episodes/${
-            EpFinishedID - 2
-          }`,
-          { finished: true }
-        );
-      }
-    } else {
-      this.setState(
-        {
-          SecondMessage: AlreadyClicked ? true : false,
-          AlreadyClicked: true,
-        },
-        () =>
           this.DisplayMsg(
             `Episode ${repereEpisode[1].id}(S${
               Object.keys(repereSaison).length === 0
                 ? null
                 : repereSaison.name.split(" ")[1]
-            }) déjà fini`,
+            }) fini !`,
             3000,
-            "warn"
-          )
+            "success"
+          );
+        },
+        true
+      );
+    } else {
+      this.DisplayMsg(
+        `Episode ${repereEpisode[1].id}(S${
+          Object.keys(repereSaison).length === 0
+            ? null
+            : repereSaison.name.split(" ")[1]
+        }) déjà fini`,
+        3000,
+        "warn"
       );
     }
     if (
@@ -1030,9 +916,6 @@ class Watch extends Component {
       this.CalculateWhereStop()[1] + 1 === AnimToWatch.Objectif.End[1]
     ) {
       this.deleteValue(`${Pseudo}/serie/${id}/Objectif`);
-      if (!this.state.OfflineMode) {
-        this.fnDbOffline("DELETE", `${Pseudo}/serie/${id}/Objectif`);
-      }
       this.StopModeWatch();
       this.setState({ LetsCelebrate: true });
     }
@@ -1087,15 +970,6 @@ class Watch extends Component {
       () => this.setState({ ShowModalRateAnime: true })
     );
 
-    if (!this.state.OfflineMode) {
-      this.fnDbOffline("PUT", `${this.state.Pseudo}/film/${id}`, {
-        finished: true,
-        Info: {
-          Watched: Date.now(),
-        },
-      });
-    }
-
     this.StopModeWatch();
   };
 
@@ -1130,22 +1004,7 @@ class Watch extends Component {
         ],
       },
     });
-    if (!this.state.OfflineMode) {
-      this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-        Objectif: {
-          Begin: [
-            parseInt(repereSaison.name.split(" ")[1]),
-            this.CalculateWhereStop()[1],
-            Date.now(),
-          ],
-          End: [
-            parseInt(repereSaison.name.split(" ")[1]),
-            nbEpObjectif,
-            new Date(DateObjectif).getTime(),
-          ],
-        },
-      });
-    }
+
     this.setState({ ShowModalAddObjectif: false, nbEpObjectif: 1 });
   };
 
@@ -1154,15 +1013,9 @@ class Watch extends Component {
 
     if (AnimToWatch.Lier) {
       this.deleteValue(`${Pseudo}/Notif/${AnimToWatch.Lier}`);
-      if (!this.state.OfflineMode) {
-        this.fnDbOffline("DELETE", `${Pseudo}/Notif/${AnimToWatch.Lier}`);
-      }
     }
 
     this.deleteValue(`${Pseudo}/${type}/${id}`);
-    if (!this.state.OfflineMode) {
-      this.fnDbOffline("DELETE", `${Pseudo}/${type}/${id}`);
-    }
     this.setState({ uid: null, RedirectTo: [true, "/notifuser/5"] });
   };
 
@@ -1170,14 +1023,6 @@ class Watch extends Component {
     const { Badges, Pseudo, type, id } = this.state;
     Badges.splice(index, 1);
     this.updateValue(`${Pseudo}/${type}/${id}`, { Badge: Badges });
-    if (!this.state.OfflineMode) {
-      if (Badges.length === 0) {
-        this.fnDbOffline("DELETE", `${Pseudo}/${type}/${id}/Badge`);
-        return;
-      }
-
-      this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, { Badge: Badges });
-    }
   };
 
   addBadge = (event) => {
@@ -1194,11 +1039,6 @@ class Watch extends Component {
       this.updateValue(`${Pseudo}/${type}/${id}`, {
         Badge: [...Badges, NewBadgeName],
       });
-      if (!this.state.OfflineMode) {
-        this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
-          Badge: [...Badges, NewBadgeName],
-        });
-      }
       this.setState({ ShowFormBadge: false, NewBadgeName: "" });
     } else if (this.FirstBadge) {
       this.FirstBadge = false;
@@ -1228,19 +1068,7 @@ class Watch extends Component {
         Paused: PauseWithAlleged ? true : null,
         Drop: DropWithAlleged ? true : null,
       });
-      if (!this.state.OfflineMode) {
-        this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-          AnimEP: null,
-          Badge: null,
-          Lier: null,
-          DurationPerEP: null,
-          NewEpMode: null,
-          InWait: null,
-          AnimeSeason: null,
-          Paused: PauseWithAlleged ? true : null,
-          Drop: DropWithAlleged ? true : null,
-        });
-      }
+
       this.setState({ uid: null, RedirectTo: [true, "/notifuser/5"] });
     }
   };
@@ -1264,11 +1092,6 @@ class Watch extends Component {
         },
         this.ReTakeInfoFromName
       );
-      if (!this.state.OfflineMode) {
-        this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
-          name: Newtitle,
-        });
-      }
     }
   };
 
@@ -1283,15 +1106,7 @@ class Watch extends Component {
       typeAlertMsg: type,
     });
     this.setTimeOutMsgInfo = setTimeout(() => {
-      if (this.state.SecondMessage) {
-        this.setState({ SecondMessage: false });
-        return;
-      }
-
-      this.setState({
-        ShowMessage: false,
-        AlreadyClicked: false,
-      });
+      this.setState({ ShowMessage: false });
 
       this.setTimeOutMsgInfo2 = setTimeout(() => {
         this.setState({
@@ -1314,12 +1129,6 @@ class Watch extends Component {
         }
         if (idSeason === AnimToWatch.AnimEP.length - 1) {
           this.deleteValue(`${Pseudo}/serie/${id}/AnimEP/${idSeason}`);
-          if (!this.state.OfflineMode) {
-            this.fnDbOffline(
-              "DELETE",
-              `${Pseudo}/serie/${id}/AnimEP/${idSeason}`
-            );
-          }
         }
         return;
       }
@@ -1340,12 +1149,6 @@ class Watch extends Component {
         this.deleteValue(
           `${Pseudo}/serie/${id}/AnimEP/${idSeason}/Episodes/${idEP - 1}`
         );
-        if (!this.state.OfflineMode) {
-          this.fnDbOffline(
-            "DELETE",
-            `${Pseudo}/serie/${id}/AnimEP/${idSeason}/Episodes/${idEP - 1}`
-          );
-        }
       }
     } else {
       if (AnimToWatch.AnimEP.length === 1) {
@@ -1355,12 +1158,6 @@ class Watch extends Component {
 
       if (idSeason === AnimToWatch.AnimEP.length - 1) {
         this.deleteValue(`${Pseudo}/serie/${id}/AnimEP/${idSeason}`);
-        if (!this.state.OfflineMode) {
-          this.fnDbOffline(
-            "DELETE",
-            `${Pseudo}/serie/${id}/AnimEP/${idSeason}`
-          );
-        }
       }
     }
   };
@@ -1663,21 +1460,11 @@ class Watch extends Component {
                 this.updateValue(`${Pseudo}/serie/${id}`, {
                   finishedAnim: false,
                 });
-                if (!this.state.OfflineMode) {
-                  this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-                    finishedAnim: false,
-                  });
-                }
               }
 
               this.updateValue(`${Pseudo}/serie/${id}`, {
                 AnimEP: AnimToWatchCopy,
               });
-              if (!this.state.OfflineMode) {
-                this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-                  AnimEP: AnimToWatchCopy,
-                });
-              }
             },
             ImgUrl: AnimToWatch.imageUrl,
             Duration: AnimToWatch.DurationPerEP,
@@ -2070,18 +1857,6 @@ class Watch extends Component {
                               "success"
                             )
                         );
-
-                        if (!this.state.OfflineMode) {
-                          this.fnDbOffline(
-                            "PUT",
-                            `${this.state.Pseudo}/serie/${id}`,
-                            {
-                              AnimeSeason: AnimToWatch.AnimeSeason
-                                ? null
-                                : true,
-                            }
-                          );
-                        }
                       }}
                     >
                       <span
@@ -2118,11 +1893,6 @@ class Watch extends Component {
                     this.updateValue(`${Pseudo}/${type}/${id}`, {
                       InWait: true,
                     });
-                    if (!this.state.OfflineMode) {
-                      this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
-                        InWait: true,
-                      });
-                    }
                     this.setState({
                       uid: null,
                       RedirectTo: [true, "/notifuser/5"],
@@ -2147,20 +1917,6 @@ class Watch extends Component {
                         Lier: null,
                         NewEpMode: null,
                       });
-                      if (!this.state.OfflineMode) {
-                        this.fnDbOffline(
-                          "PUT",
-                          `${this.state.Pseudo}/${type}/${id}`,
-                          {
-                            Drop: true,
-                            Paused: null,
-                            InWait: null,
-                            AnimeSeason: null,
-                            Lier: null,
-                            NewEpMode: null,
-                          }
-                        );
-                      }
                       this.setState({
                         uid: null,
                         RedirectTo: [true, "/notifuser/5"],
@@ -2184,20 +1940,6 @@ class Watch extends Component {
                       Lier: null,
                       NewEpMode: null,
                     });
-                    if (!this.state.OfflineMode) {
-                      this.fnDbOffline(
-                        "PUT",
-                        `${this.state.Pseudo}/${type}/${id}`,
-                        {
-                          Paused: true,
-                          Drop: null,
-                          InWait: null,
-                          AnimeSeason: null,
-                          Lier: null,
-                          NewEpMode: null,
-                        }
-                      );
-                    }
                     this.setState({
                       uid: null,
                       RedirectTo: [true, "/notifuser/5"],
@@ -2383,12 +2125,6 @@ class Watch extends Component {
                     this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                       Fav: null,
                     });
-                    if (!this.state.OfflineMode) {
-                      this.fnDbOffline(
-                        "DELETE",
-                        `${this.state.Pseudo}/${type}/${id}/Fav`
-                      );
-                    }
                   }}
                 ></span>
               ) : (
@@ -2399,15 +2135,6 @@ class Watch extends Component {
                     this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                       Fav: true,
                     });
-                    if (!this.state.OfflineMode) {
-                      this.fnDbOffline(
-                        "PUT",
-                        `${this.state.Pseudo}/${type}/${id}`,
-                        {
-                          Fav: true,
-                        }
-                      );
-                    }
                   }}
                 ></span>
               )}
@@ -2620,11 +2347,6 @@ class Watch extends Component {
                           this.updateValue(`${Pseudo}/serie/${id}`, {
                             NewEpMode: null,
                           });
-                          if (!this.state.OfflineMode) {
-                            this.fnDbOffline("PUT", `${Pseudo}/serie/${id}`, {
-                              NewEpMode: null,
-                            });
-                          }
                         }}
                       ></span>{" "}
                       Anime
@@ -2677,11 +2399,6 @@ class Watch extends Component {
                       this.updateValue(`${Pseudo}/film/${id}`, {
                         finished: !AnimToWatch.finished,
                       });
-                      if (!this.state.OfflineMode) {
-                        this.fnDbOffline("PUT", `${Pseudo}/film/${id}`, {
-                          finished: !AnimToWatch.finished,
-                        });
-                      }
                     }}
                     className="fas fa-undo-alt"
                   ></span>{" "}
@@ -2727,9 +2444,6 @@ class Watch extends Component {
             onDoubleClick={() => {
               if (AnimToWatch.Objectif !== undefined) {
                 this.deleteValue(`${Pseudo}/serie/${id}/Objectif`);
-                if (!this.state.OfflineMode) {
-                  this.fnDbOffline("DELETE", `${Pseudo}/serie/${id}/Objectif`);
-                }
                 this.StopModeWatch();
               }
             }}
@@ -3056,20 +2770,6 @@ class Watch extends Component {
                     Lier: null,
                     NewEpMode: null,
                   });
-                  if (!this.state.OfflineMode) {
-                    this.fnDbOffline(
-                      "PUT",
-                      `${this.state.Pseudo}/${type}/${id}`,
-                      {
-                        Paused: true,
-                        Drop: null,
-                        InWait: null,
-                        AnimeSeason: null,
-                        Lier: null,
-                        NewEpMode: null,
-                      }
-                    );
-                  }
                   GoToHome = true;
                 } else if (
                   ActionEndAnime[0] &&
@@ -3099,11 +2799,6 @@ class Watch extends Component {
                   this.updateValue(`${Pseudo}/${type}/${id}`, {
                     Rate,
                   });
-                  if (!this.state.OfflineMode) {
-                    this.fnDbOffline("PUT", `${Pseudo}/${type}/${id}`, {
-                      Rate,
-                    });
-                  }
                   this.setState({
                     ShowModalRateAnime: false,
                     Rate: 0,

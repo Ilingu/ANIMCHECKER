@@ -293,7 +293,7 @@ export default class Home extends Component {
         connection.effectiveType === "2g"
       ) {
         this.ShowMessageInfo(
-          `Connexion internet faible/instable. (${connection.effectiveType}}`,
+          `Connexion internet faible/instable (${connection.effectiveType})`,
           7000,
           "warn"
         );

@@ -659,7 +659,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>14</b>
+                  Stable (LTS)<b>1</b>β<b>14</b> (F1)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
@@ -671,15 +671,15 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.9</b>
+                  Stable (LTS)<b>1.9.1</b>
                 </li>
               </ul>
               <p>
                 Vous êtes actuellement sur la version{" "}
                 {window.matchMedia("(display-mode: standalone)").matches ? (
-                  <b>APP</b>
+                  <b>Application</b>
                 ) : (
-                  <b>WEB</b>
+                  <b>WEB (In browser)</b>
                 )}{" "}
                 de MyAnimChecker
               </p>
@@ -687,6 +687,16 @@ class Settings extends Component {
                 <Fragment>
                   <h5>Session Actuelle</h5>
                   <ul>
+                    <li>
+                      <span
+                        style={{ textDecoration: "underline", color: "#ddd" }}
+                      >
+                        Type d'appareil:
+                      </span>{" "}
+                      {window.mobileAndTabletCheck()
+                        ? "Mobile (Tablet/Smartphone...)"
+                        : "PC"}
+                    </li>
                     {!ConnectionInfo.TypeTechno ? null : (
                       <li>
                         <span
