@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useHistory } from "react-router-dom";
+import { openDB } from "idb";
+import ObjectPath from "object-path";
 // Components
 import Scans from "../dyna/Watch/Scans";
 import VolumesCO from "../dyna/Watch/Volumes";
@@ -32,6 +34,9 @@ const WatchManga = (props) => {
     RenderVolumesSaved: [],
     RenderScansSaved: [],
     // App
+    OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
+      ? false
+      : JSON.parse(window.localStorage.getItem("OfflineMode")),
     RedirectHome: [false, ""],
     isFirstTime: true,
     LastFinished: 0,
@@ -63,6 +68,7 @@ const WatchManga = (props) => {
     MangaToWatch,
     RedirectHome,
     LoadingMode,
+    OfflineMode,
     id,
     FirstQuerie,
     ShowModalAddScan,
@@ -103,6 +109,11 @@ const WatchManga = (props) => {
         return;
       } else {
         setState({ type: state.id.split("-")[0] });
+        if (OfflineMode === true) {
+          // Get Data IndexedDB
+          fnDbOffline("GET");
+          return;
+        }
       }
     } else {
       setState({ uid: null, RedirectHome: [true, "/notifuser/10"] });
@@ -134,12 +145,15 @@ const WatchManga = (props) => {
   /* FN */
   const ActiveWebSockets = useCallback(() => {
     // WS
-    DataBaseWS = firebase.database().ref(`${Pseudo}/manga/0/${id}`);
-    DataBaseWS.on("value", (snap) => {
-      const NewData = snap.val();
-      if (!NewData) return setState({ RedirectHome: [true, "/notifuser/12"] });
-      refreshMangaToWatch(NewData);
-    });
+    if (OfflineMode === false) {
+      DataBaseWS = firebase.database().ref(`${Pseudo}/manga/0/${id}`);
+      DataBaseWS.on("value", (snap) => {
+        const NewData = snap.val();
+        if (!NewData)
+          return setState({ RedirectHome: [true, "/notifuser/12"] });
+        refreshMangaToWatch(NewData);
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Pseudo, id, setState]);
   // Connection
@@ -219,23 +233,103 @@ const WatchManga = (props) => {
     },
     [Pseudo, id, setState]
   );
-  // FireBase
-  const UpdateValue = useCallback((path, value) => {
-    base
-      .update(path, {
-        data: value,
-      })
+  const fnDbOffline = useCallback(
+    async (type, path, value, next = null) => {
+      const db = await openDB("AckDb", 1);
+      if (type === "GET") {
+        // Get Data IndexedDB
+        const Store = db
+          .transaction("MangaFirebase")
+          .objectStore("MangaFirebase");
+        const results = await Store.getAll();
+        const MangaToWatch = results ? results[0].data[0][id] : {};
 
-      .catch((err) => console.error(err));
-  }, []);
-  const DeleteValue = useCallback((path, callBackNext) => {
-    base
-      .remove(path)
-      .then(() => {
-        callBackNext();
-      })
-      .catch(console.error);
-  }, []);
+        document.title = `MCK:${MangaToWatch.name}`;
+
+        setState({
+          MangaToWatch: !MangaToWatch ? {} : MangaToWatch,
+          FirstQuerie: true,
+          LoadingMode: false,
+          RefreshRenderVolumes: true,
+          RefreshRenderScans: true,
+        });
+      } else if (type === "PUT") {
+        const Store = db
+          .transaction("MangaFirebase")
+          .objectStore("MangaFirebase");
+        const CopyData = (await Store.getAll())[0].data[0];
+        let NewPath = path.split("/");
+        NewPath.shift();
+        NewPath.shift();
+        NewPath.shift();
+        NewPath = NewPath.join(".");
+        const ObjToEdit = ObjectPath.get(CopyData, NewPath);
+        Object.keys(value).forEach((key, i) => {
+          if (Object.values(value)[i] === null) {
+            ObjectPath.del(CopyData, `${NewPath}.${key}`);
+            return;
+          }
+          ObjToEdit[key] = Object.values(value)[i];
+        });
+        Store.put({
+          id: Store.name,
+          data: [...CopyData, ...(await Store.getAll())[0].data[1]],
+        })
+          .then(() => fnDbOffline("GET", null, null, next))
+          .catch(console.error);
+      } else if (type === "DELETE") {
+        const Store = db
+          .transaction("MangaFirebase")
+          .objectStore("MangaFirebase");
+        const CopyData = (await Store.getAll())[0].data[0];
+        let NewPath = path.split("/");
+        NewPath.shift();
+        NewPath.shift();
+        NewPath.shift();
+        NewPath = NewPath.join(".");
+        ObjectPath.del(CopyData, NewPath);
+        Store.put({
+          id: Store.name,
+          data: [...CopyData, ...(await Store.getAll())[0].data[1]],
+        })
+          .then(() => fnDbOffline("GET", null, null, next))
+          .catch(console.error);
+      }
+    },
+    [id, setState]
+  );
+  // FireBase
+  const UpdateValue = useCallback(
+    (path, value) => {
+      if (OfflineMode === true) {
+        fnDbOffline("PUT", path, value);
+        return;
+      }
+
+      base
+        .update(path, {
+          data: value,
+        })
+        .catch((err) => console.error(err));
+    },
+    [OfflineMode, fnDbOffline]
+  );
+  const DeleteValue = useCallback(
+    (path, callBackNext) => {
+      if (OfflineMode === true) {
+        fnDbOffline("DELETE", path);
+        return;
+      }
+
+      base
+        .remove(path)
+        .then(() => {
+          callBackNext();
+        })
+        .catch(console.error);
+    },
+    [OfflineMode, fnDbOffline]
+  );
   // App
   const handleAlleger = useCallback(() => {
     UpdateValue(`${Pseudo}/manga/0/${id}`, {

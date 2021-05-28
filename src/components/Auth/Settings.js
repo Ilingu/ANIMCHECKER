@@ -80,13 +80,15 @@ class Settings extends Component {
   }
 
   ActiveWebSockets = () => {
-    // WS
-    const { Pseudo } = this.state;
-    this.DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
-    this.DataBaseWS.on("value", (snap) => {
-      const NewData = snap.val();
-      this.refreshParamsOptn(NewData);
-    });
+    if (this.state.OfflineMode === false) {
+      // WS
+      const { Pseudo } = this.state;
+      this.DataBaseWS = firebase.database().ref(`${Pseudo}/ParamsOptn`);
+      this.DataBaseWS.on("value", (snap) => {
+        const NewData = snap.val();
+        this.refreshParamsOptn(NewData);
+      });
+    }
   };
 
   reAuth = () => {
@@ -659,19 +661,19 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>14</b> (F1)
+                  Stable (LTS)<b>1</b>β<b>14</b> (F2)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version MCK:
                   </span>{" "}
-                  β<b>3</b>
+                  β<b>4</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Project Version:
                   </span>{" "}
-                  Stable (LTS)<b>1.9.1</b>
+                  Stable (LTS)<b>1.9.2</b>
                 </li>
               </ul>
               <p>

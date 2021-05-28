@@ -12,6 +12,7 @@ request.onupgradeneeded = () => {
   db.createObjectStore("serieFirebase", { keyPath: "id" });
   db.createObjectStore("NotifFirebase", { keyPath: "id" });
   db.createObjectStore("ParamsOptn", { keyPath: "id" });
+  db.createObjectStore("MangaFirebase", { keyPath: "id" });
 };
 
 // Request succeed

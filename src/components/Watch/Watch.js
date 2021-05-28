@@ -166,15 +166,17 @@ class Watch extends Component {
   }
 
   ActiveWebSockets = () => {
-    // WS
-    const { Pseudo, type, id } = this.state;
-    this.DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
-    this.DataBaseWS.on("value", (snap) => {
-      const NewData = snap.val();
-      if (!NewData)
-        return this.setState({ RedirectTo: [true, "/notifuser/12"] });
-      this.refreshAnimToWatch(null, NewData);
-    });
+    if (this.state.OfflineMode === false) {
+      // WS
+      const { Pseudo, type, id } = this.state;
+      this.DataBaseWS = firebase.database().ref(`${Pseudo}/${type}/${id}`);
+      this.DataBaseWS.on("value", (snap) => {
+        const NewData = snap.val();
+        if (!NewData)
+          return this.setState({ RedirectTo: [true, "/notifuser/12"] });
+        this.refreshAnimToWatch(null, NewData);
+      });
+    }
   };
 
   reAuth = () => {

@@ -45,8 +45,7 @@ export default class Home extends Component {
     // Bon fonctionnement de l'app
     PageMode:
       JSON.parse(window.localStorage.getItem("PageMode")) === null ||
-      JSON.parse(window.localStorage.getItem("PageMode")) === undefined ||
-      JSON.parse(window.localStorage.getItem("OfflineMode")) === true
+      JSON.parse(window.localStorage.getItem("PageMode")) === undefined
         ? true
         : JSON.parse(window.localStorage.getItem("PageMode")),
     OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
@@ -730,8 +729,27 @@ export default class Home extends Component {
             );
             IsLostData = true;
             this.addValue(
-              `${this.state.Pseudo}/film`,
-              AllDataIndexedDb[1][0]?.data
+              `${this.state.Pseudo}/ParamsOptn`,
+              AllDataIndexedDb[3][0]?.data
+            );
+          } else {
+            UserNo = false;
+          }
+        }
+        if (
+          (typeof GlobalInfoUser.manga !== "object" ||
+            Object.keys(GlobalInfoUser.manga).length === 0) &&
+          AllDataIndexedDb[4][0]?.data
+        ) {
+          CheckLastAntiLostData("Manga");
+          if (!UserNo) {
+            console.warn(
+              "Perte des données Manga, procedure de réparage enclenché."
+            );
+            IsLostData = true;
+            this.addValue(
+              `${this.state.Pseudo}/manga`,
+              AllDataIndexedDb[4][0]?.data
             );
           } else {
             UserNo = false;
@@ -767,20 +785,35 @@ export default class Home extends Component {
               .transaction("NotifFirebase", "readwrite")
               .objectStore("NotifFirebase"),
             db.transaction("ParamsOptn", "readwrite").objectStore("ParamsOptn"),
+            db
+              .transaction("MangaFirebase", "readwrite")
+              .objectStore("MangaFirebase"),
           ];
           Store.forEach(async (req) => {
             req.put({
               id: req.name,
               data:
                 req.name === "serieFirebase"
-                  ? GlobalInfoUser.serie
+                  ? !GlobalInfoUser?.serie
+                    ? {}
+                    : GlobalInfoUser.serie
                   : req.name === "filmFireBase"
-                  ? GlobalInfoUser.film
+                  ? !GlobalInfoUser?.film
+                    ? {}
+                    : GlobalInfoUser.film
                   : req.name === "NextAnimFireBase"
-                  ? GlobalInfoUser.NextAnim
+                  ? !GlobalInfoUser?.NextAnim
+                    ? {}
+                    : GlobalInfoUser.NextAnim
                   : req.name === "NotifFirebase"
                   ? GlobalInfoUser.Notif
-                  : GlobalInfoUser.ParamsOptn,
+                  : req.name === "ParamsOptn"
+                  ? !GlobalInfoUser?.ParamsOptn
+                    ? {}
+                    : GlobalInfoUser.ParamsOptn
+                  : !GlobalInfoUser?.manga
+                  ? []
+                  : GlobalInfoUser.manga,
             });
           });
         }
@@ -799,6 +832,7 @@ export default class Home extends Component {
         db.transaction("filmFireBase").objectStore("filmFireBase"),
         db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
         db.transaction("ParamsOptn").objectStore("ParamsOptn"),
+        db.transaction("MangaFirebase").objectStore("MangaFirebase"),
       ];
 
       const results = await Promise.all(
@@ -827,6 +861,10 @@ export default class Home extends Component {
                 : {}
               : {}
             : {},
+          MangaFirebase:
+            results[4] && results[4][0] && results[4][0].data
+              ? results[4][0].data
+              : [],
           ParamsOptn:
             results[3] && results[3][0] && results[3][0].data
               ? results[3][0].data
@@ -1002,7 +1040,7 @@ export default class Home extends Component {
 
   addValue = (path, value) => {
     const { OfflineMode } = this.state;
-    if (OfflineMode === true && !path.includes("manga")) {
+    if (OfflineMode === true) {
       this.fnDbOffline("POST", path, value);
       return;
     }
@@ -1036,7 +1074,7 @@ export default class Home extends Component {
 
   updateValue = (path, value, Next = null) => {
     const { OfflineMode } = this.state;
-    if (OfflineMode === true && !path.includes("manga")) {
+    if (OfflineMode === true) {
       this.fnDbOffline("PUT", path, value, Next !== null ? Next : null);
       return;
     }
@@ -1056,7 +1094,7 @@ export default class Home extends Component {
 
   deleteValue = async (path) => {
     const { OfflineMode } = this.state;
-    if (OfflineMode === true && !path.includes("manga")) {
+    if (OfflineMode === true) {
       this.fnDbOffline("DELETE", path);
       return;
     }
@@ -1232,9 +1270,7 @@ export default class Home extends Component {
             // Bon fonctionnement de l'app
             PageMode:
               JSON.parse(window.localStorage.getItem("PageMode")) === null ||
-              JSON.parse(window.localStorage.getItem("PageMode")) ===
-                undefined ||
-              JSON.parse(window.localStorage.getItem("OfflineMode")) === true
+              JSON.parse(window.localStorage.getItem("PageMode")) === undefined
                 ? true
                 : JSON.parse(window.localStorage.getItem("PageMode")),
             OfflineMode: !JSON.parse(window.localStorage.getItem("OfflineMode"))
@@ -4568,7 +4604,7 @@ export default class Home extends Component {
               ImportDB: () => this.setState({ ShowModalImportFile: true }),
             }}
           >
-            {PageMode === false && OfflineMode === false ? (
+            {PageMode === false ? (
               <MyManga
                 MyMangaList={
                   MyMangaListSaved || [

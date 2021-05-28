@@ -144,7 +144,7 @@ const Header = ({ FnSearchFilter, SearchFilter }) => {
               </Fragment>
             ) : (
               <Fragment>
-                β<b>3</b>
+                β<b>4</b>
               </Fragment>
             )}
           </sup>
