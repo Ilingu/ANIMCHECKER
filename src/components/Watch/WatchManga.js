@@ -499,6 +499,7 @@ const WatchManga = (props) => {
     (!MangaToWatch?.Scans || MangaToWatch?.Scans.length === 0)
   ) {
     // Forced Loading Anime
+    fnDbOffline("GET");
     refreshMangaToWatch(null, true);
   } else if (type === "volume") {
     if (document.getElementById(`VM-${LastFinished}`)) {
@@ -548,6 +549,7 @@ const WatchManga = (props) => {
     (!MangaToWatch?.Scans || MangaToWatch?.Scans.length === 0)
   ) {
     // Forced Loading Anime
+    fnDbOffline("GET");
     refreshMangaToWatch(null, true);
   } else if (type === "scan") {
     if (document.getElementById(`SM-${LastFinished}`)) {

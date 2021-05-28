@@ -1416,6 +1416,9 @@ export default class Home extends Component {
               db
                 .transaction("NotifFirebase", "readwrite")
                 .objectStore("NotifFirebase"),
+              db
+                .transaction("MangaFirebase", "readwrite")
+                .objectStore("MangaFirebase"),
             ];
 
             Store.forEach((req) => req.clear());
@@ -2022,6 +2025,7 @@ export default class Home extends Component {
   addManga = async () => {
     const {
       Pseudo,
+      OfflineMode,
       typeManga,
       MangaFirebase,
       VolumesPersonnalize,
@@ -2033,6 +2037,12 @@ export default class Home extends Component {
       SwipeActive,
     } = this.state;
     const self = this;
+    if (OfflineMode === true) {
+      return this.setState({
+        ResText: "Impossible d'ajouter un manga en mode Hors-Ligne",
+        typeAlert: "warning",
+      });
+    }
 
     let imgUrl = imageUrl;
     if (typeof title === "string" && title.trim().length !== 0) {
@@ -2783,7 +2793,13 @@ export default class Home extends Component {
 
   addNextManga = () => {
     const self = this;
-    const { Pseudo, NextManga, MangaFirebase } = this.state;
+    const { Pseudo, NextManga, MangaFirebase, OfflineMode } = this.state;
+    if (OfflineMode === true) {
+      return this.setState({
+        ResText: "Impossible d'ajouter un manga en mode Hors-Ligne",
+        typeAlert: "warning",
+      });
+    }
 
     if (typeof NextManga === "string" && NextManga.trim().length !== 0) {
       let IsGoodForPost = true;

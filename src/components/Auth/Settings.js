@@ -667,7 +667,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version MCK:
                   </span>{" "}
-                  β<b>4</b>
+                  β<b>4</b> (F1)
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
@@ -850,6 +850,9 @@ class Settings extends Component {
                   db
                     .transaction("NotifFirebase", "readwrite")
                     .objectStore("NotifFirebase"),
+                  db
+                    .transaction("MangaFirebase", "readwrite")
+                    .objectStore("MangaFirebase"),
                 ];
 
                 Store.forEach((req) => req.clear());
@@ -940,6 +943,9 @@ class Settings extends Component {
                   db
                     .transaction("NotifFirebase", "readwrite")
                     .objectStore("NotifFirebase"),
+                  db
+                    .transaction("MangaFirebase", "readwrite")
+                    .objectStore("MangaFirebase"),
                 ];
 
                 Store.forEach((req) => req.clear());
