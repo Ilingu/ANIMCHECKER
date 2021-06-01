@@ -20,21 +20,25 @@ const WhitchSeason = () => {
     case Month === 12 && Day >= 21:
     case Month === 1:
     case Month === 2:
+    case Month === 3 && Day < 20:
       season = ["snowflake", "#007bff"];
       break;
     case Month === 3 && Day >= 20:
     case Month === 4:
     case Month === 5:
+    case Month === 6 && Day < 20:
       season = ["seedling", "green"];
       break;
     case Month === 6 && Day >= 20:
     case Month === 7:
     case Month === 8:
+    case Month === 9 && Day < 22:
       season = ["umbrella-beach", "gold"];
       break;
     case Month === 9 && Day >= 22:
     case Month === 10:
     case Month === 11:
+    case Month === 12 && Day < 21:
       season = ["tree", "brown"];
       break;
     default:

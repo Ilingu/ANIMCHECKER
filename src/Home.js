@@ -3395,21 +3395,25 @@ export default class Home extends Component {
       case Month === 12 && Day >= 21:
       case Month === 1:
       case Month === 2:
+      case Month === 3 && Day < 20:
         season = "winter";
         break;
       case Month === 3 && Day >= 20:
       case Month === 4:
       case Month === 5:
+      case Month === 6 && Day < 20:
         season = "spring";
         break;
       case Month === 6 && Day >= 20:
       case Month === 7:
       case Month === 8:
+      case Month === 9 && Day < 22:
         season = "summer";
         break;
       case Month === 9 && Day >= 22:
       case Month === 10:
       case Month === 11:
+      case Month === 12 && Day < 21:
         season = "fall";
         break;
       default:
@@ -4186,6 +4190,9 @@ export default class Home extends Component {
                     id={key}
                     Pseudo={Pseudo}
                     ModeFilter={ModeFilter}
+                    ReTakeImgFromName={() => {
+                      console.error("Manga Img Error");
+                    }}
                     isFinishedManga={MangaFirebase[0][key].finished}
                     inMyManga={true}
                     title={MangaFirebase[0][key].name}
