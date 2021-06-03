@@ -559,7 +559,7 @@ class Watch extends Component {
 
   replaceSpace = (data, remplaceStr) => {
     return data
-      .trim()
+      .trimStart()
       .split("")
       .map((char) => (char === " " ? remplaceStr : char))
       .join("");
@@ -573,7 +573,13 @@ class Watch extends Component {
       const AnimeID = (
         await axios.get(
           `https://api.jikan.moe/v3/search/anime?q=${this.replaceSpace(
-            `${AnimToWatch.name}${AnimToWatch.name.length <= 2 ? " " : ""}`,
+            `${AnimToWatch.name}${
+              AnimToWatch.name.length <= 1
+                ? "  "
+                : AnimToWatch.name.length <= 2
+                ? " "
+                : ""
+            }`,
             "%20"
           )}&limit=1`
         )

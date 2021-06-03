@@ -2926,7 +2926,7 @@ export default class Home extends Component {
 
   replaceSpace = (data, remplaceStr) => {
     return data
-      .trim()
+      .trimStart()
       .split("")
       .map((char) => (char === " " ? remplaceStr : char))
       .join("");
@@ -2969,7 +2969,7 @@ export default class Home extends Component {
           `https://api.jikan.moe/v3/search/${
             PageMode ? "anime" : "manga"
           }?q=${this.replaceSpace(
-            `${name}${name.length <= 2 ? " " : ""}`,
+            `${name}${name.length <= 1 ? "  " : name.length <= 2 ? " " : ""}`,
             "%20"
           )}&limit=2`
         );
@@ -2987,10 +2987,17 @@ export default class Home extends Component {
       Object.keys(SearchFilter).forEach((key, i) => {
         if (key === "limit=") IsLimitsCall = true;
         Request += `${i === 0 ? "" : "&"}${key}${
-          key === "q=" && SearchFilter[key].length <= 2
-            ? this.replaceSpace(`${SearchFilter[key]} `, "%20")
-            : key === "q="
-            ? this.replaceSpace(SearchFilter[key], "%20")
+          key === "q="
+            ? this.replaceSpace(
+                `${SearchFilter[key]}${
+                  SearchFilter[key].length <= 1
+                    ? "  "
+                    : SearchFilter[key].length <= 2
+                    ? " "
+                    : ""
+                }`,
+                "%20"
+              )
             : SearchFilter[key]
         }`;
       });
@@ -3012,7 +3019,7 @@ export default class Home extends Component {
       Request = `https://api.jikan.moe/v3/search/${
         PageMode ? "anime" : "manga"
       }?q=${this.replaceSpace(
-        `${name}${name.length <= 2 ? " " : ""}`,
+        `${name}${name.length <= 1 ? "  " : name.length <= 2 ? " " : ""}`,
         "%20"
       )}&limit=16`;
     }
