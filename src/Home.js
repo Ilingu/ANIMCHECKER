@@ -824,218 +824,231 @@ export default class Home extends Component {
   };
 
   fnDbOffline = async (type, path, value, next = null, refresh = true) => {
-    const db = await openDB("AckDb", 1);
-    if (type === "GET") {
-      // Get Data IndexedDB
-      const Store = [
-        db.transaction("serieFirebase").objectStore("serieFirebase"),
-        db.transaction("filmFireBase").objectStore("filmFireBase"),
-        db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
-        db.transaction("ParamsOptn").objectStore("ParamsOptn"),
-        db.transaction("MangaFirebase").objectStore("MangaFirebase"),
-      ];
+    try {
+      const db = await openDB("AckDb", 1);
+      if (type === "GET") {
+        // Get Data IndexedDB
+        const Store = [
+          db.transaction("serieFirebase").objectStore("serieFirebase"),
+          db.transaction("filmFireBase").objectStore("filmFireBase"),
+          db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
+          db.transaction("ParamsOptn").objectStore("ParamsOptn"),
+          db.transaction("MangaFirebase").objectStore("MangaFirebase"),
+        ];
 
-      const results = await Promise.all(
-        Store.map(async (req) => await req.getAll())
-      );
-      this.setState(
-        {
-          serieFirebase: results[0]
-            ? results[0][0]
-              ? results[0][0].data
+        const results = await Promise.all(
+          Store.map(async (req) => await req.getAll())
+        );
+        this.setState(
+          {
+            serieFirebase: results[0]
+              ? results[0][0]
                 ? results[0][0].data
+                  ? results[0][0].data
+                  : {}
                 : {}
-              : {}
-            : {},
-          filmFireBase: results[1]
-            ? results[1][0]
-              ? results[1][0].data
-                ? results[1][0].data
-                : {}
-              : {}
-            : {},
-          NextAnimFireBase: results[2]
-            ? results[2][0]
-              ? results[2][0].data
-                ? results[2][0].data
-                : {}
-              : {}
-            : {},
-          MangaFirebase:
-            results[4] && results[4][0] && results[4][0].data
-              ? results[4][0].data
-              : [],
-          ParamsOptn:
-            results[3] && results[3][0] && results[3][0].data
-              ? results[3][0].data
               : {},
-          LoadingMode: [
-            results[0] && results[1]
-              ? results[0][0] && results[1][0]
-                ? results[0][0].data && results[1][0].data
-                  ? Object.keys(results[0][0].data).length !== 0 ||
-                    Object.keys(results[1][0].data).length !== 0
-                    ? false
-                    : true
-                  : true
-                : true
-              : true,
-            results[2]
+            filmFireBase: results[1]
+              ? results[1][0]
+                ? results[1][0].data
+                  ? results[1][0].data
+                  : {}
+                : {}
+              : {},
+            NextAnimFireBase: results[2]
               ? results[2][0]
                 ? results[2][0].data
-                  ? Object.keys(results[2][0].data).length !== 0
-                    ? false
+                  ? results[2][0].data
+                  : {}
+                : {}
+              : {},
+            MangaFirebase:
+              results[4] && results[4][0] && results[4][0].data
+                ? results[4][0].data
+                : [],
+            ParamsOptn:
+              results[3] && results[3][0] && results[3][0].data
+                ? results[3][0].data
+                : {},
+            LoadingMode: [
+              results[0] && results[1]
+                ? results[0][0] && results[1][0]
+                  ? results[0][0].data && results[1][0].data
+                    ? Object.keys(results[0][0].data).length !== 0 ||
+                      Object.keys(results[1][0].data).length !== 0
+                      ? false
+                      : true
                     : true
                   : true
-                : true
-              : true,
-          ],
-          ModeFindAnime: [false, null],
-          RefreshRenderAnime: true,
-          RefreshRenderNA: true,
-          ModeFilter:
-            results[3] &&
-            results[3][0] &&
-            results[3][0]?.data?.TypeAnimeHomePage &&
-            !this.state.FirstQuerie
-              ? results[3][0].data.TypeAnimeHomePage
-              : this.state.ModeFilter,
-        },
-        () => {
-          if (next !== null) next();
-        }
-      );
-    } else if (type === "GETReturn") {
-      // Get Data IndexedDB
-      const Store = [
-        db.transaction("serieFirebase").objectStore("serieFirebase"),
-        db.transaction("filmFireBase").objectStore("filmFireBase"),
-        db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
-        db.transaction("ParamsOptn").objectStore("ParamsOptn"),
-      ];
-
-      const results = await Promise.all(
-        Store.map(async (req) => await req.getAll())
-      );
-
-      return results;
-    } else if (type === "POST") {
-      const WayStr = path.split("/")[1];
-      const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
-      const Store = [
-        db
-          .transaction("serieFirebase", "readwrite")
-          .objectStore("serieFirebase"),
-        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
-        db
-          .transaction("NextAnimFireBase", "readwrite")
-          .objectStore("NextAnimFireBase"),
-      ];
-      Store[WayIndex].put({
-        id: Store[WayIndex].name,
-        data: value,
-      })
-        .then(() => {
-          if (refresh) this.fnDbOffline("GET");
-          this.setState({
-            ResText: "Votre requête d'ajout a réussite.",
-            typeAlert: "success",
-          });
-        })
-        .catch(() =>
-          this.setState({
-            ResText: "Votre requête d'ajout à echoué.",
-            typeAlert: "danger",
-          })
+                : true,
+              results[2]
+                ? results[2][0]
+                  ? results[2][0].data
+                    ? Object.keys(results[2][0].data).length !== 0
+                      ? false
+                      : true
+                    : true
+                  : true
+                : true,
+            ],
+            ModeFindAnime: [false, null],
+            RefreshRenderAnime: true,
+            RefreshRenderNA: true,
+            ModeFilter:
+              results[3] &&
+              results[3][0] &&
+              results[3][0]?.data?.TypeAnimeHomePage &&
+              !this.state.FirstQuerie
+                ? results[3][0].data.TypeAnimeHomePage
+                : this.state.ModeFilter,
+          },
+          () => {
+            if (next !== null) next();
+          }
         );
-    } else if (type === "PUT") {
-      const WayStr = path.split("/")[1];
-      const WayIndex =
-        WayStr === "serie"
-          ? 0
-          : WayStr === "film"
-          ? 1
-          : WayStr === "NextAnim"
-          ? 2
-          : 3;
-      const Store = [
-        db
-          .transaction("serieFirebase", "readwrite")
-          .objectStore("serieFirebase"),
-        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
-        db
-          .transaction("NextAnimFireBase", "readwrite")
-          .objectStore("NextAnimFireBase"),
-        db
-          .transaction("NotifFirebase", "readwrite")
-          .objectStore("NotifFirebase"),
-      ];
-      const CopyData = [...(await Store[WayIndex].getAll())][0].data;
-      let NewPath = path.split("/");
-      NewPath.shift();
-      NewPath.shift();
-      NewPath = NewPath.join(".");
-      const ObjToEdit = ObjectPath.get(CopyData, NewPath);
-      Object.keys(value).forEach((key, i) => {
-        if (Object.values(value)[i] === null) {
-          ObjectPath.del(CopyData, `${NewPath}.${key}`);
-          return;
-        }
-        ObjToEdit[key] = Object.values(value)[i];
-      });
+      } else if (type === "GETReturn") {
+        // Get Data IndexedDB
+        const Store = [
+          db.transaction("serieFirebase").objectStore("serieFirebase"),
+          db.transaction("filmFireBase").objectStore("filmFireBase"),
+          db.transaction("NextAnimFireBase").objectStore("NextAnimFireBase"),
+          db.transaction("ParamsOptn").objectStore("ParamsOptn"),
+        ];
 
-      Store[WayIndex].put({
-        id: Store[WayIndex].name,
-        data: CopyData,
-      })
-        .then(() => {
-          if (refresh) this.fnDbOffline("GET", null, null, next);
+        const results = await Promise.all(
+          Store.map(async (req) => await req.getAll())
+        );
+
+        return results;
+      } else if (type === "POST") {
+        const WayStr = path.split("/")[1];
+        const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
+        const Store = [
+          db
+            .transaction("serieFirebase", "readwrite")
+            .objectStore("serieFirebase"),
+          db
+            .transaction("filmFireBase", "readwrite")
+            .objectStore("filmFireBase"),
+          db
+            .transaction("NextAnimFireBase", "readwrite")
+            .objectStore("NextAnimFireBase"),
+        ];
+        Store[WayIndex].put({
+          id: Store[WayIndex].name,
+          data: value,
         })
-        .catch(console.error);
-    } else if (type === "DELETE") {
-      const WayStr = path.split("/")[1];
-      const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
-      const Store = [
-        db
-          .transaction("serieFirebase", "readwrite")
-          .objectStore("serieFirebase"),
-        db.transaction("filmFireBase", "readwrite").objectStore("filmFireBase"),
-        db
-          .transaction("NextAnimFireBase", "readwrite")
-          .objectStore("NextAnimFireBase"),
-      ];
-      const CopyData = [...(await Store[WayIndex].getAll())][0].data;
-      let NewPath = path.split("/");
-      NewPath.shift();
-      NewPath.shift();
-      NewPath = NewPath.join(".");
-      ObjectPath.del(CopyData, NewPath);
-      Store[WayIndex].put({
-        id: Store[WayIndex].name,
-        data: CopyData,
-      })
-        .then(() => {
-          this.cancelModal();
-          if (refresh) this.fnDbOffline("GET", null, null, next);
-          this.setState({
-            ResText: "Votre requête de suppression a réussite.",
-            typeAlert: "success",
-          });
-        })
-        .catch(() => {
-          this.setState({
-            ResText: "Votre requête de suppression a échoué.",
-            typeAlert: "danger",
-          });
+          .then(() => {
+            if (refresh) this.fnDbOffline("GET");
+            this.setState({
+              ResText: "Votre requête d'ajout a réussite.",
+              typeAlert: "success",
+            });
+          })
+          .catch(() =>
+            this.setState({
+              ResText: "Votre requête d'ajout à echoué.",
+              typeAlert: "danger",
+            })
+          );
+      } else if (type === "PUT") {
+        const WayStr = path.split("/")[1];
+        const WayIndex =
+          WayStr === "serie"
+            ? 0
+            : WayStr === "film"
+            ? 1
+            : WayStr === "NextAnim"
+            ? 2
+            : 3;
+        const Store = [
+          db
+            .transaction("serieFirebase", "readwrite")
+            .objectStore("serieFirebase"),
+          db
+            .transaction("filmFireBase", "readwrite")
+            .objectStore("filmFireBase"),
+          db
+            .transaction("NextAnimFireBase", "readwrite")
+            .objectStore("NextAnimFireBase"),
+          db
+            .transaction("NotifFirebase", "readwrite")
+            .objectStore("NotifFirebase"),
+        ];
+        const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+        let NewPath = path.split("/");
+        NewPath.shift();
+        NewPath.shift();
+        NewPath = NewPath.join(".");
+        const ObjToEdit = ObjectPath.get(CopyData, NewPath);
+        Object.keys(value).forEach((key, i) => {
+          if (Object.values(value)[i] === null) {
+            ObjectPath.del(CopyData, `${NewPath}.${key}`);
+            return;
+          }
+          ObjToEdit[key] = Object.values(value)[i];
         });
-    }
 
-    setTimeout(() => {
-      this.setState({
-        ResText: null,
-        typeAlert: null,
-      });
-    }, 2500);
+        Store[WayIndex].put({
+          id: Store[WayIndex].name,
+          data: CopyData,
+        })
+          .then(() => {
+            if (refresh) this.fnDbOffline("GET", null, null, next);
+          })
+          .catch(console.error);
+      } else if (type === "DELETE") {
+        const WayStr = path.split("/")[1];
+        const WayIndex = WayStr === "serie" ? 0 : WayStr === "film" ? 1 : 2;
+        const Store = [
+          db
+            .transaction("serieFirebase", "readwrite")
+            .objectStore("serieFirebase"),
+          db
+            .transaction("filmFireBase", "readwrite")
+            .objectStore("filmFireBase"),
+          db
+            .transaction("NextAnimFireBase", "readwrite")
+            .objectStore("NextAnimFireBase"),
+        ];
+        const CopyData = [...(await Store[WayIndex].getAll())][0].data;
+        let NewPath = path.split("/");
+        NewPath.shift();
+        NewPath.shift();
+        NewPath = NewPath.join(".");
+        ObjectPath.del(CopyData, NewPath);
+        Store[WayIndex].put({
+          id: Store[WayIndex].name,
+          data: CopyData,
+        })
+          .then(() => {
+            this.cancelModal();
+            if (refresh) this.fnDbOffline("GET", null, null, next);
+            this.setState({
+              ResText: "Votre requête de suppression a réussite.",
+              typeAlert: "success",
+            });
+          })
+          .catch(() => {
+            this.setState({
+              ResText: "Votre requête de suppression a échoué.",
+              typeAlert: "danger",
+            });
+          });
+      }
+
+      setTimeout(() => {
+        this.setState({
+          ResText: null,
+          typeAlert: null,
+        });
+      }, 2500);
+    } catch (err) {
+      console.error(
+        "Error occurred in Update/Get IndexedDB (fnDbOffline)",
+        err
+      );
+    }
   };
 
   addValue = (path, value) => {
@@ -1803,14 +1816,8 @@ export default class Home extends Component {
   };
 
   AddEPToAlleged = () => {
-    const {
-      Pseudo,
-      nbEP,
-      IdToAddEp,
-      SeasonAnimCheck,
-      WaitAnimCheck,
-      OfflineMode,
-    } = this.state;
+    const { Pseudo, nbEP, IdToAddEp, SeasonAnimCheck, WaitAnimCheck } =
+      this.state;
 
     if (typeof nbEP === "string" && nbEP.trim().length !== 0 && nbEP !== "") {
       const AnimSEP = nbEP.split(",").map((nbEpS, i) => {
@@ -1827,18 +1834,6 @@ export default class Home extends Component {
         };
       });
 
-      if (!OfflineMode) {
-        this.fnDbOffline("PUT", `${Pseudo}/serie/${IdToAddEp}`, {
-          AnimEP: AnimSEP,
-          finishedAnim: false,
-          AnimeSeason: !SeasonAnimCheck ? null : true,
-          InWait: !WaitAnimCheck ? null : true,
-          Lier: null,
-          Drop: null,
-          Paused: null,
-          Rate: null,
-        });
-      }
       this.updateValue(`${Pseudo}/serie/${IdToAddEp}`, {
         AnimEP: AnimSEP,
         finishedAnim: false,
@@ -2470,31 +2465,11 @@ export default class Home extends Component {
             return [NextDay, NextDay + 604800000, NextDay + 1209600000];
           };
           let CopyCalledTime = [...NotifFirebase[notifKey].calledTime];
-          // LierNotif
-          if (NotifFirebase[notifKey].Lier) {
-            // Save DB
-            this.updateValue(
-              `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
-              {
-                NewEpMode: true,
-              }
-            );
-            if (!OfflineMode) {
-              this.fnDbOffline(
-                "PUT",
-                `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
-                { NewEpMode: true },
-                null,
-                null,
-                false
-              );
-            }
-          }
           let NumberToAdd = 0,
             TimeStampBackUp = null;
           // Remove
           let ToRemoveIndex = [];
-          CopyCalledTime.forEach((timestamp, i) => {
+          CopyCalledTime.forEach((timestamp) => {
             if (timestamp <= Date.now()) {
               NumberToAdd++;
               NumberToAdd === 3
@@ -2530,21 +2505,18 @@ export default class Home extends Component {
             {
               calledTime: CopyCalledTime,
             },
-            null,
-            false
+            () => {
+              // LierNotif
+              if (NotifFirebase[notifKey].Lier) {
+                this.updateValue(
+                  `${this.state.Pseudo}/serie/${NotifFirebase[notifKey].Lier}`,
+                  {
+                    NewEpMode: true,
+                  }
+                );
+              }
+            }
           );
-          if (!OfflineMode) {
-            this.fnDbOffline(
-              "PUT",
-              `${this.state.Pseudo}/Notif/${notifKey}`,
-              {
-                calledTime: CopyCalledTime,
-              },
-              null,
-              null,
-              false
-            );
-          }
         };
         // Make Notif
         navigator.serviceWorker
@@ -3746,14 +3718,6 @@ export default class Home extends Component {
             : false
         }
         UnPaused={() => {
-          if (!OfflineMode) {
-            this.fnDbOffline("PUT", `${Pseudo}/${key.split("-")[0]}/${key}`, {
-              Paused: null,
-              InWait: null,
-              Drop: null,
-              Rate: null,
-            });
-          }
           this.updateValue(`${Pseudo}/${key.split("-")[0]}/${key}`, {
             Paused: null,
             InWait: null,

@@ -1857,11 +1857,21 @@ class Watch extends Component {
                     <button
                       className="NavLink IconGreen"
                       onClick={() => {
+                        if (AnimToWatch?.Lier)
+                          this.deleteValue(
+                            `${this.state.Pseudo}/Notif/${AnimToWatch.Lier}`
+                          );
                         this.updateValue(
                           `${this.state.Pseudo}/serie/${id}`,
-                          {
-                            AnimeSeason: AnimToWatch.AnimeSeason ? null : true,
-                          },
+                          AnimToWatch.AnimeSeason
+                            ? {
+                                AnimeSeason: null,
+                                Lier: null,
+                                NewEpMode: null,
+                              }
+                            : {
+                                AnimeSeason: true,
+                              },
                           () =>
                             this.DisplayMsg(
                               "Changement opéré !",
