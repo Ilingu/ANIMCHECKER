@@ -2035,6 +2035,7 @@ export default class Home extends Component {
       NextMangaToDelete,
       imageUrl,
       SwipeActive,
+      UrlUserImg,
     } = this.state;
     const self = this;
     if (OfflineMode === true) {
@@ -2046,7 +2047,20 @@ export default class Home extends Component {
 
     let imgUrl = imageUrl;
     if (typeof title === "string" && title.trim().length !== 0) {
-      if (!imgUrl)
+      if (typeof UrlUserImg === "string" && UrlUserImg.trim().length !== 0) {
+        try {
+          new URL(UrlUserImg);
+          imgUrl = UrlUserImg;
+        } catch (err) {
+          console.error(err);
+          this.ShowMessageInfo(
+            "Veuillez donner un URL valide: https://www.exemple.com",
+            7000,
+            "danger"
+          );
+          return;
+        }
+      } else if (!imgUrl)
         imgUrl = await this.TakeInfoFromName(title, false, null, null, true);
 
       let IsGoodForPost = true,
@@ -5848,6 +5862,43 @@ export default class Home extends Component {
                       </Form.Group>
                     )}
                   </Fragment>
+                ) : null}
+                {typeManga[1] ? (
+                  <Form.Group controlId="optnManga">
+                    <Form.Label>Options (Facultatif)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Image Personnalisé (URL)"
+                      autoComplete="off"
+                      value={UrlUserImg}
+                      onChange={(event) =>
+                        this.setState({
+                          UrlUserImg: event.target.value,
+                        })
+                      }
+                    />
+                    {UrlUserImg.trim().length !== 0 ? (
+                      <Button
+                        variant="link"
+                        onClick={() => {
+                          try {
+                            new URL(UrlUserImg);
+                          } catch (err) {
+                            console.error(err);
+                            this.ShowMessageInfo(
+                              "Veuillez donner un URL valide: https://www.exemple.com",
+                              7000,
+                              "danger"
+                            );
+                            return;
+                          }
+                          this.setState({ ModePreview: true });
+                        }}
+                      >
+                        <span className="fas fa-eye"></span> Preview
+                      </Button>
+                    ) : null}
+                  </Form.Group>
                 ) : null}
               </Form>
             </Modal.Body>

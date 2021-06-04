@@ -661,7 +661,7 @@ class Settings extends Component {
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
                     Version ACK:
                   </span>{" "}
-                  Stable (LTS)<b>1</b>β<b>14</b> (F4)
+                  Stable (LTS)<b>1</b>β<b>15</b>
                 </li>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
