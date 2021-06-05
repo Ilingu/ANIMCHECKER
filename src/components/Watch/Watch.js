@@ -45,6 +45,7 @@ class Watch extends Component {
     modeWatch: false,
     type: "",
     LoadingMode: true,
+    clientFinishedEp: false,
     LoadingModeAuth: true,
     isFirstTime: true,
     WatchModeNow: null,
@@ -63,6 +64,7 @@ class Watch extends Component {
     SmartRepere: true,
     PauseWithAlleged: false,
     FnToExeAfterRefresh: null,
+    TriggerSideBarByMouse: false,
     DropWithAlleged: false,
     ScrollPosAccordeon: 0,
     // Message
@@ -321,6 +323,11 @@ class Watch extends Component {
                       );
               };
             }
+
+            if (this.state.modeWatch && !this.state.clientFinishedEp)
+              this.StartNextEP();
+            else this.setState({ clientFinishedEp: false });
+
             if (
               AnimToWatch.Objectif !== undefined &&
               AnimToWatch.Objectif.End[2] < Date.now()
@@ -329,7 +336,7 @@ class Watch extends Component {
               this.setState({ LetsNotCelebrate: true });
               this.deleteValue(`${this.state.Pseudo}/serie/${id}/Objectif`);
             } else if (AnimToWatch.Objectif !== undefined) this.StartNextEP();
-            if (this.state.WatchModeNow === "true") {
+            if (this.state.WatchModeNow === "true" && !this.state.modeWatch) {
               this.StartNextEP();
               this.setState({ WatchModeNow: null });
             }
@@ -876,6 +883,7 @@ class Watch extends Component {
     const idSaison = parseInt(Saison.name.split(" ")[1]) - 1;
 
     if (!AnimToWatch.AnimEP[idSaison].Episodes[EpFinishedID - 2].finished) {
+      this.setState({ clientFinishedEp: true });
       let IsFirstWatch = true;
       if (AnimToWatch.NewEpMode)
         this.updateValue(`${Pseudo}/serie/${id}`, { NewEpMode: null });
@@ -1378,6 +1386,7 @@ class Watch extends Component {
       ToggleNavbar,
       ActionEndAnime,
       repereEpisode,
+      TriggerSideBarByMouse,
       ShowModalAddObjectif,
       nbEpObjectif,
       Newtitle,
@@ -1775,8 +1784,28 @@ class Watch extends Component {
 
     return (
       <section id="Watch">
+        {!window.mobileAndTabletCheck() ? (
+          <div
+            id="DetectMouseSideBar"
+            onMouseEnter={(event) => {
+              if (event.clientX >= 26)
+                this.setState({
+                  ToggleNavbar: true,
+                  TriggerSideBarByMouse: true,
+                });
+            }}
+          ></div>
+        ) : null}
         <nav
           id="SideBarMenu"
+          onMouseLeave={(event) => {
+            if (event.clientX >= 0)
+              if (TriggerSideBarByMouse)
+                this.setState({
+                  ToggleNavbar: false,
+                  TriggerSideBarByMouse: false,
+                });
+          }}
           className={
             (!ToggleNavbar && !window.mobileAndTabletCheck()) || modeWatch
               ? "closeModal"
