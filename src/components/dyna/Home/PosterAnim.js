@@ -76,6 +76,8 @@ const PosterAnim = ({
   MangaSearch,
 }) => {
   let Fav = isFav;
+  let LongTouch = null,
+    hasQuittedPopup = null;
   const [ShowOverlay, setShowOverlay] = useState(false);
 
   // MyManga
@@ -146,8 +148,17 @@ const PosterAnim = ({
       overlay={
         <Popover
           id="popover-basic"
-          onMouseEnter={() => setShowOverlay(true)}
-          onMouseLeave={() => setShowOverlay(false)}
+          onMouseEnter={() => {
+            if (window.mobileAndTabletCheck()) return;
+            clearTimeout(hasQuittedPopup);
+            setShowOverlay(true);
+          }}
+          onMouseLeave={() => {
+            if (window.mobileAndTabletCheck()) return;
+            hasQuittedPopup = setTimeout(() => {
+              setShowOverlay(false);
+            }, 350);
+          }}
         >
           <Popover.Title as="h3">{title}</Popover.Title>
           <Popover.Content>
@@ -242,8 +253,25 @@ const PosterAnim = ({
       }
     >
       <div
-        onMouseEnter={() => setShowOverlay(true)}
-        onMouseLeave={() => setShowOverlay(false)}
+        onMouseEnter={() => {
+          if (window.mobileAndTabletCheck()) return;
+          setShowOverlay(true);
+          clearTimeout(hasQuittedPopup);
+        }}
+        onMouseLeave={() => {
+          if (window.mobileAndTabletCheck()) return;
+          setShowOverlay(false);
+        }}
+        onTouchStart={() => {
+          if (!window.mobileAndTabletCheck()) return;
+          LongTouch = setTimeout(() => {
+            setShowOverlay(!ShowOverlay);
+          }, 650);
+        }}
+        onTouchEnd={() => {
+          if (!window.mobileAndTabletCheck()) return;
+          clearTimeout(LongTouch);
+        }}
         id={`${!title || !inMyAnim ? null : title.split(" ").join("")}-${
           !id || !inMyAnim
             ? null

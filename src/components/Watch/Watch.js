@@ -1788,7 +1788,7 @@ class Watch extends Component {
           <div
             id="DetectMouseSideBar"
             onMouseEnter={(event) => {
-              if (event.clientX >= 26)
+              if (event.clientX >= 26 && !this.state.modeWatch)
                 this.setState({
                   ToggleNavbar: true,
                   TriggerSideBarByMouse: true,
