@@ -326,7 +326,7 @@ const MyAnim = ({
               className={SwitchMyAnimVar ? "active" : ""}
               onClick={ModeFindAnime || SwitchMyAnimVar ? null : SwitchMyAnim}
             >
-              Mes Animes{" "}
+              Animes List{" "}
               {SwitchMyAnimVar && !LoadingMode ? (
                 <Fragment>
                   <Button
@@ -460,7 +460,7 @@ const MyAnim = ({
                 ModeFindAnime || !SwitchMyAnimVar ? null : SwitchMyNextAnim
               }
             >
-              My next anime{" "}
+              Watch Later{" "}
               {!SwitchMyAnimVar && !LoadingMode ? (
                 <Fragment>
                   <Button

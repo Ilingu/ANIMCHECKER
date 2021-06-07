@@ -2239,7 +2239,7 @@ a:hover {
   }
   #MyAnime .content.none header form #actionFormAddNA .dropdown {
     position: absolute;
-    bottom: 71px;
+    bottom: 17px;
     left: calc(50% - 32px / 2 - 96.36px / 2);
   }
   #MyAnime .content.none header form #actionFormAddNA button[type="submit"] {
@@ -2309,7 +2309,6 @@ a:hover {
   }
   #MyAnime .content.none header form #actionFormAddNA .dropdown {
     position: absolute;
-    bottom: 71px;
     left: calc(50% - 32px / 2 - 96.36px / 2);
   }
   #MyAnime .content.none header form #actionFormAddNA button[type="submit"] {
