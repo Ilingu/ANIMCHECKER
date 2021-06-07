@@ -16,8 +16,6 @@ const MyAnim = ({
   FnSearchFilter,
   typeAlert,
   MyAnimList,
-  ModeDisplayNextAnim,
-  ChangeModeDisplayNextAnim,
   NextAnim,
   MyNextAnimList,
   handleSubmit,
@@ -26,6 +24,8 @@ const MyAnim = ({
   ModeFindAnime,
   ModeFilter,
   NewFilter,
+  ModeFilterNA,
+  NewModeFilterNA,
   CloseModeFindAnime,
   fnNextAnimForm,
   ModeImportant,
@@ -462,12 +462,90 @@ const MyAnim = ({
             >
               My next anime{" "}
               {!SwitchMyAnimVar && !LoadingMode ? (
-                <Button
-                  variant="link"
-                  onClick={() => SearchInAnimeListFn(false)}
-                >
-                  <span className="fas fa-search"></span>
-                </Button>
+                <Fragment>
+                  <Button
+                    variant="link"
+                    onClick={() => SearchInAnimeListFn(false)}
+                  >
+                    <span className="fas fa-search"></span>
+                  </Button>
+                  <Dropdown>
+                    <Dropdown.Toggle
+                      variant="link"
+                      title="Filtre"
+                      id="FilterBtn"
+                    >
+                      <span className="fas fa-filter"></span>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        active={
+                          ModeFilterNA === "importanceNone" ? true : false
+                        }
+                        onClick={() => {
+                          if (ModeFilterNA === "importanceNone") return;
+                          NewModeFilterNA("importanceNone");
+                        }}
+                        style={{ color: "rgb(108, 117, 125)" }}
+                        id="RepereImportantNextAnime"
+                      >
+                        Aucune Importance
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={
+                          ModeFilterNA === "importanceWeak" ? true : false
+                        }
+                        onClick={() => {
+                          if (ModeFilterNA === "importanceWeak") return;
+                          NewModeFilterNA("importanceWeak");
+                        }}
+                        style={{ color: "#4d8ccf" }}
+                      >
+                        <span className="fas fa-exclamation"></span> Faible
+                        Importance
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={
+                          ModeFilterNA === "importanceMedium" ? true : false
+                        }
+                        onClick={() => {
+                          if (ModeFilterNA === "importanceMedium") return;
+                          NewModeFilterNA("importanceMedium");
+                        }}
+                        style={{ color: "rgb(255, 193, 7)" }}
+                      >
+                        <span className="fas fa-exclamation"></span>{" "}
+                        <span className="fas fa-exclamation"></span> Importance
+                        Moyenne
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        active={
+                          ModeFilterNA === "importanceHigh" ? true : false
+                        }
+                        onClick={() => {
+                          if (ModeFilterNA === "importanceHigh") return;
+                          NewModeFilterNA("importanceHigh");
+                        }}
+                        style={{ color: "#fb401f" }}
+                      >
+                        <span className="fas fa-exclamation"></span>{" "}
+                        <span className="fas fa-exclamation"></span>{" "}
+                        <span className="fas fa-exclamation"></span> Haute
+                        Importance
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        active={ModeFilterNA === "all" ? true : false}
+                        onClick={() => {
+                          if (ModeFilterNA === "all") return;
+                          NewModeFilterNA("all");
+                        }}
+                      >
+                        Tous
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Fragment>
               ) : null}
             </div>
           </div>
@@ -504,14 +582,13 @@ const MyAnim = ({
           ) : (
             <Fragment>
               <header>
-                <h4>Ici tu met les anime que tu veux regarder plus tard: </h4>
+                <h4>A regarder plus tard</h4>
                 <Form onSubmit={handleSubmit}>
                   <Form.Group controlId="type">
-                    <Form.Label>Le nom ton prochain anime: </Form.Label>
                     <Form.Control
                       type="text"
                       required
-                      placeholder="Nom de l'anime"
+                      placeholder="Nom de l'anime à regarder plus tard"
                       autoComplete="off"
                       value={NextAnim}
                       onChange={NextAnimChange}
@@ -584,29 +661,8 @@ const MyAnim = ({
                   </div>
                 </Form>
                 <hr />
-                <Button
-                  id="BtnModeDisplayNextAnim"
-                  variant="outline-secondary"
-                  onClick={() => ChangeModeDisplayNextAnim("Block")}
-                >
-                  <span className="fas fa-th-large"></span>
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  onClick={() => ChangeModeDisplayNextAnim("Lines")}
-                >
-                  <span className="fas fa-grip-lines"></span>
-                </Button>
               </header>
-              <div
-                className={`NextAnimContainer${
-                  !ModeDisplayNextAnim || ModeDisplayNextAnim === "Block"
-                    ? " ModeBlock"
-                    : ""
-                }`}
-              >
-                {MyNextAnimList}
-              </div>
+              <div className="NextAnimContainer">{MyNextAnimList}</div>
               <br />
             </Fragment>
           )}

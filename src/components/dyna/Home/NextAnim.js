@@ -1,27 +1,25 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
 // Design
-import { Button, Dropdown, Badge, Form } from "react-bootstrap";
+import { Dropdown, Badge, Form } from "react-bootstrap";
 
 const NextAnim = ({
   name,
   handleClick,
   Skeleton,
-  ModeDisplay,
   ModeImportant,
   setImportance,
   BadgesType,
   AddNewBadgeType,
+  ModeFindAnime,
   handleDeleteBadge,
   DeleteNextAnim,
+  ModeFilterNA,
 }) => {
   // State
   const [ShowFormBadge, SetShowFormBadge] = useState(false);
   const [NewBadgeName, SetNewBadgeName] = useState("");
   const [Back, setBack] = useState(false);
   // App
-  if (!ModeDisplay)
-    window.localStorage.setItem("ModeDisplayNextAnim", JSON.stringify("Block"));
-
   /* Var */
   const IDElem = `NextAnim${Date.now()}${name}`
     .replace(/[^a-zA-Z0-9]/g, "")
@@ -34,10 +32,12 @@ const NextAnim = ({
 
   /* Fn */
   const countLines = (elem) => {
-    const el = document.getElementById(elem).children[0].children[0];
-    const divHeight = el.offsetHeight;
-    const lines = divHeight / 27;
-    return lines;
+    try {
+      const el = document.getElementById(elem).children[0].children[0];
+      const divHeight = el.offsetHeight;
+      const lines = divHeight / 27;
+      return lines;
+    } catch (err) {}
   };
 
   const addBadge = (event) => {
@@ -64,11 +64,7 @@ const NextAnim = ({
   const handleClickPrevent = (event) => {
     const Target = event.target;
     timer = setTimeout(() => {
-      if (
-        !prevent &&
-        !Skeleton[0] &&
-        (!ModeDisplay || ModeDisplay === "Block")
-      ) {
+      if (!prevent && !Skeleton[0]) {
         handleClick(Target);
       } else {
         prevent = false;
@@ -83,20 +79,20 @@ const NextAnim = ({
   };
 
   useEffect(() => {
-    if (!ModeDisplay || ModeDisplay === "Block")
-      for (let i = 0; i < 2; i++) {
-        if (!Skeleton[0] && countLines(IDElem) >= 3) {
-          try {
-            NameRef.current = NameRef.current.split(" ");
-          } catch (error) {}
-          for (let i = 0; i < countLines(IDElem) - 1; i++) {
-            NameRef.current.pop();
-          }
-          document.getElementById(IDElem).children[0].children[0].innerText =
-            NameRef.current.join(" ") + "...";
+    for (let i = 0; i < 2; i++) {
+      if (!Skeleton[0] && countLines(IDElem) >= 3) {
+        try {
+          NameRef.current = NameRef.current.split(" ");
+        } catch (error) {}
+        for (let i = 0; i < countLines(IDElem) - 1; i++) {
+          NameRef.current.pop();
         }
+        document.getElementById(IDElem).children[0].children[0].innerText =
+          NameRef.current.join(" ") + "...";
       }
-  });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* Dyna Components */
   let BadgesTypeComponents = null;
@@ -144,29 +140,27 @@ const NextAnim = ({
     ];
   }
 
-  return (
+  const TemplateNA = (
     <div
       id={IDElem}
       title={name}
       onClick={handleClickPrevent}
       onDoubleClick={handleDbClick}
       className={`NextAnim${Skeleton[0] ? " Skeleton" : ""}${
-        !ModeDisplay || ModeDisplay === "Block"
-          ? !ModeImportant
-            ? ""
-            : ModeImportant === 1
-            ? " small"
-            : ModeImportant === 2
-            ? " medium"
-            : " big"
-          : ""
+        !ModeImportant
+          ? ""
+          : ModeImportant === 1
+          ? " small"
+          : ModeImportant === 2
+          ? " medium"
+          : " big"
       }${Back ? " BackActive" : ""}`}
     >
       {Skeleton[0] ? (
         <Fragment>
           <div id="nameSkeleton"></div>
         </Fragment>
-      ) : !ModeDisplay || ModeDisplay === "Block" ? (
+      ) : (
         <Fragment>
           <div className={`front${Back ? "" : " active"}`}>
             <div className="name">{name}</div>
@@ -270,18 +264,23 @@ const NextAnim = ({
             </div>
           </div>
         </Fragment>
-      ) : (
-        <Fragment>
-          <div className="name">{name}</div>
-          <Button variant="outline-success" onClick={handleClick} block>
-            Commencer{" "}
-            <span className="fas fa-long-arrow-alt-right animation"></span>
-          </Button>
-          <hr />
-        </Fragment>
       )}
     </div>
   );
+
+  if (ModeFindAnime[0] && ModeFindAnime[1] !== null) return TemplateNA;
+
+  if (ModeFilterNA === "importanceNone") {
+    return !ModeImportant ? TemplateNA : null;
+  } else if (ModeFilterNA === "importanceWeak") {
+    return ModeImportant === 1 ? TemplateNA : null;
+  } else if (ModeFilterNA === "importanceMedium") {
+    return ModeImportant === 2 ? TemplateNA : null;
+  } else if (ModeFilterNA === "importanceHigh") {
+    return ModeImportant === 3 ? TemplateNA : null;
+  } else {
+    return TemplateNA;
+  }
 };
 
 export default NextAnim;

@@ -101,11 +101,7 @@ export default class Home extends Component {
     MyAnimListSaved: null,
     MyNextAnimListSaved: null,
     ModeFilter: "NotFinished",
-    ModeDisplayNextAnim: !JSON.parse(
-      window.localStorage.getItem("ModeDisplayNextAnim")
-    )
-      ? null
-      : JSON.parse(window.localStorage.getItem("ModeDisplayNextAnim")),
+    ModeFilterNA: "all",
     ModeFindAnime: [false, null],
     LoadingMode: [true, true],
     palmares: null,
@@ -622,6 +618,7 @@ export default class Home extends Component {
               !this.state.FirstQuerie
                 ? GlobalInfoUser.ParamsOptn?.TypeAnimeHomePage
                 : ModeFilter,
+            ModeFilterNA: this.state.ModeFilterNA,
             NextAnimFireBase: !GlobalInfoUser?.NextAnim
               ? {}
               : GlobalInfoUser.NextAnim,
@@ -901,6 +898,7 @@ export default class Home extends Component {
               !this.state.FirstQuerie
                 ? results[3][0].data.TypeAnimeHomePage
                 : this.state.ModeFilter,
+            ModeFilterNA: this.state.ModeFilterNA,
           },
           () => {
             if (next !== null) next();
@@ -1343,11 +1341,7 @@ export default class Home extends Component {
             MyAnimListSaved: null,
             MyNextAnimListSaved: null,
             ModeFilter: "NotFinished",
-            ModeDisplayNextAnim: !JSON.parse(
-              window.localStorage.getItem("ModeDisplayNextAnim")
-            )
-              ? null
-              : JSON.parse(window.localStorage.getItem("ModeDisplayNextAnim")),
+            ModeFilterNA: "all",
             ModeFindAnime: [false, null],
             LoadingMode: [true, true],
             palmares: null,
@@ -3488,7 +3482,6 @@ export default class Home extends Component {
       AuthenticateMethod,
       UserOnLogin,
       SeasonAnimeDetails,
-      ModeDisplayNextAnim,
       AllowUseReAuth,
       ShowModalChooseImgURL,
       RedirectPage,
@@ -3509,6 +3502,7 @@ export default class Home extends Component {
       type,
       typeManga,
       ModeFilter,
+      ModeFilterNA,
       HaveAlreadyBeenMix,
       NextReRenderOrderSerie,
       NextReRenderOrderNA,
@@ -3847,12 +3841,13 @@ export default class Home extends Component {
       <NextAnimCO
         key={key}
         name={NextAnimFireBase[key].name}
-        ModeDisplay={ModeDisplayNextAnim}
         ModeImportant={
           !NextAnimFireBase[key].Importance
             ? 0
             : NextAnimFireBase[key].Importance
         }
+        ModeFilterNA={ModeFilterNA}
+        ModeFindAnime={[ModeFindAnime[0], ImportanceSearch]}
         setImportance={(LvlImportance) => {
           this.updateValue(`${Pseudo}/NextAnim/${key}`, {
             Importance: LvlImportance,
@@ -4496,11 +4491,7 @@ export default class Home extends Component {
         for (let i = 0; i < 8; i++) {
           SkeletonListNextAnime = [
             ...SkeletonListNextAnime,
-            <NextAnimCO
-              key={i}
-              ModeDisplay={ModeDisplayNextAnim}
-              Skeleton={[true, i]}
-            />,
+            <NextAnimCO key={i} Skeleton={[true, i]} />,
           ];
         }
       }
@@ -4686,18 +4677,6 @@ export default class Home extends Component {
                 Tag={TagNA}
                 ModeImportant={ImportanceNA}
                 LoadingMode={LoadingMode[0]}
-                ModeDisplayNextAnim={ModeDisplayNextAnim}
-                ChangeModeDisplayNextAnim={(NewMode) => {
-                  if (NewMode === ModeDisplayNextAnim) return;
-                  window.localStorage.setItem(
-                    "ModeDisplayNextAnim",
-                    JSON.stringify(NewMode)
-                  );
-                  this.setState({
-                    ModeDisplayNextAnim: NewMode,
-                    RefreshRenderNA: true,
-                  });
-                }}
                 ResText={ResText}
                 typeAlert={typeAlert}
                 ModeFindAnime={ModeFindAnime[0]}
@@ -4707,6 +4686,14 @@ export default class Home extends Component {
                     ModeFilter: filter,
                     SwitchMyAnim: true,
                     RefreshRenderAnime: true,
+                  });
+                }}
+                ModeFilterNA={ModeFilterNA}
+                NewModeFilterNA={(nfilter) => {
+                  this.setState({
+                    ModeFilterNA: nfilter,
+                    SwitchMyAnim: false,
+                    RefreshRenderNA: true,
                   });
                 }}
                 MyAnimList={
@@ -4730,6 +4717,7 @@ export default class Home extends Component {
                     SearchInAnimeList: [false, null],
                     ModeFindAnime: [false, null],
                     ToReSearchAfterRefresh: false,
+                    RefreshRenderNA: !SwitchMyAnim ? true : RefreshRenderNA,
                   })
                 }
                 handleSubmit={this.addNextAnim}
