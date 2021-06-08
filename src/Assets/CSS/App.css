@@ -2740,12 +2740,31 @@ a:hover {
           transform: rotate(-180deg);
 }
 
+#Watch .nonStartMod header h1 {
+  position: relative;
+}
+
 #Watch .nonStartMod header h1 p {
   margin-bottom: 0;
 }
 
+#Watch .nonStartMod header h1 button {
+  display: none;
+  border: none;
+  height: 32px;
+  margin-top: -8px;
+}
+
+#Watch .nonStartMod header h1 button:hover {
+  background-color: transparent !important;
+}
+
 #Watch .nonStartMod header h1.ModeNewEp {
   color: #7700ff;
+}
+
+#Watch .nonStartMod header h1:hover button {
+  display: inline;
 }
 
 #Watch .nonStartMod section {
@@ -2824,6 +2843,16 @@ a:hover {
 
 #Watch .nonStartMod section #badgeStreaming .BadgesME.badge-pill:active {
   background-color: #464c52;
+}
+
+#Watch .nonStartMod section #badgeStreaming .BadgesME.BadgeForm {
+  margin-left: 0;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+#Watch .nonStartMod section #badgeStreaming:hover .BadgesME.BadgeForm {
+  margin-left: 55px;
 }
 
 #Watch .nonStartMod section header {
@@ -3342,6 +3371,7 @@ a:hover {
   position: absolute;
   z-index: 155;
   top: 0.5vh;
+  text-align: center;
   left: calc(50% - var(--size) / 2);
   font-size: 20px;
   padding: 5px;

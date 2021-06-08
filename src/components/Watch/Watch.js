@@ -55,10 +55,11 @@ class Watch extends Component {
     ToggleNavbar: false,
     OpenDropDownAction: false,
     OpenDropDownAlleger: false,
-    ModeEditTitle: false,
+    ModeEditTitle: [false, false],
     ShowFormBadge: false,
     ShowModalRateAnime: false,
     ShowModalAddObjectif: false,
+    BlockDetectSideBar: false,
     ShowMessage: false,
     ShowMessageHtml: false,
     SmartRepere: true,
@@ -98,6 +99,7 @@ class Watch extends Component {
   setIntervalVar = null;
   setTimeOutMsgInfo = null;
   setTimeOutMsgInfo2 = null;
+  TimeOutSideBarAutoClose = null;
   FirstBadge = true;
   DynamicSize = 0;
 
@@ -303,7 +305,7 @@ class Watch extends Component {
                 if (
                   keyDownEvent.key === "f" &&
                   !ShowFormBadge &&
-                  !ModeEditTitle
+                  !ModeEditTitle[0]
                 )
                   return this.StartNextEP();
                 if (keyDownEvent.key === "Escape" && !modeWatch)
@@ -1091,23 +1093,27 @@ class Watch extends Component {
 
   ChangeTitle = (event) => {
     event.preventDefault();
-    const { Pseudo, type, id, Newtitle } = this.state;
+    const { Pseudo, type, id, Newtitle, ModeEditTitle, AnimToWatch } =
+      this.state;
     if (
       event.target.id !== undefined &&
       event.target.id === "InputNTitleReperage"
     )
       return;
+    if (ModeEditTitle[1])
+      return this.setState({ ModeEditTitle: [true, false] });
 
     if (typeof Newtitle === "string" && Newtitle.trim().length !== 0) {
       window.removeEventListener("click", this.ChangeTitle, false);
-      this.setState({ ModeEditTitle: false });
-      this.updateValue(
-        `${Pseudo}/${type}/${id}`,
-        {
-          name: Newtitle,
-        },
-        this.ReTakeInfoFromName
-      );
+      this.setState({ ModeEditTitle: [false, false] });
+      if (Newtitle !== AnimToWatch.name)
+        this.updateValue(
+          `${Pseudo}/${type}/${id}`,
+          {
+            name: Newtitle,
+          },
+          this.ReTakeInfoFromName
+        );
     }
   };
 
@@ -1380,6 +1386,7 @@ class Watch extends Component {
       ShowModalVerification,
       ShowMessage,
       ShowMessageHtml,
+      BlockDetectSideBar,
       ResText,
       OpenDropDownAction,
       OpenDropDownAlleger,
@@ -1448,7 +1455,7 @@ class Watch extends Component {
       return <Redirect to="/Watch" />;
     }
 
-    let BadgesHtml = null;
+    let BadgesHtml = [];
 
     if (type === "serie" && AnimToWatch?.AnimEP && RefreshAnimToWatchRenderer) {
       let MyAnimAccordeon = AnimToWatch.AnimEP.map((EpSaison) => (
@@ -1761,22 +1768,16 @@ class Watch extends Component {
               color: grayScaleRdaColor < 128 ? "#fff" : "#212529",
             }}
           >
-            <a
-              href={`http://${value}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <div id="ValueBadge">{value}</div>
+            <div
+              id="CancelBadge"
+              onClick={(event) => {
+                event.preventDefault();
+                this.handleDeleteBadge(i);
+              }}
             >
-              <div id="ValueBadge">{value}</div>
-              <div
-                id="CancelBadge"
-                onClick={(event) => {
-                  event.preventDefault();
-                  this.handleDeleteBadge(i);
-                }}
-              >
-                <span className="fas fa-times"></span>
-              </div>
-            </a>
+              <span className="fas fa-times"></span>
+            </div>
           </Badge>
         );
       });
@@ -1784,10 +1785,12 @@ class Watch extends Component {
 
     return (
       <section id="Watch">
-        {!window.mobileAndTabletCheck() ? (
+        {!window.mobileAndTabletCheck() && !BlockDetectSideBar ? (
           <div
             id="DetectMouseSideBar"
             onMouseEnter={(event) => {
+              clearTimeout(this.TimeOutSideBarAutoClose);
+              if (BlockDetectSideBar) return;
               if (event.clientX >= 26 && !this.state.modeWatch)
                 this.setState({
                   ToggleNavbar: true,
@@ -1798,13 +1801,24 @@ class Watch extends Component {
         ) : null}
         <nav
           id="SideBarMenu"
+          onMouseEnter={() => {
+            clearTimeout(this.TimeOutSideBarAutoClose);
+          }}
           onMouseLeave={(event) => {
-            if (event.clientX >= 0)
-              if (TriggerSideBarByMouse)
+            if (event.clientX < 0 && TriggerSideBarByMouse) {
+              this.TimeOutSideBarAutoClose = setTimeout(() => {
                 this.setState({
                   ToggleNavbar: false,
                   TriggerSideBarByMouse: false,
                 });
+              }, 1500);
+              return;
+            }
+            if (TriggerSideBarByMouse)
+              this.setState({
+                ToggleNavbar: false,
+                TriggerSideBarByMouse: false,
+              });
           }}
           className={
             (!ToggleNavbar && !window.mobileAndTabletCheck()) || modeWatch
@@ -2130,22 +2144,19 @@ class Watch extends Component {
               <span className="fas fa-angle-double-left"></span>{" "}
             </button>
             <h1
-              onDoubleClick={() => {
-                this.setState({ ModeEditTitle: true });
-                window.addEventListener("click", this.ChangeTitle, false);
-              }}
               className={`title${
                 AnimToWatch.AnimeSeason && AnimToWatch.NewEpMode
                   ? " ModeNewEp"
                   : ""
               }`}
             >
-              {ModeEditTitle ? (
+              {ModeEditTitle[0] ? (
                 <Form onSubmit={this.ChangeTitle}>
                   <Form.Control
                     type="text"
                     required
                     suppressContentEditableWarning={true}
+                    autoComplete="off"
                     id="InputNTitleReperage"
                     value={Newtitle}
                     onChange={(event) =>
@@ -2155,7 +2166,23 @@ class Watch extends Component {
                   />
                 </Form>
               ) : (
-                AnimToWatch.name
+                <Fragment>
+                  {AnimToWatch.name}
+                  <Button
+                    variant="outline-info"
+                    onClick={() => {
+                      this.setState({ ModeEditTitle: [true, true] }, () =>
+                        window.addEventListener(
+                          "click",
+                          this.ChangeTitle,
+                          false
+                        )
+                      );
+                    }}
+                  >
+                    <span className="fas fa-edit"></span>
+                  </Button>
+                </Fragment>
               )}{" "}
             </h1>
             <div className="img">
@@ -2215,7 +2242,15 @@ class Watch extends Component {
             </div>
           </header>
           <section id="ToWatch">
-            <div id="badgeStreaming">
+            <div
+              id="badgeStreaming"
+              onMouseEnter={() => {
+                this.setState({ BlockDetectSideBar: true });
+              }}
+              onMouseLeave={() => {
+                this.setState({ BlockDetectSideBar: false });
+              }}
+            >
               {ShowFormBadge ? (
                 <Badge
                   variant="warning"
@@ -2241,7 +2276,13 @@ class Watch extends Component {
               {BadgesHtml}
               <Badge
                 pill
-                className="BadgesME"
+                className={`BadgesME${
+                  BadgesHtml?.length <= 0 &&
+                  !window.mobileAndTabletCheck() &&
+                  !ShowFormBadge
+                    ? " BadgeForm"
+                    : ""
+                }`}
                 variant="secondary"
                 onClick={() => {
                   this.setState({ ShowFormBadge: true });
