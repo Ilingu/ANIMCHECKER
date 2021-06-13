@@ -2,8 +2,6 @@
 
 [![SITE](https://forthebadge.com/images/badges/check-it-out.svg)](https://myanimchecker.netlify.app)
 
-<!-- [![SITE](https://img.shields.io/discord/823815537138073610.svg?label=Discord&logo=Discord&colorB=7289da&style=for-the-badge)](https://www.youtube.com/watch?v=BsIa_LKojJI) -->
-
 ## Site Info
 
 [![SITE](https://img.shields.io/maintenance/yes/2021?style=for-the-badge)](https://myanimchecker.netlify.app/)
@@ -15,7 +13,7 @@
 
 ### Release
 
-[![SITE](https://img.shields.io/badge/ACK%20release-LTS%201%20%CE%B218%20F2-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)  
+[![SITE](https://img.shields.io/badge/ACK%20release-LTS%201%20%CE%B218%20F3-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)  
 [![SITE](https://img.shields.io/badge/MCK%20release-%CE%B24%20F1-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)  
 [![SITE](https://img.shields.io/badge/Project%20Version-LTS%201.9.2-blue?style=for-the-badge)](https://myanimchecker.netlify.app/Settings)
 
@@ -23,19 +21,12 @@
 
 [![SITE](https://img.shields.io/badge/dependencies-up%20to%20date-green?style=for-the-badge)](https://www.npmjs.com/)  
 [![SITE](https://img.shields.io/static/v1?label=MADE%20WITH&message=REACT&color=61DBFB&style=for-the-badge)](https://reactjs.org/)  
-[![SITE](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://developer.mozilla.org/fr/docs/Web/JavaScript)  
-[![SITE](https://forthebadge.com/images/badges/built-with-swag.svg)](https://www.youtube.com/watch?v=BsIa_LKojJI)  
-[![SITE](https://forthebadge.com/images/badges/uses-html.svg)](https://developer.mozilla.org/fr/docs/Web/HTML)  
-[![SITE](https://forthebadge.com/images/badges/uses-css.svg)](https://developer.mozilla.org/fr/docs/Web/CSS)  
-[![SITE](https://forthebadge.com/images/badges/uses-js.svg)](https://developer.mozilla.org/fr/docs/Web/JavaScript)  
-[![SITE](https://forthebadge.com/images/badges/validated-html5.svg)](https://www.w3schools.com/html/)  
-[![SITE](https://forthebadge.com/images/badges/uses-brains.svg)](https://www.youtube.com/watch?v=BsIa_LKojJI)
+[![SITE](https://forthebadge.com/images/badges/validated-html5.svg)](https://www.w3schools.com/html/)
 
 ## Compatibilities
 
 [![SITE](https://img.shields.io/static/v1?label=Compatibility%20With&message=ALL&color=C13B3A&style=for-the-badge)](https://myanimchecker.netlify.app/)  
-[![SITE](https://forthebadge.com/images/badges/compatibility-club-penguin.svg)](https://www.youtube.com/watch?v=BsIa_LKojJI)  
-[![SITE](https://forthebadge.com/images/badges/compatibility-ie-6.svg)](https://www.youtube.com/watch?v=BsIa_LKojJI)
+[![SITE](https://forthebadge.com/images/badges/compatibility-club-penguin.svg)](https://www.youtube.com/watch?v=BsIa_LKojJI)
 
 ## Uninteresting stuff for Uninteresting people
 

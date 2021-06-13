@@ -301,23 +301,23 @@ export default class Home extends Component {
       switch (this.props.match.params.codemsg) {
         case "1":
           ResText =
-            "Impossible d'accéder à cette page car cette anime est actuellement en pause. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+            "403 Forbidden - Impossible d'accéder à cette page car cette anime est actuellement en pause. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
           typeAlert = "danger";
           break;
         case "2":
-          ResText = "Erreur aucun Pseudo n'a été acossié";
+          ResText = "422 - Erreur aucun Pseudo n'a été acossié";
           typeAlert = "danger";
           break;
         case "3":
-          ResText = "Ce n'est pas votre compte";
+          ResText = "403 Forbidden - Ce n'est pas votre compte";
           typeAlert = "danger";
           break;
         case "4":
-          ResText = "Auncun Anime à été trouvé";
+          ResText = "404 - Auncun Anime à été trouvé";
           typeAlert = "danger";
           break;
         case "5":
-          ResText = "Votre modification a bien été pris en compte";
+          ResText = "200 - Votre modification a bien été pris en compte";
           typeAlert = "success";
           break;
         case "6":
@@ -325,17 +325,17 @@ export default class Home extends Component {
           break;
         case "7":
           ResText =
-            "Impossible d'accéder à cette page car vous avez drop (arrêtez) cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+            "403 Forbidden - Impossible d'accéder à cette page car vous avez drop (arrêtez) cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
           typeAlert = "danger";
           break;
         case "8":
           ResText =
-            "Impossible d'accéder à cette page car vous avez mis en attente cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
+            "403 Forbidden - Impossible d'accéder à cette page car vous avez mis en attente cette anime. (Pour le reprendre aller sur l'anime depuis votre liste et clicker sur le bouton reprendre/play";
           typeAlert = "danger";
           break;
         case "9":
           ResText =
-            "Impossible d'accéder à cette page car cette anime est allégée.";
+            "403 Forbidden - Impossible d'accéder à cette page car cette anime est allégée.";
           typeAlert = "danger";
           break;
         case "10":
@@ -350,6 +350,11 @@ export default class Home extends Component {
           ResText = "Element inexistant (404)";
           typeAlert = "danger";
           break;
+        case "13":
+          ResText =
+            "403 Forbidden - Veuillez d'abord vous connectez sur la page principal";
+          typeAlert = "danger";
+          break;
         default:
           break;
       }
@@ -357,7 +362,7 @@ export default class Home extends Component {
 
       setTimeout(() => {
         this.setState({ ResText: null, typeAlert: null });
-      }, 10000);
+      }, 12000);
     }
   }
 

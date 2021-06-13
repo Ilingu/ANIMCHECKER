@@ -111,10 +111,10 @@ class Watch extends Component {
     if (
       this.state.Pseudo !== JSON.parse(window.localStorage.getItem("Pseudo")) ||
       !this.state.Pseudo
-    ) {
-      this.setState({ uid: null, RedirectTo: [true, "/notifuser/2"] });
-      return;
-    }
+    )
+      return this.setState({ uid: null, RedirectTo: [true, "/notifuser/2"] });
+    if (!window.mobileAndTabletCheck)
+      return this.setState({ uid: null, RedirectTo: [true, "/notifuser/13"] });
     // ID
     if (this.state.id) {
       if (
@@ -1811,7 +1811,7 @@ class Watch extends Component {
                   ToggleNavbar: false,
                   TriggerSideBarByMouse: false,
                 });
-              }, 1500);
+              }, 1000);
               return;
             }
             if (TriggerSideBarByMouse)
@@ -2140,6 +2140,12 @@ class Watch extends Component {
             <button
               className={`ToogleNavBar${!ToggleNavbar ? " closeModal" : ""}`}
               onClick={() => this.setState({ ToggleNavbar: !ToggleNavbar })}
+              onMouseEnter={() => {
+                this.setState({ BlockDetectSideBar: true });
+              }}
+              onMouseLeave={() => {
+                this.setState({ BlockDetectSideBar: false });
+              }}
             >
               <span className="fas fa-angle-double-left"></span>{" "}
             </button>
