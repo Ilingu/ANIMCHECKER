@@ -382,8 +382,9 @@ export default class Home extends Component {
       this.DataBaseWS.on("value", (snap) => {
         const NewData = snap.val();
         if (!NewData) return this.logOut();
+        const isFirstQuerie = this.state.FirstQuerie;
         this.refreshValueFirebase((DataNotif) => {
-          this.notifyMe(DataNotif);
+          if (!isFirstQuerie) this.notifyMe(DataNotif);
           if (this.state.NewLogin) {
             this.verificateNum();
           }

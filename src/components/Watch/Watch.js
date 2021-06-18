@@ -1785,7 +1785,9 @@ class Watch extends Component {
 
     return (
       <section id="Watch">
-        {!window.mobileAndTabletCheck() && !BlockDetectSideBar ? (
+        {!window.mobileAndTabletCheck() &&
+        !BlockDetectSideBar &&
+        !ToggleNavbar ? (
           <div
             id="DetectMouseSideBar"
             onMouseEnter={(event) => {

@@ -3675,6 +3675,7 @@ a:hover {
 
 #Watch #DataAnim #continuedAnim {
   margin-top: 10px;
+  cursor: pointer;
 }
 
 #Watch #DataAnim #InfoAnim {
