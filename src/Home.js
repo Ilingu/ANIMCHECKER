@@ -2161,6 +2161,7 @@ export default class Home extends Component {
       EpisodeName,
       DurationPerEp,
       OfflineMode,
+      UrlUserImg,
     } = this.state;
     const self = this;
 
@@ -2168,9 +2169,27 @@ export default class Home extends Component {
       EpName = EpisodeName,
       DuraPerEp = DurationPerEp;
 
+    const VerifiedURLUserImg = () => {
+      if (typeof UrlUserImg === "string" && UrlUserImg.trim().length !== 0) {
+        try {
+          new URL(UrlUserImg);
+          imgUrl = UrlUserImg;
+        } catch (err) {
+          console.error(err);
+          this.ShowMessageInfo(
+            "Veuillez donner un URL valide: https://www.exemple.com",
+            7000,
+            "danger"
+          );
+          return;
+        }
+      }
+    };
+
     if (imgUrl === null || EpName === null || DuraPerEp === null) {
       if (OfflineMode === true) {
         imgUrl = "PlaceHolderImg";
+        VerifiedURLUserImg();
         EpName = DuraPerEp = "none";
         next();
       } else {
@@ -2181,6 +2200,7 @@ export default class Home extends Component {
           null,
           (resImg, resEp, resDuration) => {
             imgUrl = resImg;
+            VerifiedURLUserImg();
             EpName = resEp;
             DuraPerEp = resDuration;
             next();
@@ -5578,32 +5598,6 @@ export default class Home extends Component {
                         }
                       />
                     </Form.Group>
-                    <Form.Group controlId="seasonAnime">
-                      <Form.Check
-                        type="checkbox"
-                        checked={SeasonAnimCheck}
-                        label={`Anime de saison: ${
-                          SeasonAnimCheck === true ? "Oui" : "Non"
-                        }`}
-                        onChange={(event) =>
-                          this.setState({
-                            SeasonAnimCheck: event.target.checked,
-                          })
-                        }
-                      />
-                    </Form.Group>
-                    <Form.Group controlId="WaitAnim">
-                      <Form.Check
-                        type="checkbox"
-                        checked={WaitAnimCheck}
-                        label={`Anime en attente de visionnage: ${
-                          WaitAnimCheck === true ? "Oui" : "Non"
-                        }`}
-                        onChange={(event) =>
-                          this.setState({ WaitAnimCheck: event.target.checked })
-                        }
-                      />
-                    </Form.Group>
                   </Fragment>
                 ) : type === "film" ? (
                   <Fragment>
@@ -5638,24 +5632,75 @@ export default class Home extends Component {
                         }}
                       />
                     </Form.Group>
-                    <Form.Group controlId="WaitAnimFilm">
-                      <Form.Check
-                        type="checkbox"
-                        checked={WaitAnimCheck}
-                        label={`Anime en attente de visionnage: ${
-                          WaitAnimCheck === true ? "Oui" : "Non"
-                        }`}
+                  </Fragment>
+                ) : (
+                  this.setState({ OpenNextNewAnime: false, type: "serie" })
+                )}
+                {OpenNextNewAnime ? (
+                  <Fragment>
+                    <Form.Label>Options (Facultatif)</Form.Label>
+                    {type === "serie" ? (
+                      <Fragment>
+                        <Form.Group controlId="seasonAnime">
+                          <Form.Check
+                            type="checkbox"
+                            checked={SeasonAnimCheck}
+                            label={`Anime de saison: ${
+                              SeasonAnimCheck === true ? "Oui" : "Non"
+                            }`}
+                            onChange={(event) =>
+                              this.setState({
+                                SeasonAnimCheck: event.target.checked,
+                              })
+                            }
+                          />
+                        </Form.Group>
+                        <Form.Group controlId="WaitAnim">
+                          <Form.Check
+                            type="checkbox"
+                            checked={WaitAnimCheck}
+                            label={`Série en attente de visionnage: ${
+                              WaitAnimCheck === true ? "Oui" : "Non"
+                            }`}
+                            onChange={(event) =>
+                              this.setState({
+                                WaitAnimCheck: event.target.checked,
+                              })
+                            }
+                          />
+                        </Form.Group>
+                      </Fragment>
+                    ) : type === "film" ? (
+                      <Form.Group controlId="WaitAnimFilm">
+                        <Form.Check
+                          type="checkbox"
+                          checked={WaitAnimCheck}
+                          label={`Film en attente de visionnage: ${
+                            WaitAnimCheck === true ? "Oui" : "Non"
+                          }`}
+                          onChange={(event) =>
+                            this.setState({
+                              WaitAnimCheck: event.target.checked,
+                            })
+                          }
+                        />
+                      </Form.Group>
+                    ) : null}
+                    <Form.Group controlId="urlPersoAnime">
+                      <Form.Control
+                        type="text"
+                        placeholder="Image Personnalisé (URL)"
+                        autoComplete="off"
+                        value={UrlUserImg}
                         onChange={(event) =>
                           this.setState({
-                            WaitAnimCheck: event.target.checked,
+                            UrlUserImg: event.target.value,
                           })
                         }
                       />
                     </Form.Group>
                   </Fragment>
-                ) : (
-                  this.setState({ OpenNextNewAnime: false, type: "serie" })
-                )}
+                ) : null}
               </Form>
             </Modal.Body>
             <Modal.Footer id="ModalFooter">
@@ -5676,6 +5721,27 @@ export default class Home extends Component {
                     }`}
                   ></span>{" "}
                   Find Ep for {title}
+                </Button>
+              ) : null}
+              {UrlUserImg.trim().length !== 0 && OpenNextNewAnime ? (
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    try {
+                      new URL(UrlUserImg);
+                    } catch (err) {
+                      console.error(err);
+                      this.ShowMessageInfo(
+                        "Veuillez donner un URL valide: https://www.exemple.com",
+                        7000,
+                        "danger"
+                      );
+                      return;
+                    }
+                    this.setState({ ModePreview: true });
+                  }}
+                >
+                  <span className="fas fa-eye"></span> Preview
                 </Button>
               ) : null}
               <Button
