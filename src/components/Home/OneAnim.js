@@ -385,10 +385,17 @@ const OneAnim = ({
         >
           <span className="fas fa-plus"></span> Ajouter aux "Next Anime"
         </Button>
-        <Button variant="success" block id="fixedOnBottom" onClick={handleAdd}>
+        <Button
+          variant="success"
+          block
+          id="fixedOnBottom"
+          disabled={!details[0]?.episodes}
+          onClick={details[0]?.episodes ? handleAdd : null}
+        >
           <span className="fas fa-plus"></span>{" "}
           <span className="textContent">
             Ajouter {details[1]?.title?.split(":")[0]}
+            {!details[0]?.episodes ? " (Chargements des épisodes)" : null}
           </span>
         </Button>
       </div>
