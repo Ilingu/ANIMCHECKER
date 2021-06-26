@@ -2862,6 +2862,9 @@ class Watch extends Component {
                   type === "serie" &&
                   !ActionEndAnime[1]
                 ) {
+                  if (AnimToWatch.Lier) {
+                    this.deleteValue(`${Pseudo}/Notif/${AnimToWatch.Lier}`);
+                  }
                   this.updateValue(`${this.state.Pseudo}/${type}/${id}`, {
                     Paused: true,
                     Drop: null,
