@@ -843,7 +843,6 @@ class Watch extends Component {
   };
 
   verifiedEPRepere = (Season, modeEnd) => {
-    let { AnimToWatch } = this.state;
     const idSeason = parseInt(Season.name.split(" ")[1]) - 1;
 
     // Last Season
@@ -851,6 +850,9 @@ class Watch extends Component {
       AnimeFinished = true;
 
     const Verified = (forcedStopMode) => {
+      const { AnimToWatch } = this.state;
+      SeasonFinished = true;
+      AnimeFinished = true;
       AnimToWatch.AnimEP[idSeason].Episodes.forEach((EP) => {
         if (!EP.finished) SeasonFinished = false;
       });
@@ -871,7 +873,6 @@ class Watch extends Component {
         Season.Episodes[Season.Episodes.length - 1].id + 1,
         false,
         () => {
-          AnimToWatch = this.state.AnimToWatch;
           Verified(true);
         }
       );
@@ -2658,9 +2659,7 @@ class Watch extends Component {
                     onClick={() => {
                       repereEpisode[2] !== null
                         ? this.StartNextEP(repereSaison, repereEpisode[2].id)
-                        : console.warn(
-                            "Impossible de charger un Episode innexistant !"
-                          );
+                        : this.verifiedEPRepere(repereSaison, true);
                     }}
                   >
                     Episode{" "}
