@@ -3134,7 +3134,6 @@ export default class Home extends Component {
   };
 
   findPalmares = () => {
-    const sizeof = require("object-sizeof");
     const CopyState = { ...this.state };
     const DurerTotal = Object.values(CopyState.filmFireBase).reduce(
       (acc, currentVal) => acc + currentVal.durer,
@@ -3173,21 +3172,7 @@ export default class Home extends Component {
         return acc + add;
       }, 0);
 
-    const SizeOfAll = [
-      (sizeof(this.state.serieFirebase) / 1000).toFixed(2),
-      (sizeof(this.state.filmFireBase) / 1000).toFixed(2),
-      (sizeof(this.state.NextAnimFireBase) / 1000).toFixed(2),
-      (
-        sizeof({
-          ...this.state.serieFirebase,
-          ...this.state.filmFireBase,
-          ...this.state.NextAnimFireBase,
-        }) / 1000
-      ).toFixed(2),
-    ];
-
     return {
-      SizeOfUserInDB: SizeOfAll,
       nbNextAnime: Object.keys(CopyState.NextAnimFireBase).length,
       nbFilm: [Object.keys(CopyState.filmFireBase).length, FinishedTotalFilm],
       nbSeries: [
@@ -5178,13 +5163,6 @@ export default class Home extends Component {
             <Modal.Body id="ModalBody">
               {palmares ? (
                 <ul id="palamaresUl">
-                  <li>
-                    <span className="palma">Taille pris:</span> Tous:{" "}
-                    {palmares.SizeOfUserInDB[3]}KB (Anime:{" "}
-                    {palmares.SizeOfUserInDB[0]}KB\Film:{" "}
-                    {palmares.SizeOfUserInDB[1]}KB\NextAnime:{" "}
-                    {palmares.SizeOfUserInDB[2]}KB)
-                  </li>
                   <li>
                     <span className="palma">
                       Animes en cours (Serie + Film):

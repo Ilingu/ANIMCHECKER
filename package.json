@@ -16,7 +16,6 @@
     "fireworks": "^2.2.7",
     "idb": "^6.0.0",
     "object-path": "^0.11.5",
-    "object-sizeof": "^1.6.1",
     "re-base": "^4.0.0",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.0",
