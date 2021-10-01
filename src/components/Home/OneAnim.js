@@ -15,35 +15,6 @@ const OneAnim = ({
   ResText,
   Manga,
 }) => {
-  const [SynopsisText, setSynopsisText] = useState(details[1]?.synopsis);
-  const [TranslatedCacheSynopsis, setTranslatedCacheSynopsis] = useState("");
-  const [Original, setOriginal] = useState(true);
-  useEffect(() => {
-    if (typeof UserCountry === "string" && details[1])
-      axios
-        .request({
-          method: "GET",
-          url: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate",
-          params: {
-            source: "en",
-            target: UserCountry,
-            input: details[1]?.synopsis,
-          },
-          headers: {
-            "x-rapidapi-key":
-              "412437fce2mshdbaa1f4314616bep11404djsn8f200dcb59de",
-            "x-rapidapi-host":
-              "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
-          },
-        })
-        .then((res) => {
-          setSynopsisText(res.data.outputs[0].output);
-          setTranslatedCacheSynopsis(res.data.outputs[0].output);
-          setOriginal(false);
-        })
-        .catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [details[1]]);
   if (!details[1]) {
     return (
       <div style={{ display: "flex", justifyContent: "center" }}>
@@ -143,39 +114,7 @@ const OneAnim = ({
                   Auteur(s): <span className="info">{Authors}</span>
                 </li>
                 <li>
-                  Résumé: <span className="info">{SynopsisText}</span>{" "}
-                  {!Original ? (
-                    <span style={{ color: "#aaa" }}>
-                      {`{Traduit en ${UserCountry} par SYSTRAN.io}`}{" "}
-                    </span>
-                  ) : null}
-                  {!UserCountry ? null : (
-                    <Button
-                      size="sm"
-                      variant="link"
-                      onClick={() => {
-                        if (Original) {
-                          if (TranslatedCacheSynopsis === "") {
-                            setSynopsisText("Traduction impossible.");
-                            setTimeout(
-                              () => setSynopsisText(details[1]?.synopsis),
-                              5000
-                            );
-                            return;
-                          }
-                          setSynopsisText(TranslatedCacheSynopsis);
-                          setOriginal(false);
-                          return;
-                        }
-                        setSynopsisText(details[1]?.synopsis);
-                        setOriginal(true);
-                      }}
-                    >
-                      {Original
-                        ? `Traduire en ${UserCountry} (par SYSTRAN.io)`
-                        : "Original"}
-                    </Button>
-                  )}
+                  Résumé: <span className="info">{details[1]?.synopsis}</span>{" "}
                 </li>
               </ul>
             </div>
@@ -302,39 +241,7 @@ const OneAnim = ({
                 Age requis: <span className="info">{details[1]?.rating}</span>
               </li>
               <li>
-                Résumé: <span className="info">{SynopsisText}</span>{" "}
-                {!Original ? (
-                  <span style={{ color: "#aaa" }}>
-                    {`{Traduit en ${UserCountry} par SYSTRAN.io}`}{" "}
-                  </span>
-                ) : null}
-                {!UserCountry ? null : (
-                  <Button
-                    size="sm"
-                    variant="link"
-                    onClick={() => {
-                      if (Original) {
-                        if (TranslatedCacheSynopsis === "") {
-                          setSynopsisText("Traduction impossible.");
-                          setTimeout(
-                            () => setSynopsisText(details[1]?.synopsis),
-                            5000
-                          );
-                          return;
-                        }
-                        setSynopsisText(TranslatedCacheSynopsis);
-                        setOriginal(false);
-                        return;
-                      }
-                      setSynopsisText(details[1]?.synopsis);
-                      setOriginal(true);
-                    }}
-                  >
-                    {Original
-                      ? `Traduire en ${UserCountry} (par SYSTRAN.io)`
-                      : "Original"}
-                  </Button>
-                )}
+                Résumé: <span className="info">{details[1]?.synopsis}</span>{" "}
               </li>
             </ul>
           </div>
@@ -385,13 +292,7 @@ const OneAnim = ({
         >
           <span className="fas fa-plus"></span> Ajouter aux "Next Anime"
         </Button>
-        <Button
-          variant="success"
-          block
-          id="fixedOnBottom"
-          disabled={!details[0]?.episodes}
-          onClick={details[0]?.episodes ? handleAdd : null}
-        >
+        <Button variant="success" block id="fixedOnBottom" onClick={handleAdd}>
           <span className="fas fa-plus"></span>{" "}
           <span className="textContent">
             Ajouter {details[1]?.title?.split(":")[0]}

@@ -2,14 +2,12 @@ import React, { Component, Fragment } from "react";
 import { openDB } from "idb";
 import { Redirect, Link } from "react-router-dom";
 import { ChromePicker } from "react-color";
-import CountrySelect from "react-bootstrap-country-select";
 // CSS
 import { Spinner, Alert, Button, Modal, Form } from "react-bootstrap";
 // DB
 import base from "../../db/base";
 import firebase from "firebase/app";
 import "firebase/auth";
-import CountryJSON from "../../db/Country.json";
 class Settings extends Component {
   state = {
     // FireBase
@@ -26,7 +24,6 @@ class Settings extends Component {
       : JSON.parse(window.localStorage.getItem("OfflineMode")),
     isFirstTime: true,
     ConnectionInfo: {},
-    Country: null,
     IndexForTemplateAnim: 0,
     RedirectHome: null,
     ShowModalDeleteUser: false,
@@ -129,7 +126,6 @@ class Settings extends Component {
           ParamsOptn: DataRequired[0],
           TemplateAnimeFirebase: DataRequired[1],
           ACKColor: DataRequired[0].ACKColor,
-          Country: DataRequired[0].Country,
           FirstQuerie: true,
         });
     } catch (err) {
@@ -293,7 +289,6 @@ class Settings extends Component {
       RedirectHome,
       newPseudo,
       ConnectionInfo,
-      Country,
       isFirstTime,
       ACKColor,
       OfflineMode,
@@ -590,25 +585,6 @@ class Settings extends Component {
                   ? TemplateAnime
                   : TemplateAnime[IndexForTemplateAnim]}
               </div>
-              <div className="hrDiv"></div>
-              <CountrySelect
-                value={Country}
-                onChange={(country) => {
-                  if (country !== null) {
-                    this.updateValue(`${Pseudo}/ParamsOptn`, {
-                      Country: country,
-                    });
-                  }
-                  this.setState({ Country: country });
-                }}
-                countries={CountryJSON}
-                valueAs="id"
-                noMatchesText="Ce pays n'existe pas. Le créas-tu ?"
-                flush={false}
-                flags={true}
-                placeholder="Type or select country"
-              />
-              <br />
               <ul style={{ listStyle: "none", fontSize: "20px" }}>
                 <li>
                   <span style={{ textDecoration: "underline", color: "#ddd" }}>
@@ -656,20 +632,6 @@ class Settings extends Component {
             </aside>
             <aside id="About">
               <h3>A Propos:</h3>
-              <ul>
-                <li>
-                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
-                    Version ACK:
-                  </span>{" "}
-                  Stable <b>1</b>β<b>19</b>
-                </li>
-                <li>
-                  <span style={{ textDecoration: "underline", color: "#ddd" }}>
-                    Version MCK:
-                  </span>{" "}
-                  β<b>4</b>
-                </li>
-              </ul>
               <p>
                 Vous êtes actuellement sur la version{" "}
                 {window.matchMedia("(display-mode: standalone)").matches ? (

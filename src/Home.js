@@ -4343,7 +4343,7 @@ export default class Home extends Component {
               nbEP:
                 animToDetails[1].type === "Movie"
                   ? ""
-                  : animToDetails[0].episodes.length.toString(),
+                  : animToDetails[0].episodes?.length?.toString() || 12,
               imageUrl: this.handleDeleteImageURLParameter(
                 animToDetails[1].image_url
               ),
