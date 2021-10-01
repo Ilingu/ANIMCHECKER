@@ -1,5 +1,4 @@
-import React, { useState, Fragment, useEffect } from "react";
-import axios from "axios";
+import React, { Fragment } from "react";
 // Components
 import Episode from "../dyna/Watch/Episode";
 // CSS
@@ -11,7 +10,6 @@ const OneAnim = ({
   handleAdd,
   ShowMessageHtml,
   ShowMessage,
-  UserCountry,
   ResText,
   Manga,
 }) => {
