@@ -1,3 +1,5 @@
+# DEPRECATED! [New Version](https://github.com/Ilingu/ack_v2)
+
 # [ACK]:MyAnimList -> List your anime ! (We are Otaku Corporation)
 
 [![SITE](https://forthebadge.com/images/badges/check-it-out.svg)](https://myanimchecker.netlify.app)
